@@ -7,18 +7,17 @@ Stage 1:
     * `create_file(file_path: str, content: str = "")`: Creates a new .md file in the specified path with the provided content.
     * `create_dir(dir_path: str)`: Creates a new directory in the specified path.
     * `get_size(file_or_dir_path: str)`: Returns the size of a file or directory in bytes. If left empty, returns the total size of all files and directories in the memory.
+ * The method `create_file` will check the size constaints of the files and folders and will throw an error if the constraints are exceeded. (Or should we instead make it a reward also?)
  * Agent would be trained to generate an obsidian vault given a text content
  * Allow referencing of other files (like Obsidian)
  * Agent would be trained in two stages, Stage 1.1 and Stage 1.2
  * The following metrics could be used to evaluate the agent:
-    
     * **Stage 1 Metrics (Structural):**
         * **Directed Modularity:** Measures how well the vault is partitioned into densely connected communities. High modularity indicates distinct topical clusters.
         * **Directed Clustering Coefficient:** Captures the prevalence of closed triads in the vault, reflecting how interconnected each note's neighborhood is.
         * **Directed Betweenness Centrality:** Encourages "bridge" or "hub" notes that improve navigability between different parts of the vault.
         * **Largest Weakly Connected Fraction:** Measures overall vault connectivity. A high value means most/all notes are connected.
         * **Degree Distribution Heterogeneity:** Rewards having a skewed distribution of links, indicating hub-like structures rather than uniform connections.
-        
     * **Stage 2 Metrics (Semantic - Added to Stage 1):**
         * **Note Cohesion:** Ensures each note is topically consistent internally. Higher cohesion means a note focuses on one main topic.
         * **Link Relevance:** Encourages links to connect semantically related notes. High relevance means linked notes are thematically similar.
