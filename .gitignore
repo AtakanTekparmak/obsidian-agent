@@ -181,3 +181,6 @@ cython_debug/
 # Memory directories
 memory_dir/
 mock_obsidian_vault/
+
+# Output directories
+**/output/*
