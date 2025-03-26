@@ -1,14 +1,15 @@
 import os
+import asyncio
 from pipeline.steps.generate_stories import get_stories
 from pipeline.utils import save_data_to_csv, save_data_to_json
 import pandas as pd
 
-def main():
+async def main():
     print("Starting data generation pipeline...")
     
     # Step 1: Generate diverse knowledge base (personal stories)
     print("Step 1: Generating diverse personal stories...")
-    stories_df = get_stories(num_stories=5)  # Generating 5 stories for demonstration
+    stories_df = await get_stories(num_stories=5)  # Generating 5 stories for demonstration
     
     # Display summary of generated stories
     print(f"Generated {len(stories_df)} personal stories")
@@ -26,4 +27,4 @@ def main():
     print(f"  - JSON: {json_path}")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -3,6 +3,8 @@ from pydantic import BaseModel, Field
 from dria import Prompt, DatasetGenerator, DriaDataset, Model
 from dria.factory.persona import PersonaBio
 import pandas as pd
+from typing import List, Dict, Any
+import uuid
 
 class PersonalStory(BaseModel):
     person_name: str = Field(..., title="Person's name")
@@ -15,15 +17,14 @@ class PersonalStory(BaseModel):
     current_state: str = Field(..., title="Current life situation")
     future_plans: str = Field(..., title="Future plans and aspirations")
 
-def create_story_dataset() -> DriaDataset:
+async def create_story_dataset() -> DriaDataset:
     """
-    Create a Dria dataset for personal stories
+    Create a Dria dataset for personal stories asynchronously
     
     Returns:
         DriaDataset: The created dataset
     """
     # Create a fresh dataset with a unique name to avoid mixing with existing data
-    import uuid
     unique_id = str(uuid.uuid4())[:8]
     
     # Use PersonaBio's schema for initial generation
@@ -34,7 +35,7 @@ def create_story_dataset() -> DriaDataset:
     )
     return dataset
 
-def generate_story_instructions(num_stories: int = 10) -> list[dict]:
+def generate_story_instructions(num_stories: int = 10) -> List[Dict[str, Any]]:
     """
     Generate instructions for diverse story creation
     
@@ -42,7 +43,7 @@ def generate_story_instructions(num_stories: int = 10) -> list[dict]:
         num_stories (int): The number of stories to generate
         
     Returns:
-        list[dict]: The instructions for the stories
+        List[Dict[str, Any]]: The instructions for the stories
     """
     simulation_descriptions = [
         "A tech professional in their 30s working in a modern tech company",
@@ -64,43 +65,57 @@ def generate_story_instructions(num_stories: int = 10) -> list[dict]:
     # Use a subset based on num_stories
     return personas[:num_stories]
 
-async def generate_stories(num_stories: int = 10) -> pd.DataFrame:
+async def clean_stories_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Generate diverse personal stories using Dria SDK
+    Clean and validate story data asynchronously
     
     Args:
-        num_stories (int): The number of stories to generate
+        df (pd.DataFrame): The dataframe to clean
     """
-    # Create dataset with PersonaBio schema
-    dataset = create_story_dataset()
+    # Drop rows with NaN values in critical fields
+    df = df.dropna(subset=['person_name', 'age'])
     
-    # Create instructions
-    instructions = generate_story_instructions(num_stories)
+    # Convert age to integer if possible
+    df['age'] = df['age'].astype(float)
     
-    # Create generator
+    # Ensure we have expected fields
+    expected_fields = [
+        'person_name', 'age', 'background', 'daily_activities', 
+        'relationships', 'past_events', 'chronological_timeline',
+        'current_state', 'future_plans'
+    ]
+    
+    # Only keep expected fields
+    df = df[expected_fields]
+    
+    return df
+
+async def generate_initial_personas(dataset: DriaDataset, instructions: List[Dict[str, Any]]) -> pd.DataFrame:
+    """
+    Generate initial personas using PersonaBio
+    
+    Args:
+        dataset (DriaDataset): The dataset to use
+        instructions (List[Dict[str, Any]]): The instructions for generation
+    """
     generator = DatasetGenerator(dataset=dataset)
-    
-    # Generate initial personas using PersonaBio
     await generator.generate(
         instructions=instructions,
         singletons=PersonaBio,
         models=[Model.DEEPSEEK_CHAT_OR]
     )
+    return dataset.to_pandas()
+
+async def generate_enriched_stories(story_dataset: DriaDataset, initial_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Generate enriched stories using the initial data
     
-    # Get the generated data
-    df = dataset.to_pandas()
-    
-    # Create a new dataset with our PersonalStory schema
-    story_dataset = DriaDataset(
-        name=f"personal_stories_enriched_{dataset.name}",
-        description="Enriched personal stories with chronological timeline",
-        schema=PersonalStory
-    )
-    
-    # Create a new generator for the enriched dataset
+    Args:
+        story_dataset (DriaDataset): The dataset for enriched stories
+        initial_data (pd.DataFrame): The initial persona data
+    """
     story_generator = DatasetGenerator(dataset=story_dataset)
     
-    # Define prompt for generating stories
     prompt_template = """
     Create a detailed personal profile based on this backstory: {{bio}}. Include:
     
@@ -126,52 +141,48 @@ async def generate_stories(num_stories: int = 10) -> pd.DataFrame:
     
     prompter = Prompt(prompt=prompt_template, schema=PersonalStory)
     
-    # Generate enriched stories using the bio from PersonaBio
     await story_generator.generate(
-        instructions=df.to_dict('records'),
+        instructions=initial_data.to_dict('records'),
         singletons=prompter,
         models=Model.GPT4O
     )
     
-    # Get the final enriched data
-    enriched_df = story_dataset.to_pandas()
-    
-    # Validate and clean data
-    enriched_df = clean_stories_data(enriched_df)
-    
-    return enriched_df
+    return story_dataset.to_pandas()
 
-def clean_stories_data(df: pd.DataFrame) -> pd.DataFrame:
+async def generate_stories(num_stories: int = 10) -> pd.DataFrame:
     """
-    Clean and validate story data
-    
-    Args:
-        df (pd.DataFrame): The dataframe to clean
-    """
-    # Drop rows with NaN values in critical fields
-    df = df.dropna(subset=['person_name', 'age'])
-    
-    # Convert age to integer if possible
-    df['age'] = df['age'].astype(float)
-    
-    # Ensure we have expected fields
-    expected_fields = [
-        'person_name', 'age', 'background', 'daily_activities', 
-        'relationships', 'past_events', 'chronological_timeline',
-        'current_state', 'future_plans'
-    ]
-    
-    # Only keep expected fields
-    df = df[expected_fields]
-    
-    return df
-
-def get_stories(num_stories: int = 10) -> pd.DataFrame:
-    """
-    Run the story generation and return the dataset
+    Generate diverse personal stories using Dria SDK asynchronously
     
     Args:
         num_stories (int): The number of stories to generate
     """
-    df = asyncio.run(generate_stories(num_stories))
-    return df
+    # Create initial dataset and instructions
+    dataset = await create_story_dataset()
+    instructions = generate_story_instructions(num_stories)
+    
+    # Generate initial personas
+    initial_df = await generate_initial_personas(dataset, instructions)
+    
+    # Create enriched dataset
+    story_dataset = DriaDataset(
+        name=f"personal_stories_enriched_{dataset.name}",
+        description="Enriched personal stories with chronological timeline",
+        schema=PersonalStory
+    )
+    
+    # Generate enriched stories
+    enriched_df = await generate_enriched_stories(story_dataset, initial_df)
+    
+    # Clean and validate data
+    cleaned_df = await clean_stories_data(enriched_df)
+    
+    return cleaned_df
+
+async def get_stories(num_stories: int = 10) -> pd.DataFrame:
+    """
+    Run the story generation and return the dataset asynchronously
+    
+    Args:
+        num_stories (int): The number of stories to generate
+    """
+    return await generate_stories(num_stories)
