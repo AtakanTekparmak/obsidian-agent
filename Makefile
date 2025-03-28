@@ -16,8 +16,9 @@ help:
 	@echo "  1. install           Install dependencies and set up the environment (should be run first)"
 	@echo "  2. copy-env          Copy the .env.example file to .env if it doesn't exist (should be run second)"
 	@echo "  3. run               Run the main.py script (should be run third)"
-	@echo "  4. test              Run the tests"
-	@echo "  5. clean             Remove the virtual environment and its contents"
+	@echo "  4. generate-data     Generate data using the pipeline"
+	@echo "  5. test              Run the tests"
+	@echo "  6. clean             Remove the virtual environment and its contents"
 
 # Install dependencies and set up the environment
 install:
@@ -38,6 +39,11 @@ copy-env:
 run:
 	. $(VENV_NAME)/bin/activate && \
 	$(PYTHON) main.py
+
+# Generate data using the pipeline
+generate-data:
+	. $(VENV_NAME)/bin/activate && \
+	$(PYTHON) generate_data.py
 
 # Run the tests
 test:
