@@ -43,17 +43,3 @@ def save_data_to_json(data_df: pd.DataFrame, output_path: str = OUTPUT_PATH, fil
     """
     records = data_df.to_dict(orient="records")
     return _save_json(records, output_path, filename)
-
-def save_dict_to_json(filename: str, data_dict: dict, output_path: str = OUTPUT_PATH) -> str:
-    """
-    Save dictionary to JSON file
-    
-    Args:
-        filename: The name of the file to save
-        data_dict: The dictionary to save
-        output_path: The directory to save the file to
-        
-    Returns:
-        str: The path to the saved file
-    """
-    return _save_json(data_dict, output_path, filename)

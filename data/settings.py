@@ -17,7 +17,4 @@ OUTPUT_PATH = "output"
 PERSONAS_PATH = "personas"
 
 # Seed data
-SCENARIOS = [
-    "A modern town in 2024, Amsterdam, Netherlands",
-    "A neighborhood in 2025, Hamburg, Germany"
-]
+SCENARIO = "Amsterdam, Netherlands in 2024"
