@@ -1,10 +1,10 @@
 import asyncio
 
-from data.pipeline.generate_kb import generate_personas
+from data.pipeline import generate_personas, generate_relationships
 from data.settings import SCENARIO
 
 async def main():
-    await generate_personas(scenario=SCENARIO)
-
+    backstories = await generate_personas(scenario=SCENARIO)
+    relationships = await generate_relationships(backstories=backstories)
 if __name__ == "__main__":
     asyncio.run(main())

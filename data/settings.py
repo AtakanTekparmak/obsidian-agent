@@ -10,11 +10,12 @@ STRONG_MODELS = [
 ]
 
 # Constants
-NUM_PERSONAS_PER_SCENARIO = 1
+NUM_PERSONAS_PER_SCENARIO = 8
 
 # File paths
 OUTPUT_PATH = "output"
 PERSONAS_PATH = "personas"
+RELATIONSHIPS_PATH = "relationships"
 
 # Seed data
 SCENARIO = "Amsterdam, Netherlands in 2024"

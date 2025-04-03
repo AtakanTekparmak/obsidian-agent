@@ -1,0 +1,2 @@
+from .generate_kb import generate_personas
+from .generate_relationships import generate_relationships

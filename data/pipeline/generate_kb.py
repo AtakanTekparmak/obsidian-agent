@@ -3,21 +3,19 @@ import glob
 from dria import DatasetGenerator, DriaDataset
 from dria.factory.persona import PersonaBackstory
 
-from pydantic import BaseModel, Field
-
-from data.settings import OUTPUT_PATH, PERSONAS_PATH, SCENARIO, NUM_PERSONAS_PER_SCENARIO, STRONG_MODELS
+from data.settings import OUTPUT_PATH, PERSONAS_PATH, NUM_PERSONAS_PER_SCENARIO, STRONG_MODELS
 from data.utils import save_data_to_json
 
-async def generate_personas(scenario: str) -> DriaDataset:
+async def generate_personas(scenario: str) -> list[str]:
     """
-    Generate a persona using Dria and save to JSON. Returns the DriaDataset object.
+    Generate a persona using Dria and save to JSON. Returns the list of backstories.
 
     Returns:
-        DriaDataset: The DriaDataset object
+        list[str]: The list of backstories
     """
     # Create dataset
     dataset = DriaDataset(
-        name="personas_for_scenario", 
+        name="personas_for_scenario_0", 
         description=f"A dataset for personas based on scenario: {scenario}", 
         schema=PersonaBackstory[-1].OutputSchema
     )
@@ -40,6 +38,9 @@ async def generate_personas(scenario: str) -> DriaDataset:
 
     # Convert dataset to dataframe and then a list of dicts
     df = dataset.to_pandas()
+    records: list[dict] = df.to_dict(orient="records")
+    backstories = [persona["backstory"] for persona in records]
+    
 
     # Determine the next file number
     existing_files = glob.glob(os.path.join(OUTPUT_PATH, PERSONAS_PATH, "personas_*.json"))
@@ -53,4 +54,4 @@ async def generate_personas(scenario: str) -> DriaDataset:
     save_data_to_json(data_df=df, output_path=os.path.join(OUTPUT_PATH, PERSONAS_PATH), filename=filename)
     print(f"Dataset saved to {os.path.join(OUTPUT_PATH, PERSONAS_PATH, filename)}")
 
-    return dataset
+    return backstories
