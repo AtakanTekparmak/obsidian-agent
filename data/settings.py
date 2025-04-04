@@ -1,6 +1,15 @@
+import os
+from dotenv import load_dotenv
 from dria import Model
 
-# Models
+# Load environment variables
+load_dotenv()
+
+# Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = "gemini-2.0-flash"
+
+# Dria
 STRUCTURED_OUTPUT_MODELS = [Model.GPT4O]
 STRONG_MODELS = [
     Model.DEEPSEEK_CHAT_OR,

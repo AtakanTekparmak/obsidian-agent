@@ -6,3 +6,6 @@ matplotlib
 scipy
 dria
 httpx
+python-dotenv
+openai
+google-genai
