@@ -1,12 +1,12 @@
 from google import genai
 from pydantic import BaseModel
 
-from data.settings import GEMINI_API_KEY, GEMINI_MODEL
+from data.settings import GEMINI_API_KEY
 
 # Initialize the client
 CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
-def get_model_response(schema: BaseModel, prompt: str, model: str = GEMINI_MODEL) -> BaseModel:
+def get_model_response(schema: BaseModel, prompt: str, model: str) -> BaseModel:
     """
     Get a structured response from the Gemini model
 

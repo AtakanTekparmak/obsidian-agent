@@ -1,10 +1,9 @@
-import asyncio
+from data.pipeline import generate_personas
 
-from data.pipeline import generate_personas, generate_relationships
-from data.settings import SCENARIO
+def main():
+    scenario = "Amsterdam, Netherlands in 2024"
+    personas = generate_personas(8, scenario, save=True)
+    print(personas)
 
-async def main():
-    backstories = await generate_personas(scenario=SCENARIO)
-    relationships = await generate_relationships(backstories=backstories)
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
