@@ -1,27 +1,11 @@
-from datetime import datetime
 from typing import List
-from pydantic import BaseModel, ConfigDict
 import os
 
 from data.model import get_model_response
 from data.settings import OUTPUT_PATH, STORIES_PATH, GEMINI_PRO
 from data.utils import save_pydantic_to_json
-from data.pipeline.generate_personas import Persona
-
-class MomentaryPersonaStory(BaseModel):
-    timestamp: datetime
-    story: str
-    
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class MomentaryPersonaStories(BaseModel):
-    name_surname: str
-    stories: List[MomentaryPersonaStory]
-    
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class MomentaryStories(BaseModel):
-    stories: List[MomentaryPersonaStories]
+from data.schemas.personas import Persona
+from data.schemas.stories import MomentaryStories
 
 def generate_momentary_stories(
         num_stories: int,

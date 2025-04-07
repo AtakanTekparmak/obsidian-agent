@@ -47,3 +47,45 @@ class MomentaryStories(BaseModel):
     stories: List[MomentaryPersonaStories]
 ```
 
+#### Knowledge Base
+
+```python
+class PersonaWithStories(BaseModel):
+    persona: Persona
+    stories: List[MomentaryPersonaStory]
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+
+class PersonasWithStories(BaseModel):
+    personas: List[PersonaWithStories]
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+
+class Fact(BaseModel):
+    fact_description_or_change: str
+    timestamp: Optional[datetime] = None
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+
+class PersonalFact(BaseModel):
+    name_surname: str
+    facts: List[Fact]
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+
+class PersonalFacts(BaseModel):
+    facts: List[PersonalFact]
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+
+class KnowledgeBaseItem(BaseModel):
+    persona_with_stories: PersonaWithStories
+    facts: List[Fact]
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+
+class KnowledgeBase(BaseModel):
+    items: List[KnowledgeBaseItem]
+
+    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+```

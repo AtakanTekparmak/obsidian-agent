@@ -1,52 +1,18 @@
-from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
 import os
-
+from typing import List
 from data.model import get_model_response
 from data.settings import OUTPUT_PATH, KB_PATH, GEMINI_PRO
 from data.utils import save_pydantic_to_json
-from data.pipeline.generate_personas import Personas, Persona
-from data.pipeline.generate_stories import MomentaryPersonaStory, MomentaryStories
-
-class PersonaWithStories(BaseModel):
-    persona: Persona
-    stories: List[MomentaryPersonaStory]
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class PersonasWithStories(BaseModel):
-    personas: List[PersonaWithStories]
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class Fact(BaseModel):
-    fact_description_or_change: str
-    timestamp: Optional[datetime] = None
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class PersonalFact(BaseModel):
-    name_surname: str
-    facts: List[Fact]
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class PersonalFacts(BaseModel):
-    facts: List[PersonalFact]
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class KnowledgeBaseItem(BaseModel):
-    persona_with_stories: PersonaWithStories
-    facts: List[Fact]
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
-
-class KnowledgeBase(BaseModel):
-    items: List[KnowledgeBaseItem]
-
-    model_config = ConfigDict(json_encoders={datetime: lambda dt: dt.isoformat()})
+from data.schemas.personas import Personas
+from data.schemas.stories import MomentaryStories
+from data.schemas.kb import (
+    PersonaWithStories, 
+    PersonasWithStories, 
+    PersonalFact, 
+    PersonalFacts, 
+    KnowledgeBaseItem, 
+    KnowledgeBase
+)
 
 def merge_stories_with_personas(
         stories: MomentaryStories,
