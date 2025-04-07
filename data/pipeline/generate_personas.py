@@ -35,7 +35,7 @@ def generate_personas(
         num_personas: int, 
         scenario: str,
         save: bool = True
-    ) -> List[Persona]:
+    ) -> Personas:
     """
     Generate a list of personas.
 
@@ -56,7 +56,7 @@ def generate_personas(
     if save:
         output_path = os.path.join(OUTPUT_PATH, PERSONAS_PATH)
         os.makedirs(output_path, exist_ok=True)
-        filename = os.path.join(output_path, "personas.json")
-        save_pydantic_to_json(response, filename)
+        file_path = os.path.join(output_path, "personas.json")
+        save_pydantic_to_json(response, file_path)
 
     return response

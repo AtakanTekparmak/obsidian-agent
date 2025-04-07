@@ -34,3 +34,16 @@ class Persona(BaseModel):
 
 #### Momentary Stories
 
+```python
+class MomentaryPersonaStory(BaseModel):
+    timestamp: datetime
+    story: str
+
+class MomentaryPersonaStories(BaseModel):
+    name_surname: str
+    stories: List[MomentaryPersonaStory]
+
+class MomentaryStories(BaseModel):
+    stories: List[MomentaryPersonaStories]
+```
+

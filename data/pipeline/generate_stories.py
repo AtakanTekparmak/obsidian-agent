@@ -27,7 +27,7 @@ def generate_momentary_stories(
         num_stories: int,
         personas: List[Persona],
         save: bool = True
-    ) -> List[MomentaryStories]:
+    ) -> MomentaryStories:
     """
     Generate a list of momentary stories from a list of personas.
 
@@ -48,8 +48,8 @@ def generate_momentary_stories(
     if save:
         output_path = os.path.join(OUTPUT_PATH, STORIES_PATH)
         os.makedirs(output_path, exist_ok=True)
-        filename = os.path.join(output_path, "momentary_stories.json")
-        save_pydantic_to_json(response, filename)
+        file_path = os.path.join(output_path, "momentary_stories.json")
+        save_pydantic_to_json(response, file_path)
 
     return response
     
