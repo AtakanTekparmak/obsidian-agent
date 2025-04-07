@@ -32,9 +32,5 @@ class Persona(BaseModel):
     relationships: List[Relationship]
 ```
 
-
-
-
-
 #### Momentary Stories
 

@@ -1,11 +1,11 @@
 from typing import List
 import enum
 import os
-import json
 from pydantic import BaseModel
 
 from data.model import get_model_response
 from data.settings import OUTPUT_PATH, PERSONAS_PATH, GEMINI_PRO
+from data.utils import save_pydantic_to_json
 
 class Gender(str, enum.Enum):
     MALE = "male"
@@ -49,16 +49,14 @@ def generate_personas(
     """
     prompt = f"Generate {num_personas} personas for the scenario:\n{scenario}\nMake sure to include a detailed backstory for each persona and try to make the relationships between the personas realistic. Also, in relationships, make sure to include other personas that are in the list of personas that you will generate. Make sure to include at least one relationship for each persona, but try to make the relationships realistic and not just random. Make sure to keep the backstories and relationships consistent with the scenario and keep the backstories detailed."
 
+    # Generate personas
+    print("Generating personas...")
     response = get_model_response(Personas, prompt, GEMINI_PRO)
 
     if save:
-        os.makedirs(OUTPUT_PATH, exist_ok=True)
-        filename = f"{OUTPUT_PATH}/{PERSONAS_PATH}/personas.json"
-        try:
-            with open(filename, "w") as f:
-                json.dump(response.model_dump(), f, indent=2)
-        except IOError as e:
-            print(f"Error saving file {filename}: {e}")
-            raise
+        output_path = os.path.join(OUTPUT_PATH, PERSONAS_PATH)
+        os.makedirs(output_path, exist_ok=True)
+        filename = os.path.join(output_path, "personas.json")
+        save_pydantic_to_json(response, filename)
 
     return response

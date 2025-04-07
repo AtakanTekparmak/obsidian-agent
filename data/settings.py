@@ -12,3 +12,5 @@ GEMINI_PRO = "gemini-2.5-pro-exp-03-25"
 # File paths
 OUTPUT_PATH = "output"
 PERSONAS_PATH = "personas"
+STORIES_PATH = "stories"
+KB_PATH = "kb"
