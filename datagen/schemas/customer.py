@@ -1,7 +1,7 @@
 import enum
 from typing import List
 
-from data.schemas.base import BaseSchema
+from datagen.schemas.base import BaseSchema
 
 class Gender(str, enum.Enum):
     MALE = "male"

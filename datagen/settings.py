@@ -14,3 +14,4 @@ GEMINI_MODEL = GEMINI_FLASH
 OUTPUT_PATH = "output"
 COMPANIES_PATH = "companies"
 CUSTOMERS_PATH = "customers"
+STORIES_PATH = "stories"
