@@ -7,6 +7,7 @@ Stage 1:
     * `create_file(file_path: str, content: str = "")`: Creates a new .md file in the specified path with the provided content.
     * `create_dir(dir_path: str)`: Creates a new directory in the specified path.
     * `get_size(file_or_dir_path: str)`: Returns the size of a file or directory in bytes. If left empty, returns the total size of all files and directories in the memory.
+    * `write_to_file(file_path: str, content: str)`: Writes to a file in the specified path with the provided content.
  * The method `create_file` will check the size constaints of the files and folders and will throw an error if the constraints are exceeded. (Or should we instead make it a reward also?)
  * Agent would be trained to generate an obsidian vault given a text content
  * Allow referencing of other files (like Obsidian)

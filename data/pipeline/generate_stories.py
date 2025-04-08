@@ -23,7 +23,7 @@ def generate_momentary_stories(
         A list of momentary stories
     """
 
-    prompt = f"Generate {num_stories} momentary stories from the following personas: {personas}. Make sure to include a timestamp for each story. Make sure to include {num_stories} stories for each persona. Make sure that the stories align with the persona's backstory and relationships and are feasible. Make sure that the stories are more factual narratives than writing that is too poetic/journaly/philosophical. The stories should capture facts and happenings in the life of the persona."
+    prompt = f"Generate {num_stories} momentary stories from the following personas: {personas}. Make sure to include a timestamp for each story. Make sure to include {num_stories} stories for each persona. Make sure that the stories align with the persona's backstory and relationships and are feasible. Make sure that the stories are more factual narratives than writing that is too poetic/journaly/philosophical. The stories should capture facts and happenings in the life of the persona. The stories could be consisting of multiple lines, but should be a single story/happening."
 
     # Generate stories
     print("Generating stories...")
