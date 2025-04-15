@@ -45,6 +45,11 @@ generate-data:
 	. $(VENV_NAME)/bin/activate && \
 	$(PYTHON) generate_data.py
 
+# Run the agent
+run-agent:
+	. $(VENV_NAME)/bin/activate && \
+	$(PYTHON) run_agent.py
+
 # Run the tests
 test:
 	. $(VENV_NAME)/bin/activate && \

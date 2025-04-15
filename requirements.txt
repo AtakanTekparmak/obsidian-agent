@@ -9,3 +9,4 @@ httpx
 python-dotenv
 openai
 google-genai
+RestrictedPython
