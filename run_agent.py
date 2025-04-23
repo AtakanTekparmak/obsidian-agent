@@ -1,18 +1,11 @@
 from agent.engine import execute_sandboxed_code
-from agent.model import get_model_response
 from agent.agent import Agent
 from agent.settings import MEMORY_PATH
 from agent.utils import create_memory_if_not_exists
 
-from pydantic import BaseModel
-
-class Story(BaseModel):
-    title: str
-    content: str
-
 def run_agent():
     agent = Agent()
-    response = agent.chat("Hard to believe I'm already 28.")
+    response = agent.chat("Hard to believe I'm already 28. I'm not sure how I feel about it. What feels good though, is I will have my favourite dessert today: chocolate cake.")
     print(response)
 
 def execute_code():

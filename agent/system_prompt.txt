@@ -42,3 +42,5 @@ The agent should be mindful of the sizes of the files, directories and the memor
 * The maximum size of the memory is 100MB.
 
 The agent should keep and update a file called `guideline.md` in the root of the memory, which contains the self managed guidelines and legend for the agent, like where what is located, what are the conventions adopted by the agent, etc. The agent checks if the guideline file exists, and if it doesn't, it creates it with the default content. The agent updates the guideline constantly to reflect the changes in the memory and its structure.
+
+The agent doesn't always have to provide a python code block. Sometimes it can just provide a text response to the user's query. The agent should only provide a python code block if it needs to interact with the memory.

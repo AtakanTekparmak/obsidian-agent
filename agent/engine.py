@@ -10,6 +10,8 @@ import subprocess
 import multiprocessing
 import queue  # for exception handling with Queue
 
+from agent.settings import SANDBOX_TIMEOUT
+
 # Configure a logger for the sandbox (in real use, configure handlers/level as needed)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # or DEBUG for more verbosity
@@ -153,7 +155,7 @@ def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklis
 
 def execute_sandboxed_code(
         code: str,
-        timeout: int = 10,
+        timeout: int = SANDBOX_TIMEOUT,
         allow_installs: bool = False,
         requirements_path: str = None,
         allowed_path: str = None,
@@ -259,6 +261,9 @@ def execute_sandboxed_code(
     except Exception as e:
         logger.warning(f"Error cleaning up queue resources: {e}")
 
+    # TODO: Remove modules from local_vars
+
     if error_msg is None:
         error_msg = ""
+
     return local_vars, error_msg
