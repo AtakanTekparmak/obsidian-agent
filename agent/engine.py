@@ -259,4 +259,6 @@ def execute_sandboxed_code(
     except Exception as e:
         logger.warning(f"Error cleaning up queue resources: {e}")
 
+    if error_msg is None:
+        error_msg = ""
     return local_vars, error_msg

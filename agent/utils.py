@@ -56,3 +56,24 @@ def create_memory_if_not_exists() -> None:
     """
     if not os.path.exists(MEMORY_PATH):
         os.makedirs(MEMORY_PATH)
+
+def extract_python_code(response: str) -> str:
+    """
+    Extract the python code from the response.
+
+    Args:
+        response: The response from the model.
+
+    Returns:
+        The python code from the response.
+    """
+    if "```python" in response:
+        return response.split("```python")[1].split("```")[0]
+    else:
+        return response
+
+def format_results(results: dict) -> str:
+    """
+    Format the results into a string.
+    """
+    return "<result>\n" + str(results) + "\n</result>"

@@ -1,5 +1,6 @@
 from agent.engine import execute_sandboxed_code
 from agent.model import get_model_response
+from agent.agent import Agent
 from agent.settings import MEMORY_PATH
 from agent.utils import create_memory_if_not_exists
 
@@ -10,11 +11,8 @@ class Story(BaseModel):
     content: str
 
 def run_agent():
-    prompt = "What is the capital of France?"
-    response = get_model_response(message=prompt)
-    print(response)
-    prompt_2 = "Create a story about the capital of France"
-    response = get_model_response(message=prompt_2, schema=Story)
+    agent = Agent()
+    response = agent.chat("Hard to believe I'm already 28.")
     print(response)
 
 def execute_code():
@@ -49,5 +47,5 @@ k = list_files()
         print(f"Result: {result}")
 
 if __name__ == "__main__":
-    #run_agent()
-    execute_code()
+    run_agent()
+    #execute_code()
