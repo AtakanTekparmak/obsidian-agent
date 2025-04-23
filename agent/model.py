@@ -1,46 +1,71 @@
-from google import genai
-from google.genai.chats import Chat
+from openai import OpenAI
+
 from pydantic import BaseModel
 from typing import Optional, Union
 
-from agent.settings import GEMINI_API_KEY, GEMINI_FLASH
+from agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL
+from agent.schemas import ChatMessage, Role
 
-# Initialize the client
-CLIENT = genai.Client(api_key=GEMINI_API_KEY)
+# Initialize OpenAI client
+CLIENT =  OpenAI(
+    api_key = OPENROUTER_API_KEY,
+    base_url = OPENROUTER_BASE_URL,
+)
 
-def chat_with_model(
-        prompt: str,
-        chat: Chat = None,
-        model: str = GEMINI_FLASH,
-        schema: Optional[BaseModel] = None,
-        ) -> tuple[Union[BaseModel, str], Chat]:
+def _as_dict(msg: ChatMessage | dict) -> dict:
     """
-    Chat with the model using Google's GenAI SDK.
+    Accept either ChatMessage or raw dict and return the raw dict.
 
     Args:
-        prompt: The prompt to send to the model
-        chat: The chat to use (optional, will create a new one if not provided)
-        model: The model to use
-        schema: The schema of the response (optional, will return the raw response if not provided)
+        msg: A ChatMessage object or a raw dict.
 
     Returns:
-        The structured response or the raw response and the chat object
+        A raw dict.
     """
-    if not chat:
-        chat = CLIENT.chats.create(model=model)
+    return msg if isinstance(msg, dict) else msg.model_dump()
 
-    generation_config = None
-    if schema:
-        generation_config={
-            "response_mime_type": "application/json",
-            "response_schema": schema,
-        }
+def get_model_response(
+        messages: Optional[list[ChatMessage]] = None,
+        message: Optional[str] = None,
+        system_prompt: Optional[str] = None,
+        model: str = OPENROUTER_STRONG_MODEL,
+        schema: Optional[BaseModel] = None,
+) -> Union[str, BaseModel]:
+    """
+    Get a response from a model using OpenRouter, with optional schema for structured output.
 
-    response = chat.send_message(
-        message=prompt,
-        config=generation_config,
-    ) if generation_config else chat.send_message(message=prompt)
+    Args:
+        messages: A list of ChatMessage objects (optional).
+        message: A single messag    e string (optional).
+        system_prompt: A system prompt for the model (optional).
+        model: The model to use.
+        schema: A Pydantic BaseModel for structured output (optional).
 
-    returned_response = response.parsed if schema else response.text
+    Returns:
+        A string response from the model if schema is None, otherwise a BaseModel object.
+    """
+    if messages is None and message is None:
+        raise ValueError("Either 'messages' or 'message' must be provided.")
 
-    return returned_response, chat
+    # Build message history
+    if messages is None:
+        messages = []
+        if system_prompt:
+            messages.append(_as_dict(ChatMessage(role=Role.SYSTEM, content=system_prompt)))
+        messages.append(_as_dict(ChatMessage(role=Role.USER, content=message)))
+    else:
+        messages = [_as_dict(m) for m in messages]
+
+    if schema is None:
+        completion = CLIENT.chat.completions.create(
+            model=model,
+            messages=messages,
+        )
+        return completion.choices[0].message.content
+    else: 
+        completion = CLIENT.beta.chat.completions.parse(
+            model=model,
+            messages=messages,
+            response_format=schema
+        )
+        return completion.choices[0].message.parsed
