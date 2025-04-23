@@ -14,7 +14,7 @@ import queue  # for exception handling with Queue
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # or DEBUG for more verbosity
 
-def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklist: list, result_queue: multiprocessing.Queue) -> None:
+def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, result_queue: multiprocessing.Queue) -> None:
     """
     Worker function to run in a separate process. It executes the given code string
     under sandboxed conditions (limited file access, optional installs, blacklisting).
@@ -105,6 +105,11 @@ def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklis
 
         # Prepare an isolated execution namespace. We use an empty globals dict with a fresh builtins.
         exec_globals = {"__builtins__": builtins.__dict__}
+        
+        # Add any provided functions to the execution environment
+        if available_functions:
+            exec_globals.update(available_functions)
+            
         exec_locals = {}  # local variables will be collected here
 
         error_msg = None
@@ -152,7 +157,9 @@ def execute_sandboxed_code(
         allow_installs: bool = False,
         requirements_path: str = None,
         allowed_path: str = None,
-        blacklist: list = None
+        blacklist: list = None,
+        available_functions: dict = None,
+        import_module: str = None
     ) -> tuple[dict, str]:
     """
     Execute the given Python code string in a sandboxed subprocess with specified restrictions.
@@ -166,6 +173,9 @@ def execute_sandboxed_code(
                             File operations outside this path will be blocked. If None, no extra file restrictions are applied.
         blacklist (list): List of names (builtins or module attributes) that are disallowed in the code. 
                           If the code uses any of these, it will be prevented or result in an error.
+        available_functions (dict): Dictionary of functions to make available in the sandboxed environment.
+                                   The keys are the function names, and the values are the function objects.
+        import_module (str): Name of a Python module to import and make all its functions available in the sandbox.
     
     Returns:
         (dict, str): A tuple containing the dictionary of local variables from the executed code (or None on failure),
@@ -185,10 +195,32 @@ def execute_sandboxed_code(
         else:
             logger.error("Requirements file %s not found.", requirements_path)
             return None, f"Requirements file not found: {requirements_path}"
+    
+    # If a module name is provided, import it and add its functions to available_functions
+    if import_module:
+        try:
+            module = importlib.import_module(import_module)
+            # If available_functions is None, initialize it
+            if available_functions is None:
+                available_functions = {}
+            
+            # Add all callable attributes from the module
+            for name in dir(module):
+                # Skip private attributes (starting with _)
+                if not name.startswith('_'):
+                    attr = getattr(module, name)
+                    # Only add callable attributes (functions)
+                    if callable(attr):
+                        available_functions[name] = attr
+            
+            logger.info(f"Imported module {import_module} with {len(available_functions)} functions")
+        except ImportError as e:
+            logger.error(f"Failed to import module {import_module}: {e}")
+            return None, f"Failed to import module {import_module}: {e}"
         
     # Step 2: Launch the sandbox subprocess to execute the code
     result_queue = multiprocessing.Queue()
-    proc = multiprocessing.Process(target=_sandbox_worker, args=(code, allow_installs, allowed_path, blacklist or [], result_queue))
+    proc = multiprocessing.Process(target=_sandbox_worker, args=(code, allow_installs, allowed_path, blacklist or [], available_functions or {}, result_queue))
     logger.info("Starting sandboxed process for code execution (timeout=%ds)...", timeout)
     proc.start()
 

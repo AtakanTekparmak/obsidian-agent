@@ -1,5 +1,8 @@
 from agent.engine import execute_sandboxed_code
 from agent.model import get_model_response
+from agent.settings import MEMORY_PATH
+from agent.utils import create_memory_if_not_exists
+
 from pydantic import BaseModel
 
 class Story(BaseModel):
@@ -27,9 +30,19 @@ def something_else(a: int, b: int) -> int:
 a = sum_of_numbers([1, 2, 3, 4, 5])
 b = a + 2
 c = something_else(a, b)
+d = create_file("test.txt", "Hello, world!")
+e = create_dir("test_dir")
+f = write_to_file("test.txt", "Hello, everyone!")
+g = read_file("test.txt")
+j = create_file("test_dir/a.txt", "Hello, world!")
+k = list_files()
 """
-    
-    result, error = execute_sandboxed_code(sample_code)
+    create_memory_if_not_exists()
+    result, error = execute_sandboxed_code(
+        sample_code,
+        import_module="agent.tools",
+        allowed_path=MEMORY_PATH
+    )
     if error:
         print(f"Error: {error}")
     else:
@@ -38,4 +51,3 @@ c = something_else(a, b)
 if __name__ == "__main__":
     #run_agent()
     execute_code()
-    run_agent()

@@ -16,6 +16,9 @@ OPENROUTER_STRONG_MODEL = "google/gemini-2.5-pro-preview-03-25"
 
 # Memory
 MEMORY_PATH = "memory"
+FILE_SIZE_LIMIT = 1024 * 1024 # 1MB
+DIR_SIZE_LIMIT = 1024 * 1024 * 10 # 10MB
+MEMORY_SIZE_LIMIT = 1024 * 1024 * 100 # 100MB
 
 # Path settings
 SYSTEM_PROMPT_PATH = "agent/system_prompt.txt"
