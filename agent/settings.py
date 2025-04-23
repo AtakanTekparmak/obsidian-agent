@@ -16,3 +16,6 @@ OPENROUTER_STRONG_MODEL = "google/gemini-2.5-pro-preview-03-25"
 
 # Memory
 MEMORY_PATH = "memory"
+
+# Path settings
+SYSTEM_PROMPT_PATH = "agent/system_prompt.txt"
