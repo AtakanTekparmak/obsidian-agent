@@ -31,7 +31,7 @@ def generate_multiturn_convos(
     if save:
         output_path = os.path.join(OUTPUT_PATH, CONVO_PATH)
         os.makedirs(output_path, exist_ok=True)
-        file_path = os.path.join(output_path, "multiturn_convos.json")
+        file_path = os.path.join(output_path, "convos.json")
         save_pydantic_to_json(multiturn_convos, file_path)
         print(f"Multiturn conversations saved to {file_path}")
 
