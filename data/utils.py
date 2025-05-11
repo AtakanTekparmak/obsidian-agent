@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
+
 from pydantic import BaseModel
 
-def save_pydantic_to_json(model: BaseModel, filepath: str | Path) -> None:
+def save_pydantic_to_json(model: BaseModel, filepath: str) -> None:
     """
     Save a Pydantic model to a JSON file.
 

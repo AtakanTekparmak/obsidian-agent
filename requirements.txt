@@ -4,7 +4,6 @@ datasets
 networkx
 matplotlib
 scipy
-dria
 httpx
 python-dotenv
 openai
