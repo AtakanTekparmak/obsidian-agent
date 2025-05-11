@@ -1,1 +1,0 @@
-from datagen.pipeline.generate_companies import generate_companies
