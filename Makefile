@@ -53,7 +53,7 @@ run-agent:
 # Run the tests
 test:
 	. $(VENV_NAME)/bin/activate && \
-	$(PYTHON) tests/run_tests.py
+	$(PYTHON) test_reward.py
 
 # Clean the virtual environment
 clean:
