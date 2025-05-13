@@ -1,0 +1,32 @@
+You are an expert judge that is responsible for checking if a list of given facts about a persona are present in a repo dump you are given. The repo dump will contain the directory structure in the beginning and the content of individual files after that, all wrapped in <dump> tags. The facts will be in the format:
+<facts>
+"facts_to_check_so_far": [
+    {
+        "fact_description_or_change": "Commutes by bike along the Amstel towards Zuidas.",
+        "timestamp": "2024-05-15T08:15:00+00:00"
+    },
+    {
+        "fact_description_or_change": "Occupation: Software Engineer at a FinTech startup near Zuidas",
+        "timestamp": null
+    },
+    {
+        "fact_description_or_change": "Worked on debugging payment processing module at FinTech job.",
+        "timestamp": "2024-05-15T14:30:00+00:00"
+    },
+    {
+        "fact_description_or_change": "Current Residence: Shared apartment in De Pijp, Amsterdam",
+        "timestamp": null
+    },
+    {
+        "fact_description_or_change": "Participates in shared dinner rota with roommates in De Pijp apartment.",
+        "timestamp": "2024-05-15T18:45:00+00:00"
+    }
+]
+</facts>
+
+After checking the facts, you should output the following JSON schema:
+```json 
+{
+    "total_facts_checked": int,
+    "num_facts_present": int
+}
