@@ -1,0 +1,38 @@
+# env 
+.venv/
+venv/
+env/
+.env
+.env.local
+uv.lock
+CLAUDE.md
+.cursorrules
+
+# artifacts
+dist/
+build/
+*.egg-info/
+*/__pycache__/
+*.pyo
+*.pyd
+*.pyc
+
+# outputs
+wandb/
+outputs/
+logs/
+
+# development
+.idea/
+.vscode/
+*.swp
+.DS_Store
+verifiers/envs/doublecheck_env.py
+verifiers/envs/math_env.py
+
+# WIPs
+wip/
+old/
+tests/
+scripts/
+notebooks/
