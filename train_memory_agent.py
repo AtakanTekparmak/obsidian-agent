@@ -16,15 +16,10 @@ from trl import GRPOConfig
 8 GPU setup
 # Terminal 1: Start vLLM server 
 
-CUDA_VISIBLE_DEVICES=0,1,2,3 python verifiers/inference/vllm_serve.py \\
-    --model 'Qwen/Qwen2.5-7B-Instruct' \\
-    --tensor_parallel_size 4 \\
-    --max_model_len 8192 \\
-    --dtype bfloat16 \\
-    --gpu_memory_utilization 0.9 \\
-    --enable_prefix_caching True \\
-    --host 0.0.0.0 \\
-    --port 8000
+CUDA_VISIBLE_DEVICES=0,1,2,3 python verifiers/inference/vllm_serve.py --model 'Qwen/Qwen2.5-7B-Instruct' \
+    --tensor_parallel_size 4 --max_model_len 8192 --dtype bfloat16 \
+    --gpu_memory_utilization 0.9 --enable_prefix_caching True \
+    --host 0.0.0.0 --port 8000
 
 # Terminal 2: Launch training script 
 

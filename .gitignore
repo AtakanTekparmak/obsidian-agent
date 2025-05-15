@@ -184,3 +184,6 @@ mock_obsidian_vault/
 
 # Output directories
 **/output/*
+
+# .DS_Store
+.DS_Store
