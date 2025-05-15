@@ -4,9 +4,9 @@ from pathlib import Path
 from datasets import Dataset
 import argparse
 
-from verifiers.verifiers.envs.memory_env import ObsidianAgentEnv
-from verifiers.verifiers.trainers import GRPOEnvTrainer
-from verifiers.verifiers.utils.data_utils import preprocess_dataset
+from verifiers.envs.memory_env import ObsidianAgentEnv
+from verifiers.trainers import GRPOEnvTrainer
+from verifiers.utils.data_utils import preprocess_dataset, format_dataset
 from trl import GRPOConfig
 
 
@@ -82,6 +82,26 @@ def main():
         eval_ds = None # Or a small subset if evaluation is still desired
         print(f"Train dataset size: {len(train_ds)}, No evaluation set.")
 
+    # Initialize the environment to access its system_prompt and few_shot_examples
+    # This instance is just for configuration; the trainer will manage its own env instance.
+    env_for_formatting = ObsidianAgentEnv()
+
+    # Format datasets to include the 'prompt' field expected by the trainer
+    print("Formatting datasets...")
+    train_ds = format_dataset(
+        train_ds,
+        system_prompt=env_for_formatting.system_prompt,
+        question_key="question", # 'question' is the key from preprocess_convos_persona
+        answer_key="answer"      # 'answer' is also present
+    )
+    if eval_ds:
+        eval_ds = format_dataset(
+            eval_ds,
+            system_prompt=env_for_formatting.system_prompt,
+            question_key="question",
+            answer_key="answer"
+        )
+
     # Initialize the environment
     # ObsidianAgentEnv does not need dataset paths in __init__ anymore.
     # It will receive data points from the trainer via env.reset(data=...)
@@ -113,9 +133,8 @@ def main():
         # vLLM server details if use_vllm=True
         vllm_server_host="0.0.0.0",
         vllm_server_port=8000,
-        # reward_weights should be fetched from env if it provides multiple weighted rewards
-        # For MemoryRubric, it's a single reward type.
-        # The trainer might sum them or use them as-is if named.
+        bf16=True,
+        reward_weights=env.get_reward_weights()
     )
     
     # Initialize the trainer
@@ -127,7 +146,6 @@ def main():
         env=env,
         # reward_funcs and reward_weights are fetched from the environment
         reward_funcs=env.get_reward_funcs(),
-        reward_weights=env.get_reward_weights(),
         args=grpo_config,
         train_dataset=train_ds,
         eval_dataset=eval_ds,
