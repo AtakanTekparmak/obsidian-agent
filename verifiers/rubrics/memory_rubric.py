@@ -1,8 +1,5 @@
-from typing import List, Dict
-import json
+from typing import List, Dict, Union
 import os
-import shutil
-import tempfile
 
 from verifiers.parsers import XMLParser
 from verifiers.rubrics import Rubric
@@ -51,33 +48,77 @@ class MemoryRubric(Rubric):
         
     def check_facts_reward_func(
             self,
-            completion_history: List[Dict[str, str]], # Represents the chat history for one persona
-            facts_to_check: List[Fact],
-            **kwargs # Allows for compatibility if MultiTurnEnv passes other args
-    ) -> float: # Returns a single reward for the persona's trajectory
+            facts_to_check: List[List[Dict]], # Expecting List of Lists of Dictionaries now
+            # Other batch-level args like prompts, completions are in **kwargs if needed by other funcs
+            **kwargs 
+    ) -> List[Union[float, None]]: # Must return a list of rewards, one per batch item
         """
-        Reward function that checks if the provided facts are present in the agent's memory dump.
+        Reward function that checks if the provided facts for each sample in a batch
+        are present in the agent's current memory dump.
         
         Args:
-            completion_history: The list of messages in the conversation for the current persona.
-                                (Not directly used for dump if it's purely file-based but good for context)
-            facts_to_check: A list of Fact objects to check against the memory dump.
+            facts_to_check: A list where each element is a List of Dictionaries,
+                            each dictionary representing a Fact, for a specific sample in the batch.
+            **kwargs: Absorbs other arguments passed by the trainer like 'prompts', 'completions'.
             
         Returns:
-            A single reward value (0.0 to 1.0) based on how many facts are found.
+            A list of reward values (float or None), one for each sample in the batch.
         """
-        if not facts_to_check:
-            return 0.0
-
+        batched_rewards: List[Union[float, None]] = []
+        
         memory_dump_str = self._get_memory_dump_str()
-        
-        if not memory_dump_str:
-            return 0.0
-        
-        try:
-            reward = get_reward(memory_dump_str, facts_to_check)
-            return float(reward) 
-        except Exception as e:
-            print(f"Error in check_facts_reward_func: {e}")
-            return 0.0
+
+        for single_sample_facts_as_dicts in facts_to_check: # Iterate over each sample in the batch
+            if not isinstance(single_sample_facts_as_dicts, list):
+                print(f"Warning in check_facts_reward_func: Expected List[Dict] for a sample, but got {type(single_sample_facts_as_dicts)}. Assigning 0.0 reward for this sample.")
+                batched_rewards.append(0.0)
+                continue
+
+            if not single_sample_facts_as_dicts:  # No fact dictionaries to check for this specific sample
+                batched_rewards.append(0.0)
+                continue
+            
+            if not memory_dump_str: # If memory dump is empty, no facts can be found.
+                batched_rewards.append(0.0)
+                continue
+            
+            try:
+                # Convert list of dicts to list of Fact Pydantic models for this sample
+                single_sample_facts_as_models: List[Fact] = []
+                valid_fact_dicts_found = False
+                for f_dict in single_sample_facts_as_dicts:
+                    if isinstance(f_dict, dict):
+                        single_sample_facts_as_models.append(Fact.model_validate(f_dict))
+                        valid_fact_dicts_found = True
+                    else:
+                        print(f"Warning in check_facts_reward_func: Expected a dict for a fact, but got {type(f_dict)}. Skipping this particular fact.")
+                
+                if not valid_fact_dicts_found: # If no valid fact dicts were found to convert
+                    # This implies single_sample_facts_as_dicts might have been a list of non-dicts.
+                    print(f"Warning in check_facts_reward_func: No valid fact dictionaries found in sample. Assigning 0.0 reward.")
+                    batched_rewards.append(0.0)
+                    continue
+                 
+                if not single_sample_facts_as_models: # If conversion resulted in an empty list (e.g. all were invalid non-dicts)
+                    # This check is somewhat redundant if valid_fact_dicts_found handles it, but good for safety.
+                    batched_rewards.append(0.0)
+                    continue
+
+                # 'single_sample_facts_as_models' is now List[Fact] as get_reward expects.
+                reward_for_sample = get_reward(memory_dump_str, single_sample_facts_as_models)
+                batched_rewards.append(float(reward_for_sample))
+            except Exception as e:
+                print(f"Error calculating reward for a sample in check_facts_reward_func (after Pydantic conversion attempt): {e}. Facts data: {single_sample_facts_as_dicts}")
+                batched_rewards.append(0.0) # Assign 0 reward for this sample due to error
+                
+        return batched_rewards
+
+# Example of how MemoryRubric might be used within an environment that processes one persona at a time
+# (Not directly used by GRPOTrainer in this way, GRPOTrainer calls the reward func directly with batches)
+# def evaluate_persona_completion(rubric: MemoryRubric, facts_for_persona: List[Fact]):
+#     # In a single-instance evaluation (not batch):
+#     # Here, facts_for_persona is List[Fact]
+#     # To call the batch-aware version, you'd wrap it:
+#     reward_list = rubric.check_facts_reward_func(facts_to_check=[facts_for_persona])
+#     return reward_list[0] if reward_list else 0.0
                     

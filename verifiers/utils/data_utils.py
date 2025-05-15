@@ -3,6 +3,7 @@ import json
 from typing import List, Dict, Callable, Any
 
 from datasets import Dataset, load_dataset, concatenate_datasets # type: ignore
+from data.schemas.kb import Fact # Added import
 
 def extract_boxed_answer(text: str) -> str | None:
     def find_matching_brace(s: str, start: int) -> int:
@@ -174,7 +175,12 @@ def get_preprocess_fn(name: str) -> Callable[[Dict], Dict]:
         def preprocess_convos_persona(persona_data: Dict[str, Any]) -> List[Dict[str, Any]]:
             processed_turns = []
             persona_id = persona_data["user_persona_name_surname"]
-            facts_to_check_for_persona = persona_data["facts_to_check"]
+            
+            raw_facts_list = persona_data.get("facts_to_check", [])
+            # Convert to Fact objects first for validation, then dump to dicts for Arrow table creation
+            facts_as_models = [Fact.model_validate(f_dict) for f_dict in raw_facts_list]
+            facts_to_check_for_persona_serializable = [f_model.model_dump() for f_model in facts_as_models]
+            
             user_chats = persona_data["user_chats"]
             num_chats = len(user_chats)
 
@@ -184,7 +190,7 @@ def get_preprocess_fn(name: str) -> Callable[[Dict], Dict]:
                     "persona_id": persona_id,
                     "turn_number": chat_turn["turn_number"],
                     "is_last_turn": (i == num_chats - 1),
-                    "facts_to_check": facts_to_check_for_persona,
+                    "facts_to_check": facts_to_check_for_persona_serializable, # Storing List[Dict]
                     "answer": "", 
                     "task": "convos_memory_chat"
                 })
