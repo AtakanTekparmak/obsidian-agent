@@ -1,4 +1,6 @@
 import os
+import shutil
+
 from agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH
 
 def load_system_prompt() -> str:
@@ -56,6 +58,13 @@ def create_memory_if_not_exists() -> None:
     """
     if not os.path.exists(MEMORY_PATH):
         os.makedirs(MEMORY_PATH)
+
+def delete_memory() -> None:
+    """
+    Delete the memory.
+    """
+    if os.path.exists(MEMORY_PATH):
+        shutil.rmtree(MEMORY_PATH)
 
 def extract_python_code(response: str) -> str:
     """

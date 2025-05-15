@@ -1,13 +1,14 @@
 from typing import List, Dict
 import json
-import re
 import os
+import shutil
 import tempfile
-import subprocess
 
 from verifiers.parsers import XMLParser
 from verifiers.rubrics import Rubric
-from verifiers.envs.memory_agent.model import get_model_response
+from training.reward.reward import get_reward
+from training.reward.folder_dump import dump_folder
+from data.schemas.kb import Fact
 
 class MemoryRubric(Rubric):
     def __init__(
@@ -17,112 +18,66 @@ class MemoryRubric(Rubric):
         ):
         self.parser = parser
         self.env_parser = env_parser
-        self.reward_funcs = [
-            self.parser.get_xml_reward_func(),
-            self.check_facts_reward_func
-        ]
-        self.reward_weights = [0.3, 0.7]  # Emphasize fact checking over XML formatting
+        # self.reward_funcs and self.reward_weights are not strictly needed here
+        # if the environment calls the check_facts_reward_func directly.
+        # However, if MultiTurnEnv framework relies on these, they might need to be set.
+        # For now, let's assume direct call from the custom env.
         
-        # Load judge prompt
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        judge_prompt_path = os.path.join(current_dir, "..", "envs", "memory_agent", "judge_prompt.txt")
-        with open(judge_prompt_path, "r") as f:
-            self.judge_prompt = f.read()
-    
     def get_reward_funcs(self) -> List:
-        return self.reward_funcs
+        # This might be required by MultiTurnEnv framework.
+        # If so, it should return a list containing a wrapper or the method itself.
+        # For now, returning the method directly.
+        return [self.check_facts_reward_func] 
     
     def get_reward_weights(self) -> List[float]:
-        return self.reward_weights
+        # Corresponding weight for the reward function.
+        return [1.0]
     
-    def extract_memory_dump(self, messages: List[Dict[str, str]]) -> str:
+    def _get_memory_dump_str(self) -> str:
         """
-        Extracts the memory dump from the messages.
-        
-        Args:
-            messages: The list of messages.
+        Uses dump_folder from training.reward to get the memory dump string.
             
         Returns:
             The memory dump as a string.
         """
-        dump = ""
-        for msg in messages:
-            if msg["role"] == "assistant":
-                parsed = self.parser.parse(msg["content"])
-                if hasattr(parsed, "python") and parsed.python is not None:
-                    # Extract the memory dump by running folder_dump.py on the memory path
-                    dump_code = parsed.python
-                    if "list_files" in dump_code or "read_file" in dump_code:
-                        # This code might read files - use it to collect memory state
-                        dump += f"\n\nCode execution: {dump_code}\n"
-                        
-                        # Check if there's a corresponding user message with the result
-                        msg_idx = messages.index(msg)
-                        if msg_idx + 1 < len(messages) and messages[msg_idx + 1]["role"] == "user":
-                            result_msg = messages[msg_idx + 1]
-                            parsed_result = self.env_parser.parse(result_msg["content"])
-                            if hasattr(parsed_result, "result") and parsed_result.result:
-                                dump += f"\nResult: {parsed_result.result}\n"
+        memory_path = "memory_dir" # Should align with agent.settings.MEMORY_PATH
+        if not os.path.exists(memory_path):
+            # Ensure the directory exists before dumping, or dump_folder might error
+            # or return an empty/irrelevant dump for a non-existent path.
+            # Depending on dump_folder behavior, might return empty or specific message.
+            return "" # Return empty string if memory_dir doesn't exist
         
-        return dump
+        return dump_folder(memory_path)
         
     def check_facts_reward_func(
             self,
-            completions: List[List[Dict[str, str]]],
-            facts_to_check_so_far: List[Dict[str, str]] = None,
-            **kwargs
-    ) -> List[float]:
+            completion_history: List[Dict[str, str]], # Represents the chat history for one persona
+            facts_to_check: List[Fact],
+            **kwargs # Allows for compatibility if MultiTurnEnv passes other args
+    ) -> float: # Returns a single reward for the persona's trajectory
         """
-        Reward function that checks if the facts_to_check_so_far are present in the memory.
+        Reward function that checks if the provided facts are present in the agent's memory dump.
         
         Args:
-            completions: The list of completions.
-            facts_to_check_so_far: The list of facts to check.
+            completion_history: The list of messages in the conversation for the current persona.
+                                (Not directly used for dump if it's purely file-based but good for context)
+            facts_to_check: A list of Fact objects to check against the memory dump.
             
         Returns:
-            A list of rewards (0.0 to 1.0) based on how many facts are found.
+            A single reward value (0.0 to 1.0) based on how many facts are found.
         """
-        rewards = []
+        if not facts_to_check:
+            return 0.0
+
+        memory_dump_str = self._get_memory_dump_str()
         
-        for completion in completions:
-            if not facts_to_check_so_far:
-                rewards.append(0.0)
-                continue
-                
-            # Extract memory dump from the completion
-            memory_dump = self.extract_memory_dump(completion)
-            
-            if not memory_dump:
-                rewards.append(0.0)
-                continue
-            
-            # Create a prompt for the judge to check facts
-            judge_input = self.judge_prompt + f"\n<dump>\n{memory_dump}\n</dump>\n"
-            
-            # Add facts to check
-            judge_input += f"\n<facts>\n\"facts_to_check_so_far\": {json.dumps(facts_to_check_so_far, indent=4)}\n</facts>"
-            
-            # Get model response using the judge
-            try:
-                response = get_model_response(message=judge_input)
-                json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
-                
-                if json_match:
-                    result = json.loads(json_match.group(1))
-                    total_facts = result.get("total_facts_checked", 0)
-                    facts_present = result.get("num_facts_present", 0)
-                    
-                    if total_facts > 0:
-                        reward = facts_present / total_facts
-                    else:
-                        reward = 0.0
-                else:
-                    reward = 0.0
-            except Exception as e:
-                print(f"Error in check_facts_reward_func: {e}")
-                reward = 0.0
-                
-            rewards.append(reward)
-            
-        return rewards
+        if not memory_dump_str:
+            return 0.0
+        
+        try:
+            reward = get_reward(memory_dump_str, facts_to_check)
+            return float(reward) 
+        except Exception as e:
+            print(f"Error in check_facts_reward_func: {e}")
+            return 0.0
                     
