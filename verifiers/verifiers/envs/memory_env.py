@@ -13,16 +13,16 @@ from verifiers.prompts import MEMORY_AGENT_PROMPT
 from verifiers.rubrics.memory_rubric import MemoryRubric
 from verifiers.utils.data_utils import preprocess_dataset # For loading convos dataset
 
-from obsidian_agent.engine import execute_sandboxed_code
-from obsidian_agent.utils import create_memory_if_not_exists
-from obsidian_agent.settings import MEMORY_PATH
+from agent.engine import execute_sandboxed_code
+from agent.utils import create_memory_if_not_exists
+from agent.settings import MEMORY_PATH
 from data.schemas.kb import Fact # For casting facts_to_check
 
 # Define constants
 STOP_TOKENS = ["</python>", "</answer>"] # Keep </answer> for now, might be useful for agent to signal final thought
 MASK_ENV_RESPONSE = True # Usually True if env responses are just results/errors
 # MAX_STEPS is now implicitly defined by the length of persona conversations
-TOOLS_MODULE = "obsidian_agent.tools" # Assuming tools are in this module for execute_sandboxed_code
+TOOLS_MODULE = "agent.tools" # Assuming tools are in this module for execute_sandboxed_code
 
 class ObsidianAgentEnv(MultiTurnEnv):
     """

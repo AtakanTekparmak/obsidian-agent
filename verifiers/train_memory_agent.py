@@ -4,10 +4,11 @@ from pathlib import Path
 from datasets import Dataset
 import argparse
 
-from verifiers.envs.memory_env import ObsidianAgentEnv
-from verifiers.trainers import GRPOEnvTrainer
-from verifiers.utils.data_utils import preprocess_dataset
+from verifiers.verifiers.envs.memory_env import ObsidianAgentEnv
+from verifiers.verifiers.trainers import GRPOEnvTrainer
+from verifiers.verifiers.utils.data_utils import preprocess_dataset
 from trl import GRPOConfig
+
 
 # GPU setup for 8 GPUs (e.g., 2 for vLLM inference, 6 for training)
 # This is an example, adjust gpu allocation and model paths as needed.
@@ -15,7 +16,7 @@ from trl import GRPOConfig
 8 GPU setup
 # Terminal 1: Start vLLM server 
 
-CUDA_VISIBLE_DEVICES=0,1,2,3 python -m vllm.entrypoints.api_server \\
+CUDA_VISIBLE_DEVICES=0,1,2,3 python verifiers/inference/vllm_serve.py \\
     --model 'Qwen/Qwen2.5-7B-Instruct' \\
     --tensor_parallel_size 4 \\
     --max_model_len 8192 \\
