@@ -1,7 +1,7 @@
 from training.reward.utils import construct_judge_prompt
 from training.reward.model import get_model_response
 from training.reward.schemas import JudgeResponse
-from training.settings import GEMINI_FLASH
+from training.settings import GPT_4O
 
 from data.schemas.kb import Fact
 
@@ -23,6 +23,6 @@ def get_reward(
     judge_response = get_model_response(
         schema=JudgeResponse,
         prompt=judge_prompt,
-        model=GEMINI_FLASH
+        model=GPT_4O
     )
     return judge_response.ratio_of_facts_present
