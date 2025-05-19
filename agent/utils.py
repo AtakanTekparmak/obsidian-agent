@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH
+from agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH, get_rollout_memory_path
 
 def load_system_prompt() -> str:
     """
@@ -52,19 +52,27 @@ def check_size_limits(file_or_dir_path: str) -> bool:
     else:
         return False
     
-def create_memory_if_not_exists() -> None:
+def create_memory_if_not_exists(memory_path=None) -> None:
     """
     Create the memory if it doesn't exist.
+    
+    Args:
+        memory_path: Optional custom memory path. If None, uses the default MEMORY_PATH.
     """
-    if not os.path.exists(MEMORY_PATH):
-        os.makedirs(MEMORY_PATH)
+    memory_path = memory_path or MEMORY_PATH
+    if not os.path.exists(memory_path):
+        os.makedirs(memory_path)
 
-def delete_memory() -> None:
+def delete_memory(memory_path=None) -> None:
     """
     Delete the memory.
+    
+    Args:
+        memory_path: Optional custom memory path. If None, uses the default MEMORY_PATH.
     """
-    if os.path.exists(MEMORY_PATH):
-        shutil.rmtree(MEMORY_PATH)
+    memory_path = memory_path or MEMORY_PATH
+    if os.path.exists(memory_path):
+        shutil.rmtree(memory_path)
 
 def extract_python_code(response: str) -> str:
     """
@@ -85,4 +93,4 @@ def format_results(results: dict) -> str:
     """
     Format the results into a string.
     """
-    return "<result>\n" + str(results) + "\n</result>"
+    return "<r>\n" + str(results) + "\n</r>"

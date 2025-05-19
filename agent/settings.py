@@ -1,4 +1,5 @@
 import os
+import tempfile
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -20,3 +21,23 @@ SANDBOX_TIMEOUT = 20
 
 # Path settings
 SYSTEM_PROMPT_PATH = "agent/system_prompt.txt"
+
+# Log settings
+LOG_DIR = "logs"
+REWARD_LOG_DIR = os.path.join(LOG_DIR, "rewards")
+
+def get_rollout_memory_path(rollout_id=None):
+    """
+    Get a memory path for a specific rollout.
+    If rollout_id is not provided, returns the default memory path.
+    
+    Args:
+        rollout_id: Unique ID for the rollout
+        
+    Returns:
+        Path to the memory directory for this rollout
+    """
+    if rollout_id is None:
+        return MEMORY_PATH
+    
+    return os.path.join(tempfile.gettempdir(), f"memory_dir_{rollout_id}")
