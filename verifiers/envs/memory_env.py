@@ -87,7 +87,10 @@ class ObsidianAgentEnv(MultiTurnEnv):
             rollout_id: ID for this rollout
         """
         self.rollout_id = rollout_id
-        self.memory_path = f"{self.base_memory_path}_{rollout_id}"
+        # Create a path inside the memory folder with a structured pattern
+        memory_parent = os.path.dirname(self.base_memory_path)
+        memory_base = os.path.basename(self.base_memory_path)
+        self.memory_path = os.path.join(memory_parent, f"rollout_{rollout_id}")
         create_memory_if_not_exists(self.memory_path)
         # Inform the rubric about the new memory path
         if hasattr(self, 'rubric'):

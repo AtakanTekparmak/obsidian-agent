@@ -1,5 +1,5 @@
 import warnings
-from typing import Callable, Optional, Union, Any, List
+from typing import Callable, Optional, Union, Any, List, TYPE_CHECKING
 import uuid
 
 from accelerate.utils import broadcast_object_list, gather, gather_object
@@ -16,10 +16,15 @@ from transformers import (
 )
 from verifiers import RewardFunc
 from verifiers.envs.environment import Environment
-from verifiers.envs.memory_env import ObsidianAgentEnv
+# Remove direct import to avoid circular import
+# from verifiers.envs.memory_env import ObsidianAgentEnv
 from verifiers.utils.logging_utils import print_prompt_completions_sample
 from verifiers.imports import LLM, SamplingParams
 from verifiers.inference.vllm_client import VLLMClient
+
+# For type checking only
+if TYPE_CHECKING:
+    from verifiers.envs.memory_env import ObsidianAgentEnv
 
 # monkey patch vllm client
 import trl.extras.vllm_client
@@ -112,6 +117,9 @@ class GRPOEnvTrainer(GRPOTrainer):
         """
         if rollout_id not in self.rollout_envs:
             # Create a new env instance with the same config as the original env
+            # Import here to avoid circular imports
+            from verifiers.envs.memory_env import ObsidianAgentEnv
+            
             if isinstance(self.env, ObsidianAgentEnv):
                 # For ObsidianAgentEnv, we need to set a unique memory path
                 # Copy all kwargs from original env first
@@ -179,10 +187,26 @@ class GRPOEnvTrainer(GRPOTrainer):
                 
                 # Add rollout metadata to each prompt
                 for j in range(i, min(i + self.num_generations, len(all_prompts))):
-                    prompt_copy = all_prompts[j].copy()
-                    prompt_copy["rollout_id"] = rollout_id
-                    prompt_copy["memory_path"] = getattr(env, "memory_path", None)
-                    prompts_with_rollout_ids.append(prompt_copy)
+                    prompt = all_prompts[j]
+                    
+                    # Handle both list and dict formats
+                    if isinstance(prompt, list):
+                        # For list of messages format, attach metadata to first message or create a wrapper
+                        prompt_with_meta = {"messages": prompt, 
+                                           "rollout_id": rollout_id,
+                                           "memory_path": getattr(env, "memory_path", None)}
+                    elif isinstance(prompt, dict):
+                        # For dictionary format, add metadata to the dict
+                        prompt_with_meta = prompt.copy()
+                        prompt_with_meta["rollout_id"] = rollout_id
+                        prompt_with_meta["memory_path"] = getattr(env, "memory_path", None)
+                    else:
+                        # For any other format, create a wrapper
+                        prompt_with_meta = {"original_prompt": prompt, 
+                                           "rollout_id": rollout_id,
+                                           "memory_path": getattr(env, "memory_path", None)}
+                    
+                    prompts_with_rollout_ids.append(prompt_with_meta)
                 
         if self.accelerator.is_main_process:
             completion_ids = [None] * len(prompts_with_rollout_ids)
@@ -199,7 +223,7 @@ class GRPOEnvTrainer(GRPOTrainer):
                 
                 # Generate completions using this environment
                 env_result = env.generate(
-                    prompts=current_batch,
+                    prompts=self._unwrap_prompts(current_batch),
                     llm=self.vllm_client, # type: ignore
                     sampling_params=self.sampling_params,
                 )
@@ -281,10 +305,8 @@ class GRPOEnvTrainer(GRPOTrainer):
             reward_kwargs = {key: [example[key] for example in inputs] for key in keys} # type: ignore
             reward_kwargs["rollout_ids"] = local_generation_rollout_ids
             
-            # Instead of using the original prompts, use the ones with rollout IDs
-            modified_prompts = local_prompts_with_rollout_ids
-            
-            output_reward_func = reward_func(prompts=modified_prompts, completions=completions, **reward_kwargs) # type: ignore
+            # Use the prompts with rollout IDs for reward calculation
+            output_reward_func = reward_func(prompts=local_prompts_with_rollout_ids, completions=completions, **reward_kwargs) # type: ignore
             
             output_reward_func = [reward if reward is not None else torch.nan for reward in output_reward_func]
             rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
@@ -378,3 +400,26 @@ class GRPOEnvTrainer(GRPOTrainer):
             "action_ids": prompt_completion_ids[:, prompt_ids.shape[1]:],
             "rewards": rewards[process_slice],
         }
+
+    def _unwrap_prompts(self, prompts):
+        """
+        Extract the original prompt format from wrapped prompt objects.
+        
+        Args:
+            prompts: List of prompts, potentially wrapped with metadata
+            
+        Returns:
+            Unwrapped prompts in the format expected by the environment
+        """
+        unwrapped = []
+        for p in prompts:
+            if isinstance(p, dict) and "messages" in p:
+                # If using our wrapper format with messages
+                unwrapped.append(p["messages"])
+            elif isinstance(p, dict) and "original_prompt" in p:
+                # If using our wrapper format with original_prompt
+                unwrapped.append(p["original_prompt"])
+            else:
+                # If already in expected format or other format
+                unwrapped.append(p)
+        return unwrapped

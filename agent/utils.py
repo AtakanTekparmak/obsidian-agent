@@ -62,6 +62,11 @@ def create_memory_if_not_exists(memory_path: str = MEMORY_PATH) -> None:
     Args:
         memory_path: Path to the memory directory
     """
+    # Make sure parent directory exists first
+    parent_dir = os.path.dirname(memory_path)
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir)
+        
     if not os.path.exists(memory_path):
         os.makedirs(memory_path)
 

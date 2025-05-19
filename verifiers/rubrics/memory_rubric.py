@@ -86,9 +86,14 @@ class MemoryRubric(Rubric):
         # Extract rollout_id from kwargs or completions if available
         rollout_id = None
         if 'prompts' in kwargs and kwargs['prompts'] and len(kwargs['prompts']) > 0:
-            # First, check in metadata passed as prompts[0] kwargs
-            if isinstance(kwargs['prompts'][0], dict) and 'rollout_id' in kwargs['prompts'][0]:
-                rollout_id = kwargs['prompts'][0]['rollout_id']
+            # Check if prompt is wrapped with metadata
+            prompt_0 = kwargs['prompts'][0]
+            if isinstance(prompt_0, dict) and 'rollout_id' in prompt_0:
+                rollout_id = prompt_0['rollout_id']
+        
+        # Also check rollout_ids if provided directly
+        if 'rollout_ids' in kwargs and kwargs['rollout_ids'] and len(kwargs['rollout_ids']) > 0:
+            rollout_id = kwargs['rollout_ids'][0]
         
         # Determine if this is a batched call from GRPOTrainer or a direct call
         is_batch_call = isinstance(facts_to_check, list) and len(facts_to_check) > 0 and isinstance(facts_to_check[0], list)
