@@ -1,8 +1,5 @@
 import os
 import shutil
-import json
-import datetime
-from pathlib import Path
 
 from agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH
 
@@ -55,77 +52,19 @@ def check_size_limits(file_or_dir_path: str) -> bool:
     else:
         return False
     
-def create_memory_if_not_exists(memory_path: str = MEMORY_PATH) -> None:
+def create_memory_if_not_exists() -> None:
     """
     Create the memory if it doesn't exist.
-    
-    Args:
-        memory_path: Path to the memory directory
     """
-    # Make sure parent directory exists first
-    parent_dir = os.path.dirname(memory_path)
-    if parent_dir and not os.path.exists(parent_dir):
-        os.makedirs(parent_dir)
-        
-    if not os.path.exists(memory_path):
-        os.makedirs(memory_path)
+    if not os.path.exists(MEMORY_PATH):
+        os.makedirs(MEMORY_PATH)
 
-def create_log_dir() -> str:
-    """
-    Create a log directory for the current run if it doesn't exist.
-    
-    Returns:
-        Path to the log directory
-    """
-    log_dir = Path("logs")
-    if not log_dir.exists():
-        log_dir.mkdir()
-    
-    # Create a subdirectory with timestamp
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_log_dir = log_dir / timestamp
-    if not run_log_dir.exists():
-        run_log_dir.mkdir()
-    
-    return str(run_log_dir)
-
-def log_reward_calculation(log_dir: str, rollout_id: int, memory_dump: str, facts: list, reward: float) -> None:
-    """
-    Log the reward calculation data.
-    
-    Args:
-        log_dir: Path to the log directory
-        rollout_id: ID of the rollout
-        memory_dump: Memory dump string
-        facts: Facts to check
-        reward: Calculated reward
-    """
-    # Create rollout directory if it doesn't exist
-    rollout_dir = Path(log_dir) / f"rollout_{rollout_id}"
-    if not rollout_dir.exists():
-        rollout_dir.mkdir()
-    
-    # Log memory dump
-    with open(rollout_dir / "memory_dump.txt", "w") as f:
-        f.write(memory_dump)
-    
-    # Log facts
-    with open(rollout_dir / "facts.json", "w") as f:
-        json.dump([fact.model_dump() for fact in facts], f, indent=2)
-    
-    # Log reward
-    with open(rollout_dir / "reward.txt", "w") as f:
-        f.write(str(reward))
-
-def delete_memory(memory_path: str = MEMORY_PATH) -> None:
+def delete_memory() -> None:
     """
     Delete the memory.
-    
-    Args:
-        memory_path: Path to the memory directory to delete
     """
-    if os.path.exists(memory_path):
-        shutil.rmtree(memory_path)
+    if os.path.exists(MEMORY_PATH):
+        shutil.rmtree(MEMORY_PATH)
 
 def extract_python_code(response: str) -> str:
     """
@@ -146,4 +85,4 @@ def format_results(results: dict) -> str:
     """
     Format the results into a string.
     """
-    return "<r>\n" + str(results) + "\n</r>"
+    return "<result>\n" + str(results) + "\n</result>"
