@@ -105,8 +105,7 @@ class MultiTurnEnv(Environment):
     def step(self,
              states: List[Dict[str, Any]],
              llm: LLM | VLLMClient,
-             sampling_params: SamplingParams,
-             **kwargs: Any) -> List[Dict[str, Any]]:
+             sampling_params: SamplingParams) -> List[Dict[str, Any]]:
         
         live_indices = [i for i, s in enumerate(states) if not s["completed"]]
         messages_to_step = [states[i]["messages"] for i in live_indices]
@@ -165,13 +164,12 @@ class MultiTurnEnv(Environment):
             if len(state["completion_mask"]) > len(state["completion_ids"]): # type: ignore
                 state["completion_mask"] = state["completion_mask"][:len(state["completion_ids"])] # type: ignore
             
-            if self.is_completed(state["messages"], **kwargs) or len(state["completion_ids"]) > sampling_params.max_tokens - 1: # type: ignore
+            if self.is_completed(state["messages"]) or len(state["completion_ids"]) > sampling_params.max_tokens - 1: # type: ignore
                 state["completed"] = True
                 state["completion_ids"] = state["completion_ids"][:sampling_params.max_tokens]
                 state["completion_mask"] = state["completion_mask"][:len(state["completion_ids"])]
             else:
-                # Pass through kwargs to env_response
-                state["messages"].append(self.env_response(state["messages"], **kwargs))
+                state["messages"].append(self.env_response(state["messages"]))
 
             # enforce that the completion mask and completion ids are the same length
             # weird bug that happens rarely and only for certain models; something tokenizer related :(
@@ -217,35 +215,17 @@ class MultiTurnEnv(Environment):
 
         # main loop
         while not all_completed:
-            # Pass through all kwargs to step and env_response
-            states = self.step(states, llm, custom_sp, **kwargs)
+            states = self.step(states, llm, custom_sp)
             all_completed = all(state["completed"] for state in states)
 
         completion_messages = [s["messages"][s["prompt_messages"]:] for s in states]
         completion_ids = [s["completion_ids"] for s in states]
         completion_mask = [s["completion_mask"] for s in states]
-        
-        # When all states are completed, call get_rewards if provided
-        rewards = {}
-        for i, state in enumerate(states):
-            if hasattr(self, 'get_rewards'):
-                # Pass through all kwargs to get_rewards
-                reward_dict = self.get_rewards(state["messages"], **kwargs)
-                for k, v in reward_dict.items():
-                    if k not in rewards:
-                        rewards[k] = []
-                    rewards[k].append(v)
-        
         output = {
             "ids": completion_ids,
             "messages": completion_messages,
             "mask": completion_mask
         }
-        
-        # Add rewards to output if calculated
-        if rewards:
-            output["rewards"] = rewards
-            
         return output
 
     def step_api(self, 
