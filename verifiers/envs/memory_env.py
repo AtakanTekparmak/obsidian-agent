@@ -2,6 +2,7 @@ import inspect
 import json
 import os
 import shutil # For clearing memory_dir
+import uuid # For generating unique rollout IDs
 from typing import List, Dict, Any, Callable, Tuple, Optional
 
 from datasets import Dataset, load_dataset
@@ -14,8 +15,11 @@ from verifiers.rubrics.memory_rubric import MemoryRubric
 from verifiers.utils.data_utils import preprocess_dataset # For loading convos dataset
 
 from agent.engine import execute_sandboxed_code
-from agent.utils import create_memory_if_not_exists
-from agent.settings import MEMORY_PATH
+from agent.utils import (
+    create_memory_if_not_exists, delete_memory, 
+    log_reward_calculation, log_completion
+)
+from agent.settings import get_rollout_memory_path
 from data.schemas.kb import Fact # For casting facts_to_check
 
 # Define constants
@@ -62,7 +66,12 @@ class ObsidianAgentEnv(MultiTurnEnv):
         self.env_parser = XMLParser(fields=["result"]) # For parsing <result> tags if any
         self.rubric = MemoryRubric()
         
-        create_memory_if_not_exists()
+        # Set a unique ID for this environment instance for memory isolation
+        self.env_id = str(uuid.uuid4())
+        
+        # Dictionary mapping rollout IDs to their memory paths
+        self.rollout_memories = {}
+        
         self.current_persona_id: Optional[str] = None
         self.current_persona_facts_to_check: List[Fact] = []
         
@@ -70,16 +79,62 @@ class ObsidianAgentEnv(MultiTurnEnv):
         self.current_data_idx = -1 # Index in the flat full_dataset
         self.current_turn_in_persona = 0
 
-    def _clear_memory_dir(self):
-        """Clears the contents of the MEMORY_PATH directory."""
-        if os.path.exists(MEMORY_PATH):
-            for item in os.listdir(MEMORY_PATH):
-                item_path = os.path.join(MEMORY_PATH, item)
-                if os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
-                else:
-                    os.remove(item_path)
-        create_memory_if_not_exists() # Recreate if it was removed
+    def _get_rollout_id_from_completion(self, completion: Dict[str, str]) -> str:
+        """
+        Extract a rollout ID from the completion metadata or generate one if not present.
+        This is the key method for identifying unique rollouts.
+        
+        Args:
+            completion: The completion dictionary from the model
+            
+        Returns:
+            A unique ID for this rollout
+        """
+        # If metadata exists and contains a rollout_id, use that
+        if isinstance(completion, dict) and completion.get("metadata", {}).get("rollout_id"):
+            return completion["metadata"]["rollout_id"]
+        
+        # If we find a sequence_id, batch_id, or generation_id in metadata, use that
+        if isinstance(completion, dict) and "metadata" in completion:
+            metadata = completion["metadata"]
+            if "sequence_id" in metadata:
+                return str(metadata["sequence_id"])
+            if "batch_id" in metadata:
+                return str(metadata["batch_id"])
+            if "generation_id" in metadata:
+                return str(metadata["generation_id"])
+        
+        # Otherwise generate a new ID
+        return f"rollout_{str(uuid.uuid4())[:8]}"
+    
+    def _ensure_rollout_memory(self, rollout_id: str) -> str:
+        """
+        Ensure a memory directory exists for this rollout and return its path.
+        
+        Args:
+            rollout_id: The rollout ID
+            
+        Returns:
+            The path to the memory directory for this rollout
+        """
+        if rollout_id not in self.rollout_memories:
+            memory_path = create_memory_if_not_exists(rollout_id)
+            self.rollout_memories[rollout_id] = memory_path
+        return self.rollout_memories[rollout_id]
+
+    def _clear_memory_dir(self, rollout_id: Optional[str] = None):
+        """
+        Clears the contents of a specific memory directory.
+        
+        Args:
+            rollout_id: The rollout ID to clear, or None to clear the current environment's memory
+        """
+        if rollout_id is None:
+            rollout_id = self.env_id
+            
+        memory_path = get_rollout_memory_path(rollout_id)
+        delete_memory(rollout_id)
+        create_memory_if_not_exists(rollout_id)
 
     def reset_turn(self) -> Tuple[List[Dict[str, str]], Dict[str, Any]]:
         """
@@ -100,8 +155,10 @@ class ObsidianAgentEnv(MultiTurnEnv):
         new_persona_id = current_turn_data["persona_id"]
 
         if self.current_persona_id != new_persona_id:
-            # New persona encountered
-            self._clear_memory_dir()
+            # New persona encountered - reset all rollout memories for this persona
+            for rollout_id in list(self.rollout_memories.keys()):
+                self._clear_memory_dir(rollout_id)
+                
             self.current_persona_id = new_persona_id
             self.current_turn_in_persona = 0
             # Load facts for this new persona. They are stored per turn data point but are the same for all turns of a persona.
@@ -114,13 +171,6 @@ class ObsidianAgentEnv(MultiTurnEnv):
         # The 'question' from the dataset is the user's message for this turn
         user_message = {"role": "user", "content": current_turn_data["question"]}
         
-        # We need to construct the message history to send to the agent.
-        # If it's the first turn of a persona, it's just system + user_message.
-        # Otherwise, it's the existing self.messages + user_message.
-        # MultiTurnEnv's `self.messages` should handle history accumulation.
-        # This method's responsibility is to provide the *next* input.
-        # The base MultiTurnEnv's step() will append this user_message to self.messages.
-
         # Info to be passed along, could include things like current persona_id for logging
         info = {
             "persona_id": self.current_persona_id,
@@ -144,29 +194,63 @@ class ObsidianAgentEnv(MultiTurnEnv):
         Calculates rewards at the end of a persona's trajectory.
         This is called when is_completed returns True for the current persona.
         """
-        # This check ensures rewards are calculated only when a persona's dialogue is complete.
-        # It relies on `is_completed` correctly identifying the end of a persona's session.
+        # Get the rollout ID from the last assistant message
+        rollout_id = None
+        for msg in reversed(messages):
+            if msg["role"] == "assistant":
+                rollout_id = self._get_rollout_id_from_completion(msg)
+                
+                # Log the completion
+                if self.current_persona_id:
+                    log_completion(
+                        persona_id=self.current_persona_id,
+                        completion=msg.get("content", ""),
+                        rollout_id=rollout_id
+                    )
+                break
+                
+        # Ensure the memory path exists for this rollout
+        if rollout_id:
+            self._ensure_rollout_memory(rollout_id)
+            
+        # Calculate rewards based on facts in memory
         if self.current_persona_facts_to_check:
-            # The `check_facts_reward_func` from MemoryRubric expects the full completion history
-            # for the persona and the facts to check for *that specific persona*.
-            # `messages` here is the accumulated conversation for the current persona.
+            # This uses the specific rollout's memory directory
             reward_val = self.rubric.check_facts_reward_func(
-                completion_history=messages, # Pass the history
-                facts_to_check=self.current_persona_facts_to_check
+                completion_history=messages,
+                facts_to_check=self.current_persona_facts_to_check,
+                rollout_id=rollout_id
             )
+            
+            # Log the reward calculation
+            if self.current_persona_id:
+                # Get memory dump from the rubric to log it
+                memory_dump = self.rubric.get_memory_dump_str(rollout_id)
+                log_reward_calculation(
+                    persona_id=self.current_persona_id,
+                    facts=self.current_persona_facts_to_check,
+                    memory_dump=memory_dump,
+                    reward=reward_val,
+                    rollout_id=rollout_id
+                )
+            
             return {"memory_fact_check": reward_val}
         return {"memory_fact_check": 0.0} # No facts to check or error
 
-    def execute_python_code(self, code: str) -> str:
+    def execute_python_code(self, code: str, rollout_id: Optional[str] = None) -> str:
         """
         Execute the given python code in a sandboxed environment.
+        
+        Args:
+            code: The Python code to execute
+            rollout_id: The rollout ID to use for the memory directory
         """
-        # Ensure memory exists (though it should from __init__ and _clear_memory_dir)
-        create_memory_if_not_exists() 
+        # Ensure memory exists for this rollout
+        memory_path = self._ensure_rollout_memory(rollout_id if rollout_id else self.env_id)
         
         locals_dict, error = execute_sandboxed_code(
             code=code,
-            allowed_path=MEMORY_PATH,
+            allowed_path=memory_path,
             import_module=TOOLS_MODULE 
         )
         
@@ -194,27 +278,6 @@ class ObsidianAgentEnv(MultiTurnEnv):
         # The trajectory for a persona is complete if 'is_last_turn' is true for the current data point.
         if current_turn_data["is_last_turn"]:
             return True
-            
-        # Optional: Add max_steps check *within* a persona if self.max_steps is set meaningfully
-        if self.max_steps and self.max_steps > 0: # max_steps from MultiTurnEnv constructor
-             # We need a way to count assistant turns *for the current persona*
-             # This is tricky as `messages` is the full history up to this point for the persona.
-             # A simpler approach is to rely on `is_last_turn` from data.
-             # If `self.max_steps` (from `MultiTurnEnv`) is used, it might prematurely end a persona.
-             # For now, let's prioritize `is_last_turn`.
-             pass
-
-        # If the agent provides a final answer (e.g., via <answer> tag and no python)
-        # this could also signify completion, but `is_last_turn` is more deterministic here.
-        # last_assistant_msg = next((msg for msg in reversed(messages) if msg["role"] == "assistant"), None)
-        # if last_assistant_msg:
-        #     parsed = self.llm_parser.parse(last_assistant_msg["content"])
-        #     if hasattr(parsed, "answer") and parsed.answer is not None and \
-        #        (not hasattr(parsed, "python") or parsed.python is None):
-        #         # If this logic is enabled, ensure it aligns with `is_last_turn`
-        #         # or decide which takes precedence.
-        #         # return True 
-        #         pass
                 
         return False
     
@@ -227,25 +290,19 @@ class ObsidianAgentEnv(MultiTurnEnv):
             # This case should ideally be handled by the MultiTurnEnv logic or raise an error.
             return {"role": "user", "content": "<result>\nError: Expected last message to be from assistant.\n</result>"}
 
+        # Extract rollout ID from the completion metadata
+        rollout_id = self._get_rollout_id_from_completion(last_msg)
+        
         try:
             parsed = self.llm_parser.parse(last_msg["content"])
             
             if hasattr(parsed, "python") and parsed.python is not None:
-                # Execute the Python code
-                execution_result_str = self.execute_python_code(parsed.python)
+                # Execute the Python code with the specific rollout's memory directory
+                execution_result_str = self.execute_python_code(parsed.python, rollout_id)
                 return {"role": "user", "content": execution_result_str}
             
-            # If agent gives an <answer> without python, and it's NOT the last turn of persona,
-            # we might want to prompt it to continue or use tools if appropriate.
-            # However, if `is_completed` handles the end-of-persona, this becomes simpler.
-            # If it's the last turn, `is_completed` will return True, and `get_rewards` is called.
-            # The flow doesn't necessarily need a special env_response for a non-tool answer.
-            # MultiTurnEnv will just proceed to the next turn (which would be a new persona or end).
-            
             # If no python and no answer, or just thoughts.
-            # Prompt to take action or provide an answer.
-            # This can be a generic prompt if the agent is expected to always use python or provide a final answer.
-            # If the agent is just thinking, this response will be its next input.
+            # Prompt to take action or provide a final answer.
             return {"role": "user", "content": "<result>\nPlease continue. You can use tools or provide a final answer if all tasks for the current user are complete.\n</result>"}
                 
         except Exception as e:
@@ -278,10 +335,5 @@ class ObsidianAgentEnv(MultiTurnEnv):
             current_turn_data = self.dataset[self.current_data_idx]
             if current_turn_data["is_last_turn"]:
                 return f"Completed all turns for persona: {self.current_persona_id}."
-        
-        # If MultiTurnEnv's max_steps is used and hit:
-        # step_count = self._get_step_count(messages) # Assuming _get_step_count counts assistant turns
-        # if self.max_steps and self.max_steps > 0 and step_count >= self.max_steps:
-        #    return f"Reached max_steps ({self.max_steps}) for persona."
             
         return None # No specific termination reason other than what base class might determine

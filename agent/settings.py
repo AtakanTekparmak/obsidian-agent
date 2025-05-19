@@ -11,6 +11,16 @@ OPENROUTER_STRONG_MODEL = "google/gemini-2.5-pro-preview-03-25"
 
 # Memory
 MEMORY_PATH = "memory_dir"
+def get_rollout_memory_path(rollout_id=None):
+    if rollout_id is None:
+        return MEMORY_PATH
+    return f"memory_dir_rollout_{rollout_id}"
+
+# Logs
+LOG_DIR = "logs"
+REWARD_LOG_DIR = os.path.join(LOG_DIR, "rewards")
+COMPLETION_LOG_DIR = os.path.join(LOG_DIR, "completions")
+
 FILE_SIZE_LIMIT = 1024 * 1024 # 1MB
 DIR_SIZE_LIMIT = 1024 * 1024 * 10 # 10MB
 MEMORY_SIZE_LIMIT = 1024 * 1024 * 100 # 100MB

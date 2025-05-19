@@ -1,7 +1,13 @@
 import os
 import shutil
+import json
+from datetime import datetime
 
-from agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH
+from agent.settings import (
+    SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, 
+    MEMORY_SIZE_LIMIT, MEMORY_PATH, LOG_DIR, REWARD_LOG_DIR, 
+    COMPLETION_LOG_DIR, get_rollout_memory_path
+)
 
 def load_system_prompt() -> str:
     """
@@ -52,19 +58,90 @@ def check_size_limits(file_or_dir_path: str) -> bool:
     else:
         return False
     
-def create_memory_if_not_exists() -> None:
+def create_memory_if_not_exists(rollout_id=None) -> str:
     """
-    Create the memory if it doesn't exist.
+    Create the memory if it doesn't exist and return its path.
+    
+    Args:
+        rollout_id: Optional rollout ID to create a unique memory directory
+        
+    Returns:
+        The path to the memory directory
     """
-    if not os.path.exists(MEMORY_PATH):
-        os.makedirs(MEMORY_PATH)
+    memory_path = get_rollout_memory_path(rollout_id)
+    if not os.path.exists(memory_path):
+        os.makedirs(memory_path, exist_ok=True)
+    return memory_path
 
-def delete_memory() -> None:
+def create_log_dirs():
+    """
+    Create log directories if they don't exist.
+    """
+    os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(REWARD_LOG_DIR, exist_ok=True)
+    os.makedirs(COMPLETION_LOG_DIR, exist_ok=True)
+
+def log_reward_calculation(persona_id, facts, memory_dump, reward, rollout_id=None):
+    """
+    Log a reward calculation to file.
+    
+    Args:
+        persona_id: The ID of the persona
+        facts: The facts to check
+        memory_dump: The memory dump string
+        reward: The calculated reward
+        rollout_id: The rollout ID (optional)
+    """
+    create_log_dirs()
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rollout_str = f"_rollout_{rollout_id}" if rollout_id is not None else ""
+    log_file = os.path.join(REWARD_LOG_DIR, f"{timestamp}_{persona_id}{rollout_str}.json")
+    
+    log_data = {
+        "timestamp": timestamp,
+        "persona_id": persona_id,
+        "rollout_id": rollout_id,
+        "facts": facts,
+        "reward": reward,
+        "memory_dump_summary": memory_dump[:1000] + "..." if len(memory_dump) > 1000 else memory_dump
+    }
+    
+    with open(log_file, 'w') as f:
+        json.dump(log_data, f, indent=2, default=str)
+
+def log_completion(persona_id, completion, rollout_id=None):
+    """
+    Log an agent completion to file.
+    
+    Args:
+        persona_id: The ID of the persona
+        completion: The completion from the agent
+        rollout_id: The rollout ID (optional)
+    """
+    create_log_dirs()
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rollout_str = f"_rollout_{rollout_id}" if rollout_id is not None else ""
+    log_file = os.path.join(COMPLETION_LOG_DIR, f"{timestamp}_{persona_id}{rollout_str}.txt")
+    
+    with open(log_file, 'w') as f:
+        f.write(f"Persona ID: {persona_id}\n")
+        f.write(f"Rollout ID: {rollout_id}\n")
+        f.write(f"Timestamp: {timestamp}\n")
+        f.write("="*50 + "\n")
+        f.write(completion)
+
+def delete_memory(rollout_id=None) -> None:
     """
     Delete the memory.
+    
+    Args:
+        rollout_id: Optional rollout ID to delete a specific memory directory
     """
-    if os.path.exists(MEMORY_PATH):
-        shutil.rmtree(MEMORY_PATH)
+    memory_path = get_rollout_memory_path(rollout_id)
+    if os.path.exists(memory_path):
+        shutil.rmtree(memory_path)
 
 def extract_python_code(response: str) -> str:
     """
@@ -85,4 +162,4 @@ def format_results(results: dict) -> str:
     """
     Format the results into a string.
     """
-    return "<result>\n" + str(results) + "\n</result>"
+    return "<r>\n" + str(results) + "\n</r>"
