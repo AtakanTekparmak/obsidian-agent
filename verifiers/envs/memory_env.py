@@ -215,24 +215,14 @@ class ObsidianAgentEnv(MultiTurnEnv):
             
         # Calculate rewards based on facts in memory
         if self.current_persona_facts_to_check:
-            # This uses the specific rollout's memory directory
-            reward_val = self.rubric.check_facts_reward_func(
-                completion_history=messages,
+            # Call the single reward calculation method directly
+            # We don't use check_facts_reward_func here as it expects batch inputs
+            reward_val = self.rubric._calculate_single_reward(
                 facts_to_check=self.current_persona_facts_to_check,
-                rollout_id=rollout_id
+                completion_history=messages,
+                rollout_id=rollout_id,
+                persona_id=self.current_persona_id
             )
-            
-            # Log the reward calculation
-            if self.current_persona_id:
-                # Get memory dump from the rubric to log it
-                memory_dump = self.rubric.get_memory_dump_str(rollout_id)
-                log_reward_calculation(
-                    persona_id=self.current_persona_id,
-                    facts=self.current_persona_facts_to_check,
-                    memory_dump=memory_dump,
-                    reward=reward_val,
-                    rollout_id=rollout_id
-                )
             
             return {"memory_fact_check": reward_val}
         return {"memory_fact_check": 0.0} # No facts to check or error
