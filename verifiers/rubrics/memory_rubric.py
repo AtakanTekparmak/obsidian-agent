@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union
 import os
 
 from verifiers.parsers import XMLParser
@@ -6,110 +6,191 @@ from verifiers.rubrics import Rubric
 from training.reward.reward import get_reward
 from training.reward.folder_dump import dump_folder
 from data.schemas.kb import Fact
-
-# Import the logger
-from training.utils import trainer_logger
+from agent.utils import log_reward_calculation
+from agent.settings import MEMORY_PATH
 
 class MemoryRubric(Rubric):
     def __init__(
             self,
             parser: XMLParser = XMLParser(fields=["thoughts", ("python", "answer")]),
             env_parser: XMLParser = XMLParser(fields=["result"]),
+            memory_path: str = MEMORY_PATH,
         ):
         self.parser = parser
         self.env_parser = env_parser
-        # self.reward_funcs and self.reward_weights are not strictly needed here
-        # if the environment calls the check_facts_reward_func directly.
-        # However, if MultiTurnEnv framework relies on these, they might need to be set.
-        # For now, let's assume direct call from the custom env.
+        self.memory_path = memory_path
+        self.log_dir = None
         
-    def get_reward_funcs(self, instance_id: Optional[int] = None) -> List:
-        # Include instance_id parameter to pass it to the reward function
+    def set_memory_path(self, memory_path: str) -> None:
+        """
+        Set the memory path to use for dumping and reward calculation.
+        
+        Args:
+            memory_path: Path to the memory directory
+        """
+        self.memory_path = memory_path
+    
+    def set_log_dir(self, log_dir: str) -> None:
+        """
+        Set the log directory for reward calculation logs.
+        
+        Args:
+            log_dir: Path to the log directory
+        """
+        self.log_dir = log_dir
+        
+    def get_reward_funcs(self) -> List:
+        # This might be required by MultiTurnEnv framework.
+        # If so, it should return a list containing a wrapper or the method itself.
+        # For now, returning the method directly.
         return [self.check_facts_reward_func] 
     
     def get_reward_weights(self) -> List[float]:
         # Corresponding weight for the reward function.
         return [1.0]
     
-    def _get_memory_dump_str(self, memory_dir: Optional[str] = None) -> str:
+    def _get_memory_dump_str(self) -> str:
         """
         Uses dump_folder from training.reward to get the memory dump string.
-            
-        Args:
-            memory_dir: Optional specific memory directory to dump from
             
         Returns:
             The memory dump as a string.
         """
-        # If a specific memory directory is provided, use that
-        memory_path = memory_dir or "memory_dir"
+        if not os.path.exists(self.memory_path):
+            # Ensure the directory exists before dumping, or dump_folder might error
+            # or return an empty/irrelevant dump for a non-existent path.
+            # Depending on dump_folder behavior, might return empty or specific message.
+            return "" # Return empty string if memory_dir doesn't exist
         
-        if not os.path.exists(memory_path):
-            # Ensure the directory exists before dumping
-            return ""
-        
-        return dump_folder(memory_path)
+        return dump_folder(self.memory_path)
         
     def check_facts_reward_func(
             self,
-            facts_to_check: List[Dict] = None,
-            completion_history: List[Dict] = None,
-            memory_dir: Optional[str] = None,
-            rollout_id: Optional[int] = None,
+            facts_to_check: List[Dict], # List of dictionaries representing facts
+            completion_history=None, # Only used when called directly, not by GRPOTrainer
+            # Other batch-level args like prompts, completions are in **kwargs if needed by other funcs
             **kwargs 
-    ) -> Union[float, List[Union[float, None]]]:
+    ) -> Union[float, List[Union[float, None]]]: # Returns a single float or a list of rewards for batch
         """
-        Reward function that checks if the provided facts are present in the agent's memory dump.
-        Can be called directly by the environment for a single persona or by the trainer for batch evaluation.
+        Reward function that checks if the provided facts are present in the agent's current memory dump.
         
         Args:
-            facts_to_check: List of fact dictionaries to check, or a batch list for trainer calls
-            completion_history: Optional completion history for the current persona
-            memory_dir: Optional specific memory directory to check
-            rollout_id: Optional rollout ID for logging
-            **kwargs: Additional kwargs passed from the environment or trainer
+            facts_to_check: A list of dictionaries representing facts, or if called in batch mode,
+                           a list of lists of dictionaries.
+            completion_history: Optional message history, only used when called directly.
+            **kwargs: Absorbs other arguments passed by the trainer like 'prompts', 'completions'.
             
         Returns:
-            A float reward value for a single sample, or a list of rewards for a batch
+            A single reward value or a list of reward values (float or None), one for each sample in a batch.
         """
-        # Handle direct environment call with explicit memory_dir and facts_to_check
-        if memory_dir is not None and facts_to_check is not None and not isinstance(facts_to_check[0], list):
-            memory_dump_str = self._get_memory_dump_str(memory_dir)
-            
-            # Convert fact dictionaries to Fact models
-            facts_as_models = []
-            for f_dict in facts_to_check:
-                if isinstance(f_dict, dict):
-                    facts_as_models.append(Fact.model_validate(f_dict))
-            
-            if not facts_as_models:
-                return 0.0
-                
-            reward_value = get_reward(memory_dump_str, facts_as_models)
-            
-            # Log the reward call if rollout_id is provided
-            if rollout_id is not None:
-                trainer_logger.log_reward_call(
-                    rollout_id=rollout_id,
-                    memory_dump=memory_dump_str,
-                    facts_to_check=facts_to_check,
-                    reward_value=float(reward_value)
-                )
-                
-            return float(reward_value)
-            
-        # Handle batch calls from trainer (returns a list of rewards)
-        batched_rewards: List[Union[float, None]] = []
+        # Extract rollout_id from kwargs or completions if available
+        rollout_id = None
+        if 'prompts' in kwargs and kwargs['prompts'] and len(kwargs['prompts']) > 0:
+            # First, check in metadata passed as prompts[0] kwargs
+            if isinstance(kwargs['prompts'][0], dict) and 'rollout_id' in kwargs['prompts'][0]:
+                rollout_id = kwargs['prompts'][0]['rollout_id']
         
-        # If this is a batch call from the trainer
-        if facts_to_check is not None and isinstance(facts_to_check, list):
-            # In this case, facts_to_check is a batch list where each item is the facts list for a sample
-            # We don't have access to the memory_dir for each separate rollout
-            # We'll just return zeros for now, since the real rewards are calculated by the environment
-            # directly calling this function with explicit memory_dir
-            return [0.0] * len(facts_to_check)
+        # Determine if this is a batched call from GRPOTrainer or a direct call
+        is_batch_call = isinstance(facts_to_check, list) and len(facts_to_check) > 0 and isinstance(facts_to_check[0], list)
+        
+        if is_batch_call:
+            # This is a batched call from GRPOTrainer
+            batched_rewards: List[Union[float, None]] = []
+            
+            for batch_idx, single_sample_facts_as_dicts in enumerate(facts_to_check):
+                if not isinstance(single_sample_facts_as_dicts, list):
+                    print(f"Warning: Expected List[Dict] for a sample, but got {type(single_sample_facts_as_dicts)}. Assigning 0.0 reward.")
+                    batched_rewards.append(0.0)
+                    continue
+
+                if not single_sample_facts_as_dicts:  # No fact dictionaries to check for this specific sample
+                    batched_rewards.append(0.0)
+                    continue
                 
-        return batched_rewards
+                memory_dump_str = self._get_memory_dump_str()
+                if not memory_dump_str: # If memory dump is empty, no facts can be found.
+                    batched_rewards.append(0.0)
+                    continue
+                
+                try:
+                    # Convert list of dicts to list of Fact Pydantic models for this sample
+                    single_sample_facts_as_models: List[Fact] = []
+                    valid_fact_dicts_found = False
+                    for f_dict in single_sample_facts_as_dicts:
+                        if isinstance(f_dict, dict):
+                            single_sample_facts_as_models.append(Fact.model_validate(f_dict))
+                            valid_fact_dicts_found = True
+                        else:
+                            print(f"Warning: Expected a dict for a fact, but got {type(f_dict)}. Skipping this fact.")
+                    
+                    if not valid_fact_dicts_found:
+                        print(f"Warning: No valid fact dictionaries found in sample. Assigning 0.0 reward.")
+                        batched_rewards.append(0.0)
+                        continue
+                    
+                    if not single_sample_facts_as_models:
+                        batched_rewards.append(0.0)
+                        continue
+
+                    # Calculate reward for this sample
+                    reward_for_sample = get_reward(memory_dump_str, single_sample_facts_as_models)
+                    batched_rewards.append(float(reward_for_sample))
+                    
+                    # Log reward calculation if log_dir is set and we have a rollout_id
+                    if self.log_dir and rollout_id:
+                        log_reward_calculation(
+                            self.log_dir,
+                            f"{rollout_id}_{batch_idx}",
+                            memory_dump_str,
+                            single_sample_facts_as_models,
+                            float(reward_for_sample)
+                        )
+                        
+                except Exception as e:
+                    print(f"Error calculating reward: {e}. Facts data: {single_sample_facts_as_dicts}")
+                    batched_rewards.append(0.0)
+                    
+            return batched_rewards
+        else:
+            # Direct call from ObsidianAgentEnv.get_rewards()
+            if not facts_to_check:
+                return 0.0
+            
+            memory_dump_str = self._get_memory_dump_str()
+            if not memory_dump_str:
+                return 0.0
+            
+            try:
+                # For direct calls, facts_to_check should already be a list of Fact objects
+                # But if it's a list of dicts, convert it to Fact objects
+                facts_as_models = []
+                for fact in facts_to_check:
+                    if isinstance(fact, Fact):
+                        facts_as_models.append(fact)
+                    elif isinstance(fact, dict):
+                        facts_as_models.append(Fact.model_validate(fact))
+                    else:
+                        print(f"Warning: Invalid fact type: {type(fact)}. Skipping.")
+                
+                if not facts_as_models:
+                    return 0.0
+                
+                reward = get_reward(memory_dump_str, facts_as_models)
+                
+                # Log reward calculation
+                if self.log_dir and rollout_id:
+                    log_reward_calculation(
+                        self.log_dir,
+                        rollout_id,
+                        memory_dump_str,
+                        facts_as_models,
+                        float(reward)
+                    )
+                
+                return float(reward)
+            except Exception as e:
+                print(f"Error calculating reward in direct call: {e}")
+                return 0.0
 
 # Example of how MemoryRubric might be used within an environment that processes one persona at a time
 # (Not directly used by GRPOTrainer in this way, GRPOTrainer calls the reward func directly with batches)

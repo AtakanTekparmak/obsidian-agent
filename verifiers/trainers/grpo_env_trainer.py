@@ -1,5 +1,6 @@
 import warnings
 from typing import Callable, Optional, Union, Any, List
+import uuid
 
 from accelerate.utils import broadcast_object_list, gather, gather_object
 from datasets import Dataset, IterableDataset
@@ -15,6 +16,7 @@ from transformers import (
 )
 from verifiers import RewardFunc
 from verifiers.envs.environment import Environment
+from verifiers.envs.memory_env import ObsidianAgentEnv
 from verifiers.utils.logging_utils import print_prompt_completions_sample
 from verifiers.imports import LLM, SamplingParams
 from verifiers.inference.vllm_client import VLLMClient
@@ -95,6 +97,49 @@ class GRPOEnvTrainer(GRPOTrainer):
             min_p=0.0 if self.min_p is None else self.min_p,
             repetition_penalty=self.repetition_penalty
         )
+        self.rollout_envs = {}
+
+    def _create_or_get_env_for_rollout(self, rollout_id: str) -> Environment:
+        """
+        Create or retrieve an environment instance for a specific rollout.
+        For ObsidianAgentEnv, this includes setting a unique memory path.
+        
+        Args:
+            rollout_id: Unique ID for the rollout
+            
+        Returns:
+            Environment instance configured for this rollout
+        """
+        if rollout_id not in self.rollout_envs:
+            # Create a new env instance with the same config as the original env
+            if isinstance(self.env, ObsidianAgentEnv):
+                # For ObsidianAgentEnv, we need to set a unique memory path
+                # Copy all kwargs from original env first
+                env_kwargs = {
+                    "convos_dataset_path": getattr(self.env, "convos_dataset_path", "training/data/convos.json"),
+                    "system_prompt": self.env.system_prompt,
+                    "few_shot": self.env.few_shot,
+                    "sampling_args": self.env.sampling_args,
+                    "mask_env_response": self.env.env_mask == 0,
+                    "max_steps": self.env.max_steps,
+                }
+                
+                # Create new env instance
+                env = ObsidianAgentEnv(**env_kwargs)
+                
+                # Set rollout-specific attributes
+                env.set_rollout_id(rollout_id)
+                
+                # Set log_dir in rubric
+                if hasattr(env, 'rubric') and hasattr(env, 'log_dir'):
+                    env.rubric.set_log_dir(env.log_dir)
+                
+                self.rollout_envs[rollout_id] = env
+            else:
+                # For other environment types, just use the original env
+                self.rollout_envs[rollout_id] = self.env
+                
+        return self.rollout_envs[rollout_id]
 
     def _generate_and_score_completions(
          self, inputs: dict[str, Union[torch.Tensor, Any]]   
@@ -118,24 +163,67 @@ class GRPOEnvTrainer(GRPOTrainer):
 
         # Gather the original prompts in message dict form, not the text form
         all_prompts = gather_object(prompts)
+        
+        # Add rollout_id to each prompt for tracking
+        generation_rollout_ids = []
+        prompts_with_rollout_ids = []
+        
         if self.accelerator.is_main_process:
-            env_result = self.env.generate(
-                prompts=all_prompts,
-                llm=self.vllm_client, # type: ignore
-                sampling_params=self.sampling_params,
-            )
-            completion_ids = env_result['ids']
-            completion_messages = env_result['messages']
-            completion_mask = env_result['mask']
-
+            # Generate unique rollout IDs for each batch of generations
+            for i in range(0, len(all_prompts), self.num_generations):
+                rollout_id = uuid.uuid4().hex[:8]
+                generation_rollout_ids.extend([rollout_id] * self.num_generations)
+                
+                # Create rollout-specific environment
+                env = self._create_or_get_env_for_rollout(rollout_id)
+                
+                # Add rollout metadata to each prompt
+                for j in range(i, min(i + self.num_generations, len(all_prompts))):
+                    prompt_copy = all_prompts[j].copy()
+                    prompt_copy["rollout_id"] = rollout_id
+                    prompt_copy["memory_path"] = getattr(env, "memory_path", None)
+                    prompts_with_rollout_ids.append(prompt_copy)
+                
+        if self.accelerator.is_main_process:
+            completion_ids = [None] * len(prompts_with_rollout_ids)
+            completion_messages = [None] * len(prompts_with_rollout_ids)
+            completion_mask = [None] * len(prompts_with_rollout_ids)
+            
+            # Process each rollout with its dedicated environment
+            for i in range(0, len(prompts_with_rollout_ids), self.num_generations):
+                rollout_id = prompts_with_rollout_ids[i]["rollout_id"]
+                current_batch = prompts_with_rollout_ids[i:i + self.num_generations]
+                
+                # Get the environment for this rollout
+                env = self._create_or_get_env_for_rollout(rollout_id)
+                
+                # Generate completions using this environment
+                env_result = env.generate(
+                    prompts=current_batch,
+                    llm=self.vllm_client, # type: ignore
+                    sampling_params=self.sampling_params,
+                )
+                
+                # Store results for this batch
+                for j, (ids, msgs, mask) in enumerate(zip(
+                    env_result['ids'], env_result['messages'], env_result['mask']
+                )):
+                    idx = i + j
+                    completion_ids[idx] = ids
+                    completion_messages[idx] = msgs
+                    completion_mask[idx] = mask
         else:
             completion_ids = [None] * len(all_prompts)
             completion_messages = [None] * len(all_prompts)
             completion_mask = [None] * len(all_prompts)
+            generation_rollout_ids = [None] * len(all_prompts)
+            prompts_with_rollout_ids = [None] * len(all_prompts)
 
         completion_ids = broadcast_object_list(completion_ids, from_process=0)
         completion_messages = broadcast_object_list(completion_messages, from_process=0)
         completion_mask = broadcast_object_list(completion_mask, from_process=0)
+        generation_rollout_ids = broadcast_object_list(generation_rollout_ids, from_process=0)
+        prompts_with_rollout_ids = broadcast_object_list(prompts_with_rollout_ids, from_process=0)
 
         process_slice = slice(
             self.accelerator.process_index * len(prompts),
@@ -145,6 +233,8 @@ class GRPOEnvTrainer(GRPOTrainer):
         completion_ids = completion_ids[process_slice]
         completion_messages = completion_messages[process_slice]
         completion_mask = completion_mask[process_slice]
+        local_generation_rollout_ids = generation_rollout_ids[process_slice]
+        local_prompts_with_rollout_ids = prompts_with_rollout_ids[process_slice]
 
         # Pad + mask after per-sequence EOS tokens
         completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
@@ -186,8 +276,15 @@ class GRPOEnvTrainer(GRPOTrainer):
         for i, reward_func in enumerate(self.reward_funcs):
             # Repeat all input columns (but "prompt" and "completion") to match the number of generations
             keys = [key for key in inputs[0] if key not in ["prompt", "completion"]] # type: ignore
+            
+            # Include rollout_id and memory_path in reward function kwargs
             reward_kwargs = {key: [example[key] for example in inputs] for key in keys} # type: ignore
-            output_reward_func = reward_func(prompts=prompts, completions=completions, **reward_kwargs) # type: ignore
+            reward_kwargs["rollout_ids"] = local_generation_rollout_ids
+            
+            # Instead of using the original prompts, use the ones with rollout IDs
+            modified_prompts = local_prompts_with_rollout_ids
+            
+            output_reward_func = reward_func(prompts=modified_prompts, completions=completions, **reward_kwargs) # type: ignore
             
             output_reward_func = [reward if reward is not None else torch.nan for reward in output_reward_func]
             rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
@@ -249,35 +346,35 @@ class GRPOEnvTrainer(GRPOTrainer):
         if self.log_completions and self.state.global_step % self.args.logging_steps == 0:
             prompts_to_log = gather_object(prompts)
             completions_to_log = gather_object(completions)
-            rewards_to_log = rewards.tolist()
-
-            if self.accelerator.is_main_process:
-                if is_rich_available():
-                    print_prompt_completions_sample(
-                        [str(prompts_to_log[0][-1]["content"])],
-                        [completions_to_log[0]],
-                        [rewards_to_log[0]],
-                        self.state.global_step,
-                    )
-                if self.args.report_to and "wandb" in self.args.report_to and wandb.run is not None: # type: ignore
-                    import pandas as pd
-
-                    # For logging
-                    table = {
-                        "step": [str(self.state.global_step)] * len(rewards),
-                        "prompt": prompts_to_log,
-                        "completion": completions_to_log,
-                        "reward": rewards.tolist(),
-                    }
-                    df = pd.DataFrame(table)
-                    wandb.log({"completions": wandb.Table(dataframe=df)}) # type: ignore
+            rewards_to_log = gather(rewards).cpu().numpy().tolist()
+            if self.accelerator.is_main_process and is_rich_available() and is_wandb_available() and len(prompts_to_log) > 0:
+                print_prompt_completions_sample(
+                    prompts=prompts_to_log,
+                    completions=completions_to_log,
+                    rewards=rewards_to_log,
+                    num_samples=1,
+                    generation_group_size=self.num_generations
+                )
+                if wandb.run is not None:
+                    wandb.log({"sampled_generations": wandb.Table(
+                        columns=["prompt", "completion", "reward"],
+                        data=[(str(p), str(c), str(r)) for p, c, r in zip(
+                            prompts_to_log, completions_to_log, rewards_to_log
+                        )]
+                    )})
 
         return {
-            "prompt_ids": prompt_ids,
-            "prompt_mask": prompt_mask,
-            "completion_ids": completion_ids,
-            "completion_mask": completion_mask,
-            "old_per_token_logps": old_per_token_logps,
-            "ref_per_token_logps": ref_per_token_logps,
+            "per_token_logprobs": self._get_per_token_logps(
+                self.model, prompt_completion_ids, attention_mask, logits_to_keep
+            ),
+            "old_per_token_logprobs": old_per_token_logps,
+            "ref_per_token_logprobs": ref_per_token_logps,
             "advantages": advantages,
+            "prompt_attention_mask": prompt_mask,
+            "prompt_ids": prompt_ids,
+            "prompt_length": prompt_ids.shape[1],
+            "attention_mask": attention_mask,
+            "completion_ids": completion_ids,
+            "action_ids": prompt_completion_ids[:, prompt_ids.shape[1]:],
+            "rewards": rewards[process_slice],
         }
