@@ -28,9 +28,18 @@ TOOLS_MODULE = "agent.tools" # Assuming tools are in this module for execute_san
 # Set up logging directories
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(REWARD_LOG_DIR, exist_ok=True)
-logging.basicConfig(level=logging.INFO, 
-                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Setup logger
 logger = logging.getLogger('obsidian_agent_env')
+logger.setLevel(logging.INFO)
+# Remove default handlers to avoid duplicate logging
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+# Add file handler
+log_file = os.path.join(LOG_DIR, 'obsidian_agent_env.log')
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(file_handler)
 
 class ObsidianAgentEnv(MultiTurnEnv):
     """
@@ -75,6 +84,18 @@ class ObsidianAgentEnv(MultiTurnEnv):
         self.rollout_id = rollout_id
         # Get a unique memory path for this rollout
         self.memory_path = get_rollout_memory_path(rollout_id)
+        
+        # Setup rollout-specific logging if needed
+        if rollout_id:
+            rollout_log_dir = os.path.join(LOG_DIR, f"rollout_{rollout_id}")
+            os.makedirs(rollout_log_dir, exist_ok=True)
+            rollout_log_file = os.path.join(rollout_log_dir, "env.log")
+            
+            # Add a file handler for this specific rollout
+            rollout_handler = logging.FileHandler(rollout_log_file)
+            rollout_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+            logger.addHandler(rollout_handler)
+            
         logger.info(f"Initialized ObsidianAgentEnv with rollout_id={rollout_id}, memory_path={self.memory_path}")
         
         # Create the memory directory
@@ -170,9 +191,16 @@ class ObsidianAgentEnv(MultiTurnEnv):
             # `messages` here is the accumulated conversation for the current persona.
             
             # Log the facts being checked and memory state for debugging
-            facts_log_path = os.path.join(REWARD_LOG_DIR, f"facts_{self.rollout_id}_{self.current_persona_id}.json")
-            with open(facts_log_path, 'w') as f:
-                json.dump([fact.model_dump() for fact in self.current_persona_facts_to_check], f, indent=2)
+            if self.rollout_id:
+                rollout_log_dir = os.path.join(REWARD_LOG_DIR, f"rollout_{self.rollout_id}")
+                os.makedirs(rollout_log_dir, exist_ok=True)
+                facts_log_path = os.path.join(rollout_log_dir, f"facts_{self.current_persona_id}.json")
+                try:
+                    with open(facts_log_path, 'w') as f:
+                        json.dump([fact.model_dump() for fact in self.current_persona_facts_to_check], f, indent=2)
+                    logger.info(f"Saved persona facts to {facts_log_path}")
+                except Exception as e:
+                    logger.error(f"Failed to write facts file: {e}")
             
             reward_val = self.rubric.check_facts_reward_func(
                 completion_history=messages, # Pass the history
@@ -251,8 +279,6 @@ class ObsidianAgentEnv(MultiTurnEnv):
             logger.error(f"Error in env_response: {e}")
             return {"role": "user", "content": f"<result>\nError processing your last turn: {str(e)}\n</result>"}
 
-    # Override _get_info if more specific info needs to be returned by step()
-    # The base class returns an empty dict.
     def _get_info(self, **kwargs) -> Dict:
         if self.current_data_idx < 0 or self.current_data_idx >= len(self.dataset):
             return {"status": "dataset_complete"}
@@ -268,8 +294,6 @@ class ObsidianAgentEnv(MultiTurnEnv):
             "memory_path": self.memory_path
         }
 
-    # Override get_termination_reason if needed.
-    # Base class returns None or a generic reason if max_steps hit.
     def get_termination_reason(self, messages: List[Dict[str, str]], **kwargs: Any) -> Optional[str]:
         if self.done: # Set in reset_turn when dataset ends
              return "Dataset completed."

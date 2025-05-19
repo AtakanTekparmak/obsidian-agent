@@ -9,7 +9,7 @@ from verifiers.envs.memory_env import ObsidianAgentEnv
 from verifiers.trainers import GRPOEnvTrainer
 from verifiers.utils.data_utils import preprocess_dataset, format_dataset
 from trl import GRPOConfig
-from agent.settings import LOG_DIR
+from agent.settings import LOG_DIR, REWARD_LOG_DIR
 
 
 # GPU setup for 8 GPUs (e.g., 2 for vLLM inference, 6 for training)
@@ -61,6 +61,7 @@ def main():
     
     os.makedirs(args.output_dir, exist_ok=True)
     os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(REWARD_LOG_DIR, exist_ok=True)
     
     data_path = Path(args.data_path).resolve()
     print(f"Loading and preprocessing data from {data_path} using 'convos' preset...")
@@ -173,9 +174,11 @@ def main():
         # Create new environments for each batch of prompts
         # This simulates having separate environments for each rollout
         environments = []
+        batch_indices = []
         for i in range(len(prompts) // args.num_generations):
             # Create a unique rollout ID for this batch
             batch_index = kwargs.get("batch_index", i)
+            batch_indices.append(batch_index)
             rollout_id = f"{base_rollout_id}_{process_index}_{batch_index}"
             
             # Create a new environment with this rollout ID
@@ -192,7 +195,10 @@ def main():
             batch_prompts = prompts[start_idx:end_idx]
             
             # Generate completions using this environment
-            env_result = env.generate(batch_prompts, llm, sampling_params, **kwargs)
+            batch_kwargs = dict(kwargs)
+            batch_kwargs['batch_index'] = batch_indices[i]
+            batch_kwargs['rollout_id'] = env.rollout_id
+            env_result = env.generate(batch_prompts, llm, sampling_params, **batch_kwargs)
             
             # Append results
             results['ids'].extend(env_result['ids'])

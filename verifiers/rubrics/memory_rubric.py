@@ -13,6 +13,15 @@ from agent.settings import MEMORY_PATH, REWARD_LOG_DIR
 
 # Set up logging
 logger = logging.getLogger('memory_rubric')
+logger.setLevel(logging.INFO)
+# Remove default handlers to avoid duplicate logging
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+# Only add file handler, no console handler
+log_file = os.path.join(REWARD_LOG_DIR, 'memory_rubric.log')
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(file_handler)
 
 class MemoryRubric(Rubric):
     def __init__(
@@ -84,15 +93,40 @@ class MemoryRubric(Rubric):
         """
         batched_rewards: List[Union[float, None]] = []
         
+        # Setup a dedicated log file for this specific rollout/persona if available
+        rollout_log_path = None
+        if rollout_id is not None:
+            rollout_log_dir = os.path.join(REWARD_LOG_DIR, f"rollout_{rollout_id}")
+            os.makedirs(rollout_log_dir, exist_ok=True)
+            rollout_log_path = os.path.join(rollout_log_dir, f"rewards.log")
+            
+            # Add a file handler for this specific rollout
+            rollout_handler = logging.FileHandler(rollout_log_path)
+            rollout_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+            logger.addHandler(rollout_handler)
+            
+            logger.info(f"Processing rewards for rollout_id={rollout_id}, persona_id={persona_id}, memory_path={memory_path}")
+        
         memory_dump_str = self._get_memory_dump_str(memory_path)
         
         # Log memory dump for debugging
         if rollout_id is not None and persona_id is not None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            log_path = os.path.join(REWARD_LOG_DIR, f"memory_dump_{rollout_id}_{persona_id}_{timestamp}.txt")
+            if isinstance(persona_id, list):
+                persona_id_str = "_".join(str(p) for p in persona_id)
+            else:
+                persona_id_str = str(persona_id)
+                
+            # Create a directory for this rollout
+            rollout_log_dir = os.path.join(REWARD_LOG_DIR, f"rollout_{rollout_id}")
+            os.makedirs(rollout_log_dir, exist_ok=True)
+            
+            # Save memory dump
+            memory_dump_path = os.path.join(rollout_log_dir, f"memory_dump_{persona_id_str}_{timestamp}.txt")
             try:
-                with open(log_path, 'w', encoding='utf-8') as f:
+                with open(memory_dump_path, 'w', encoding='utf-8') as f:
                     f.write(memory_dump_str)
+                logger.info(f"Saved memory dump to {memory_dump_path}")
             except Exception as e:
                 logger.error(f"Failed to write memory dump log: {e}")
 
@@ -134,10 +168,12 @@ class MemoryRubric(Rubric):
 
                 # Log facts being checked for reward calculation
                 if rollout_id is not None and persona_id is not None:
-                    facts_log_path = os.path.join(REWARD_LOG_DIR, f"facts_check_{rollout_id}_{persona_id}_{timestamp}.json")
+                    rollout_log_dir = os.path.join(REWARD_LOG_DIR, f"rollout_{rollout_id}")
+                    facts_log_path = os.path.join(rollout_log_dir, f"facts_check_{persona_id_str}_{timestamp}.json")
                     try:
                         with open(facts_log_path, 'w') as f:
                             json.dump([fact.model_dump() for fact in single_sample_facts_as_models], f, indent=2)
+                        logger.info(f"Saved facts to check to {facts_log_path}")
                     except Exception as e:
                         logger.error(f"Failed to write facts log: {e}")
 
@@ -146,11 +182,14 @@ class MemoryRubric(Rubric):
                 
                 # Log the reward call result
                 if rollout_id is not None and persona_id is not None:
-                    reward_log_path = os.path.join(REWARD_LOG_DIR, f"reward_{rollout_id}_{persona_id}_{timestamp}.txt")
+                    rollout_log_dir = os.path.join(REWARD_LOG_DIR, f"rollout_{rollout_id}")
+                    reward_log_path = os.path.join(rollout_log_dir, f"reward_{persona_id_str}_{timestamp}.txt")
                     try:
                         with open(reward_log_path, 'w') as f:
                             f.write(f"Reward: {reward_for_sample}\n")
                             f.write(f"Facts count: {len(single_sample_facts_as_models)}\n")
+                            f.write(f"Memory path: {memory_path}\n")
+                        logger.info(f"Saved reward info to {reward_log_path}")
                     except Exception as e:
                         logger.error(f"Failed to write reward log: {e}")
                 
@@ -159,15 +198,11 @@ class MemoryRubric(Rubric):
             except Exception as e:
                 logger.error(f"Error calculating reward for a sample in check_facts_reward_func: {e}")
                 batched_rewards.append(0.0) # Assign 0 reward for this sample due to error
+        
+        # Remove the rollout-specific handler if it was added
+        if rollout_id is not None:
+            # Remove the last handler which should be the rollout handler
+            if len(logger.handlers) > 1:
+                logger.removeHandler(logger.handlers[-1])
                 
         return batched_rewards
-
-# Example of how MemoryRubric might be used within an environment that processes one persona at a time
-# (Not directly used by GRPOTrainer in this way, GRPOTrainer calls the reward func directly with batches)
-# def evaluate_persona_completion(rubric: MemoryRubric, facts_for_persona: List[Fact]):
-#     # In a single-instance evaluation (not batch):
-#     # Here, facts_for_persona is List[Fact]
-#     # To call the batch-aware version, you'd wrap it:
-#     reward_list = rubric.check_facts_reward_func(facts_to_check=[facts_for_persona])
-#     return reward_list[0] if reward_list else 0.0
-                    
