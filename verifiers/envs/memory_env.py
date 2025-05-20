@@ -130,12 +130,6 @@ class ObsidianAgentEnv(MultiTurnEnv):
                     os.remove(item_path)
         create_memory_if_not_exists() # Recreate if it was removed
 
-    def get_reward_funcs(self, **kwargs: Any) -> List[RewardFunc]:
-        return self.rubric.get_reward_funcs()
-    
-    def get_reward_weights(self, **kwargs: Any) -> List[float]:
-        return self.rubric.get_reward_weights()
-
     def get_rewards(
         self, 
         batch_messages: List[List[Dict[str, str]]], # Trainer passes a batch of message histories
