@@ -257,46 +257,9 @@ class ObsidianAgentEnv(MultiTurnEnv):
                 execution_result_str = self.execute_python_code(code)
                 return {"role": "user", "content": execution_result_str}
             
-            # If agent gives an <answer> without python, and it's NOT the last turn of persona,
-            # we might want to prompt it to continue or use tools if appropriate.
-            # However, if `is_completed` handles the end-of-persona, this becomes simpler.
-            # If it's the last turn, `is_completed` will return True, and `get_rewards` is called.
-            # The flow doesn't necessarily need a special env_response for a non-tool answer.
-            # MultiTurnEnv will just proceed to the next turn (which would be a new persona or end).
-            
-            # If no python and no answer, or just thoughts.
-            # Prompt to take action or provide an answer.
-            # This can be a generic prompt if the agent is expected to always use python or provide a final answer.
-            # If the agent is just thinking, this response will be its next input.
             return {"role": "user", "content": "<result>\nPlease continue. You can use tools or provide a final answer if all tasks for the current user are complete.\n</result>"}
                 
         except Exception as e:
             # Log and handle any errors during parsing or execution
             print(f"Error in env_response: {e}")
             return {"role": "user", "content": f"<result>\nError processing your last turn: {str(e)}\n</result>"}
-
-    # Override _get_info if more specific info needs to be returned by step()
-    # The base class returns an empty dict.
-    def _get_info(self, **kwargs) -> Dict:
-        # This method is called by MultiTurnEnv.step without direct context of which trajectory
-        # in a batch it pertains to, if batching > 1.
-        # We use a cached value from the last processed turn in env_response or is_completed.
-        # This might not be perfectly accurate for all items in a batch if they are processed in parallel by MultiTurnEnv.
-        
-        if self._last_turn_data_for_info_cache:
-            turn_data = self._last_turn_data_for_info_cache
-            facts_to_check_count = len(turn_data.get("facts_to_check", []))
-            
-            # The turn_number from data_utils is 1-indexed for the persona's conversation
-            turn_in_persona = turn_data.get("turn_number", 0) 
-
-            return {
-                "persona_id": turn_data.get("persona_id"),
-                "turn_in_persona": turn_in_persona,
-                "is_last_turn_for_persona": turn_data.get("is_last_turn", False),
-                # "current_data_idx" is no longer relevant in this model.
-                "facts_for_persona_count": facts_to_check_count,
-                "status": "turn_info_from_cache"
-            }
-        
-        return {"status": "no_cached_turn_info", "last_processed_persona_id": self.last_processed_persona_id}
