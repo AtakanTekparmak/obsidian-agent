@@ -2,6 +2,8 @@ import inspect
 import json
 import os
 import shutil # For clearing memory_dir
+import threading # Added import
+import time # Added import time
 from typing import List, Dict, Any, Callable, Tuple, Optional
 
 from datasets import Dataset, load_dataset
@@ -76,6 +78,7 @@ class ObsidianAgentEnv(MultiTurnEnv):
         self.env_parser = XMLParser(fields=["result"]) # For parsing <result> tags if any
         self.rubric = MemoryRubric()
         self.num_generations = num_generations # Store num_generations
+        self.memory_clear_lock = threading.Lock() # Initialize lock
         
         create_memory_if_not_exists(MEMORY_PATH) # Pass MEMORY_PATH
         self.last_processed_persona_id: Optional[str] = None
@@ -130,15 +133,25 @@ class ObsidianAgentEnv(MultiTurnEnv):
         return self.rubric.get_reward_weights()
 
     def _clear_memory_dir(self):
-        """Clears the contents of the MEMORY_PATH directory."""
-        if os.path.exists(MEMORY_PATH):
-            for item in os.listdir(MEMORY_PATH):
-                item_path = os.path.join(MEMORY_PATH, item)
-                if os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
-                else:
-                    os.remove(item_path)
-        create_memory_if_not_exists() # Recreate if it was removed
+        """Clears the MEMORY_PATH directory by removing and recreating it, with retries."""
+        for attempt in range(3): # Try up to 3 times
+            if os.path.exists(MEMORY_PATH):
+                try:
+                    shutil.rmtree(MEMORY_PATH) # Remove the entire directory
+                    break # If successful, exit loop
+                except OSError as e:
+                    # self.logger.warning(f"Attempt {attempt + 1} to clear memory directory failed: {e}")
+                    if attempt < 2: # If not the last attempt
+                        time.sleep(0.5 * (attempt + 1)) # Wait 0.5s, then 1s
+                        continue
+                    else:
+                        # self.logger.error(f"Failed to clear memory directory {MEMORY_PATH} after multiple attempts.")
+                        raise # Re-raise the exception on the last attempt
+            else:
+                break # MEMORY_PATH doesn't exist, no need to clear or retry
+            
+        # Ensure the base directory is recreated fresh regardless of whether it existed or was just deleted.
+        create_memory_if_not_exists(MEMORY_PATH)
 
     def get_rewards(
         self, 
@@ -238,9 +251,12 @@ class ObsidianAgentEnv(MultiTurnEnv):
             current_persona_id = current_turn_data.get("persona_id")
 
         if current_persona_id and self.last_processed_persona_id != current_persona_id:
-            # self.logger.info(f"New persona '{current_persona_id}' detected (was '{self.last_processed_persona_id}'). Clearing base memory.")
-            self._clear_memory_dir() # Clears the base MEMORY_PATH
-            self.last_processed_persona_id = current_persona_id
+            with self.memory_clear_lock: # Use the lock
+                # Double-check the condition inside the lock to ensure atomicity
+                if self.last_processed_persona_id != current_persona_id: # Check again due to lock acquisition
+                    # self.logger.info(f"New persona '{current_persona_id}' detected (was '{self.last_processed_persona_id}'). Clearing base memory.")
+                    self._clear_memory_dir() # Clears the base MEMORY_PATH
+                    self.last_processed_persona_id = current_persona_id # Correctly placed
         
         # Determine effective memory path for this rollout
         if rollout_info and 'rollout_idx' in rollout_info:
