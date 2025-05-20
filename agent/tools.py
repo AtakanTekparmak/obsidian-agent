@@ -165,8 +165,8 @@ def go_to_link(link_string: str) -> str:
     except Exception as _:
         return "Error: File not found"
 
-def check_if_file_exists(file_path: str) -> bool:
+def check_if_path_exists(path: str) -> bool:
     """
-    Check if a file exists in the given filepath.
+    Check if a path exists in the memory.
     """
-    return os.path.exists(file_path)
+    return os.path.exists(path)

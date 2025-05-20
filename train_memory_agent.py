@@ -124,7 +124,7 @@ def main():
         eval_steps=20 if eval_ds else 0, # Example: evaluate every 100 steps
         save_strategy="steps",
         save_steps=20, # Example: save every 200 steps
-        logging_steps=10,
+        logging_steps=5,
         report_to="wandb", # if configured
         # vLLM server details if use_vllm=True
         vllm_server_host="0.0.0.0",

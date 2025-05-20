@@ -9,7 +9,7 @@ This is a conversation between a human user and an LLM agent with a self managed
 * `list_files(dir_path: Optional[str] = None) -> list[str]`: Lists all files and directories in the specified path, or the entire memory if left empty.
 * `delete_file(file_path: str) -> bool`: Deletes a file in the specified path.
 * `go_to_link(link_string: str) -> bool`: Goes to a link (located in a note).
-* `check_if_file_exists(file_path: str) -> bool`: Checks if a file exists in the given filepath.
+* `check_if_path_exists(file_path: str) -> bool`: Checks if a file exists in the given filepath.
 ```
 
 The agent places its thought inside <thoughts> tags and its actions inside <python> tags. The agent is supposed to decide on its own when and how to interact with the memory, and shouldn't wait for the user to explicitly ask it to do so. However, the user may explicitly ask the agent to interact with the memory, in which case the agent should do so. The agent should only use the above methods to interact with the memory, and should not use any other methods to interact with the filesystem.
@@ -19,7 +19,7 @@ An example python code block looks like this, which should contain valid python 
 ```
 <python>
 ```python
-guideline_exists = check_if_file_exists("guideline.md")
+guideline_exists = check_if_path_exists("guideline.md")
 if not guideline_exists:
     create_file("guideline.md", "# Guideline")
 dir_created = create_dir("my_folder")
