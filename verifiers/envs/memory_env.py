@@ -28,6 +28,8 @@ class ObsidianAgentEnv(MultiTurnEnv):
     """
     Environment for the Obsidian Agent interacting with conversations from convos.json.
     Each persona's conversation is treated as a trajectory.
+    Each turn within a persona's conversation is treated as a separate trajectory by MultiTurnEnv.
+    This class adapts ObsidianAgent to that model.
     """
     def __init__(
             self,
@@ -45,10 +47,21 @@ class ObsidianAgentEnv(MultiTurnEnv):
         
         # Load and preprocess the convos dataset
         # The dataset will be a flat list of turns, each with persona_id, facts_to_check, etc.
-        full_dataset = preprocess_dataset(name="convos", path=convos_dataset_path)
+        self.flat_dataset = preprocess_dataset(name="convos", path=convos_dataset_path)
+        
+        # Create a map for quick lookup of turn data by question
+        self.question_to_turn_data_map: Dict[str, Dict[str, Any]] = {}
+        for turn_data_item in self.flat_dataset:
+            question_content = turn_data_item.get("question")
+            if question_content:
+                self.question_to_turn_data_map[question_content] = turn_data_item
+            else:
+                # Handle cases where 'question' might be missing or empty if necessary
+                print(f"Warning: Turn data item found without a 'question' field: {turn_data_item}")
+
 
         super().__init__(
-            dataset=full_dataset, # Pass the full flat dataset
+            dataset=self.flat_dataset, # Pass the full flat dataset
             eval_dataset=None, # Or a separate eval slice if desired
             system_prompt=system_prompt,
             few_shot=few_shot,
@@ -63,12 +76,48 @@ class ObsidianAgentEnv(MultiTurnEnv):
         self.rubric = MemoryRubric()
         
         create_memory_if_not_exists()
-        self.current_persona_id: Optional[str] = None
-        self.current_persona_facts_to_check: List[Fact] = []
+        self.last_processed_persona_id: Optional[str] = None
+        self._last_turn_data_for_info_cache: Optional[Dict[str, Any]] = None
+
+        # Calculate the number of prefix messages (system prompt + few-shot examples)
+        self.num_prefix_messages = 0
+        if self.system_prompt:
+            self.num_prefix_messages += 1
+        if self.few_shot:
+            self.num_prefix_messages += len(self.few_shot)
+
+
+    def _get_turn_data(self, messages: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        """
+        Retrieves the turn-specific data from self.flat_dataset based on the initial user question in messages.
+        """
+        if not messages:
+            return None
+
+        # The actual user question is after system prompt and few-shot examples.
+        # MultiTurnEnv.format_dataset prepends these.
+        # messages[0] is system, messages[1...N] are few-shot, messages[N+1] is user question.
         
-        # Internal state for tracking progress through the flat dataset
-        self.current_data_idx = -1 # Index in the flat full_dataset
-        self.current_turn_in_persona = 0
+        initial_user_message_index = self.num_prefix_messages
+        
+        if len(messages) > initial_user_message_index and messages[initial_user_message_index]["role"] == "user":
+            user_question_content = messages[initial_user_message_index]["content"]
+            return self.question_to_turn_data_map.get(user_question_content)
+        
+        # Fallback: try to find first user message if indexing is off (should not happen with format_dataset)
+        for i, msg in enumerate(messages):
+            if msg["role"] == "user":
+                # Ensure this is the one matching an entry in our map (initial question)
+                # This fallback is less reliable if user can say the same thing later.
+                # The primary mechanism relies on knowing the structure from format_dataset.
+                if msg["content"] in self.question_to_turn_data_map:
+                     # Check if this user message is indeed the one at the expected position
+                    if i == initial_user_message_index:
+                        return self.question_to_turn_data_map[msg["content"]]
+        
+        # If no user message found at the expected position or via simple search
+        # self.logger.warning(f"Could not reliably identify user question to fetch turn data from messages: {messages}")
+        return None
 
     def _clear_memory_dir(self):
         """Clears the contents of the MEMORY_PATH directory."""
@@ -81,81 +130,57 @@ class ObsidianAgentEnv(MultiTurnEnv):
                     os.remove(item_path)
         create_memory_if_not_exists() # Recreate if it was removed
 
-    def reset_turn(self) -> Tuple[List[Dict[str, str]], Dict[str, Any]]:
-        """
-        Resets the environment for the next turn or next persona.
-        Loads the next user message for the current persona, or starts a new persona.
-        This is the primary method for advancing through the dataset and managing persona episodes.
-        """
-        self.current_data_idx += 1
-        
-        if self.current_data_idx >= len(self.dataset):
-            # End of dataset
-            self.done = True
-            # Return empty messages and info, or raise an error, or signal completion.
-            # MultiTurnEnv's main loop should handle self.done.
-            return [{"role": "system", "content": "End of dataset."}], {"status": "dataset_complete"}
-
-        current_turn_data = self.dataset[self.current_data_idx]
-        new_persona_id = current_turn_data["persona_id"]
-
-        if self.current_persona_id != new_persona_id:
-            # New persona encountered
-            self._clear_memory_dir()
-            self.current_persona_id = new_persona_id
-            self.current_turn_in_persona = 0
-            # Load facts for this new persona. They are stored per turn data point but are the same for all turns of a persona.
-            # Validate and store them as Fact objects.
-            raw_facts = current_turn_data.get("facts_to_check", [])
-            self.current_persona_facts_to_check = [Fact.model_validate(f) for f in raw_facts]
-        
-        self.current_turn_in_persona += 1
-        
-        # The 'question' from the dataset is the user's message for this turn
-        user_message = {"role": "user", "content": current_turn_data["question"]}
-        
-        # We need to construct the message history to send to the agent.
-        # If it's the first turn of a persona, it's just system + user_message.
-        # Otherwise, it's the existing self.messages + user_message.
-        # MultiTurnEnv's `self.messages` should handle history accumulation.
-        # This method's responsibility is to provide the *next* input.
-        # The base MultiTurnEnv's step() will append this user_message to self.messages.
-
-        # Info to be passed along, could include things like current persona_id for logging
-        info = {
-            "persona_id": self.current_persona_id,
-            "turn_in_persona": self.current_turn_in_persona,
-            "is_last_turn_for_persona": current_turn_data["is_last_turn"],
-            "current_data_idx": self.current_data_idx
-        }
-        
-        # The format_prompt function in MultiTurnEnv handles adding system prompt and few_shot.
-        # We just return the next user message here to be appended.
-        return [user_message], info
-
     def get_reward_funcs(self, **kwargs: Any) -> List[RewardFunc]:
         return self.rubric.get_reward_funcs()
     
     def get_reward_weights(self, **kwargs: Any) -> List[float]:
         return self.rubric.get_reward_weights()
 
-    def get_rewards(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, float]:
+    def get_rewards(
+        self, 
+        batch_messages: List[List[Dict[str, str]]], # Trainer passes a batch of message histories
+        **kwargs: Any
+    ) -> List[Dict[str, float]]:
         """
-        Calculates rewards at the end of a persona's trajectory.
-        This is called when is_completed returns True for the current persona.
+        Calculates rewards for a batch of completed trajectories.
+        Each trajectory corresponds to a single turn from the convos.json.
+        Rewards are based on facts_to_check for the persona of that turn.
         """
-        # This check ensures rewards are calculated only when a persona's dialogue is complete.
-        # It relies on `is_completed` correctly identifying the end of a persona's session.
-        if self.current_persona_facts_to_check:
-            # The `check_facts_reward_func` from MemoryRubric expects the full completion history
-            # for the persona and the facts to check for *that specific persona*.
-            # `messages` here is the accumulated conversation for the current persona.
-            reward_val = self.rubric.check_facts_reward_func(
-                completion_history=messages, # Pass the history
-                facts_to_check=self.current_persona_facts_to_check
-            )
-            return {"memory_fact_check": reward_val}
-        return {"memory_fact_check": 0.0} # No facts to check or error
+        batch_facts_to_check: List[List[Dict[str, Any]]] = []
+        processed_successfully_flags: List[bool] = []
+
+        for messages in batch_messages:
+            turn_data = self._get_turn_data(messages)
+            if turn_data and "facts_to_check" in turn_data:
+                # facts_to_check from data_utils is already List[Dict] (serialized Fact models)
+                facts_for_current_turn_persona = turn_data["facts_to_check"]
+                batch_facts_to_check.append(facts_for_current_turn_persona)
+                processed_successfully_flags.append(True)
+            else:
+                # Add empty list if no facts or turn_data not found, to maintain batch alignment
+                batch_facts_to_check.append([]) 
+                processed_successfully_flags.append(False)
+                # self.logger.warning(f"Could not find turn_data or facts_to_check for messages: {messages}")
+
+        # MemoryRubric.check_facts_reward_func expects List[List[Dict]] for facts_to_check
+        # and List[List[Dict[str,str]]] for completion_history (batch_messages)
+        # It returns a List[Union[float, None]]
+        # This call assumes completion_history is batch_messages, but rubric might only need it for context
+        # or might not use it if facts are directly provided. Let's pass it.
+        rubric_rewards_list = self.rubric.check_facts_reward_func(
+            completion_history=batch_messages, # Rubric might not use this if facts are primary
+            facts_to_check=batch_facts_to_check
+        )
+        
+        output_rewards: List[Dict[str, float]] = []
+        for i, reward_val in enumerate(rubric_rewards_list):
+            if processed_successfully_flags[i] and reward_val is not None:
+                output_rewards.append({"memory_fact_check": float(reward_val)})
+            else:
+                # Assign 0.0 if data wasn't found or rubric returned None
+                output_rewards.append({"memory_fact_check": 0.0})
+        
+        return output_rewards
 
     def execute_python_code(self, code: str) -> str:
         """
@@ -183,45 +208,37 @@ class ObsidianAgentEnv(MultiTurnEnv):
         
     def is_completed(self, messages: List[Dict[str, str]], **kwargs: Any) -> bool:
         """
-        Determines if the current persona's conversation has been completed.
+        Determines if the current trajectory (a single turn from convos.json) is completed.
+        This is true if the 'is_last_turn' flag for this turn's data is true.
         """
-        # Check if we have processed a turn from the dataset
-        if self.current_data_idx < 0 or self.current_data_idx >= len(self.dataset):
-            return True # No data loaded or past end of data
+        turn_data = self._get_turn_data(messages)
+        self._last_turn_data_for_info_cache = turn_data # Cache for _get_info
 
-        current_turn_data = self.dataset[self.current_data_idx]
+        if turn_data:
+            return turn_data.get("is_last_turn", True) # Default to True if key missing
         
-        # The trajectory for a persona is complete if 'is_last_turn' is true for the current data point.
-        if current_turn_data["is_last_turn"]:
-            return True
-            
-        # Optional: Add max_steps check *within* a persona if self.max_steps is set meaningfully
-        if self.max_steps and self.max_steps > 0: # max_steps from MultiTurnEnv constructor
-             # We need a way to count assistant turns *for the current persona*
-             # This is tricky as `messages` is the full history up to this point for the persona.
-             # A simpler approach is to rely on `is_last_turn` from data.
-             # If `self.max_steps` (from `MultiTurnEnv`) is used, it might prematurely end a persona.
-             # For now, let's prioritize `is_last_turn`.
-             pass
-
-        # If the agent provides a final answer (e.g., via <answer> tag and no python)
-        # this could also signify completion, but `is_last_turn` is more deterministic here.
-        # last_assistant_msg = next((msg for msg in reversed(messages) if msg["role"] == "assistant"), None)
-        # if last_assistant_msg:
-        #     parsed = self.llm_parser.parse(last_assistant_msg["content"])
-        #     if hasattr(parsed, "answer") and parsed.answer is not None and \
-        #        (not hasattr(parsed, "python") or parsed.python is None):
-        #         # If this logic is enabled, ensure it aligns with `is_last_turn`
-        #         # or decide which takes precedence.
-        #         # return True 
-        #         pass
-                
-        return False
+        # self.logger.warning(f"is_completed: Could not find turn_data for messages: {messages}. Assuming completed.")
+        return True # If turn_data couldn't be found, end the trajectory.
     
     def env_response(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, str]:
         """
         Generates the environment's response based on the model's last action (typically Python code execution).
+        Also handles memory clearing when a new persona is encountered.
         """
+        # Memory clearing logic:
+        # This needs to be done carefully if MultiTurnEnv processes batches with mixed personas concurrently.
+        # Assuming for now that either batch size is 1, or personas are not mixed in concurrent execution segments
+        # impacting self.last_processed_persona_id.
+        current_turn_data = self._get_turn_data(messages)
+        self._last_turn_data_for_info_cache = current_turn_data # Cache for _get_info
+
+        if current_turn_data:
+            current_persona_id = current_turn_data.get("persona_id")
+            if current_persona_id and self.last_processed_persona_id != current_persona_id:
+                # self.logger.info(f"New persona '{current_persona_id}' detected (was '{self.last_processed_persona_id}'). Clearing memory.")
+                self._clear_memory_dir()
+                self.last_processed_persona_id = current_persona_id
+        
         last_msg = messages[-1]
         if last_msg["role"] != "assistant":
             # This case should ideally be handled by the MultiTurnEnv logic or raise an error.
@@ -231,8 +248,13 @@ class ObsidianAgentEnv(MultiTurnEnv):
             parsed = self.llm_parser.parse(last_msg["content"])
             
             if hasattr(parsed, "python") and parsed.python is not None:
+                # Get the code from the "```python" and "```" tags
+                if "```python" in parsed.python and "```" in parsed.python:
+                    code = parsed.python.split("```python")[1].split("```")[0]
+                else:
+                    code = parsed.python
                 # Execute the Python code
-                execution_result_str = self.execute_python_code(parsed.python)
+                execution_result_str = self.execute_python_code(code)
                 return {"role": "user", "content": execution_result_str}
             
             # If agent gives an <answer> without python, and it's NOT the last turn of persona,
@@ -256,32 +278,25 @@ class ObsidianAgentEnv(MultiTurnEnv):
     # Override _get_info if more specific info needs to be returned by step()
     # The base class returns an empty dict.
     def _get_info(self, **kwargs) -> Dict:
-        if self.current_data_idx < 0 or self.current_data_idx >= len(self.dataset):
-            return {"status": "dataset_complete"}
+        # This method is called by MultiTurnEnv.step without direct context of which trajectory
+        # in a batch it pertains to, if batching > 1.
+        # We use a cached value from the last processed turn in env_response or is_completed.
+        # This might not be perfectly accurate for all items in a batch if they are processed in parallel by MultiTurnEnv.
         
-        current_turn_data = self.dataset[self.current_data_idx]
-        return {
-            "persona_id": self.current_persona_id,
-            "turn_in_persona": self.current_turn_in_persona,
-            "is_last_turn_for_persona": current_turn_data["is_last_turn"],
-            "current_data_idx": self.current_data_idx,
-            "facts_for_persona_count": len(self.current_persona_facts_to_check)
-        }
-
-    # Override get_termination_reason if needed.
-    # Base class returns None or a generic reason if max_steps hit.
-    def get_termination_reason(self, messages: List[Dict[str, str]], **kwargs: Any) -> Optional[str]:
-        if self.done: # Set in reset_turn when dataset ends
-             return "Dataset completed."
-        
-        if self.current_data_idx >= 0 and self.current_data_idx < len(self.dataset):
-            current_turn_data = self.dataset[self.current_data_idx]
-            if current_turn_data["is_last_turn"]:
-                return f"Completed all turns for persona: {self.current_persona_id}."
-        
-        # If MultiTurnEnv's max_steps is used and hit:
-        # step_count = self._get_step_count(messages) # Assuming _get_step_count counts assistant turns
-        # if self.max_steps and self.max_steps > 0 and step_count >= self.max_steps:
-        #    return f"Reached max_steps ({self.max_steps}) for persona."
+        if self._last_turn_data_for_info_cache:
+            turn_data = self._last_turn_data_for_info_cache
+            facts_to_check_count = len(turn_data.get("facts_to_check", []))
             
-        return None # No specific termination reason other than what base class might determine
+            # The turn_number from data_utils is 1-indexed for the persona's conversation
+            turn_in_persona = turn_data.get("turn_number", 0) 
+
+            return {
+                "persona_id": turn_data.get("persona_id"),
+                "turn_in_persona": turn_in_persona,
+                "is_last_turn_for_persona": turn_data.get("is_last_turn", False),
+                # "current_data_idx" is no longer relevant in this model.
+                "facts_for_persona_count": facts_to_check_count,
+                "status": "turn_info_from_cache"
+            }
+        
+        return {"status": "no_cached_turn_info", "last_processed_persona_id": self.last_processed_persona_id}
