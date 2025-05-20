@@ -121,6 +121,14 @@ class ObsidianAgentEnv(MultiTurnEnv):
         # self.logger.warning(f"Could not reliably identify user question to fetch turn data from messages: {messages}")
         return None
 
+    def get_reward_funcs(self) -> List[Callable]:
+        """Delegates to the rubric's get_reward_funcs method."""
+        return self.rubric.get_reward_funcs()
+
+    def get_reward_weights(self) -> List[float]:
+        """Delegates to the rubric's get_reward_weights method."""
+        return self.rubric.get_reward_weights()
+
     def _clear_memory_dir(self):
         """Clears the contents of the MEMORY_PATH directory."""
         if os.path.exists(MEMORY_PATH):
