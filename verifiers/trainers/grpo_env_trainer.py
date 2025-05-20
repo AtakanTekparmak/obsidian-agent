@@ -1,5 +1,6 @@
 import warnings
 from typing import Callable, Optional, Union, Any, List
+import os
 
 from accelerate.utils import broadcast_object_list, gather, gather_object
 from datasets import Dataset, IterableDataset
@@ -18,6 +19,7 @@ from verifiers.envs.environment import Environment
 from verifiers.utils.logging_utils import print_prompt_completions_sample
 from verifiers.imports import LLM, SamplingParams
 from verifiers.inference.vllm_client import VLLMClient
+from agent.settings import MEMORY_PATH
 
 # monkey patch vllm client
 import trl.extras.vllm_client
@@ -187,6 +189,10 @@ class GRPOEnvTrainer(GRPOTrainer):
             # Repeat all input columns (but "prompt" and "completion") to match the number of generations
             keys = [key for key in inputs[0] if key not in ["prompt", "completion"]] # type: ignore
             reward_kwargs = {key: [example[key] for example in inputs] for key in keys} # type: ignore
+            
+            current_batch_memory_paths = [os.path.join(MEMORY_PATH, f"rollout_{i % self.args.num_generations}") for i in range(len(prompts))]
+            reward_kwargs["memory_paths"] = current_batch_memory_paths
+            
             output_reward_func = reward_func(prompts=prompts, completions=completions, **reward_kwargs) # type: ignore
             
             output_reward_func = [reward if reward is not None else torch.nan for reward in output_reward_func]

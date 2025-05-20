@@ -52,12 +52,12 @@ def check_size_limits(file_or_dir_path: str) -> bool:
     else:
         return False
     
-def create_memory_if_not_exists() -> None:
+def create_memory_if_not_exists(path: str = MEMORY_PATH):
     """
     Create the memory if it doesn't exist.
     """
-    if not os.path.exists(MEMORY_PATH):
-        os.makedirs(MEMORY_PATH)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 def delete_memory() -> None:
     """

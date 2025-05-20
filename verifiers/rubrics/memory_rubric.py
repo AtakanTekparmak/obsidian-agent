@@ -30,25 +30,25 @@ class MemoryRubric(Rubric):
         # Corresponding weight for the reward function.
         return [1.0]
     
-    def _get_memory_dump_str(self) -> str:
+    def _get_memory_dump_str(self, memory_path_to_dump: str) -> str:
         """
         Uses dump_folder from training.reward to get the memory dump string.
             
         Returns:
             The memory dump as a string.
         """
-        memory_path = "memory_dir" # Should align with agent.settings.MEMORY_PATH
-        if not os.path.exists(memory_path):
+        if not os.path.exists(memory_path_to_dump):
             # Ensure the directory exists before dumping, or dump_folder might error
             # or return an empty/irrelevant dump for a non-existent path.
             # Depending on dump_folder behavior, might return empty or specific message.
             return "" # Return empty string if memory_dir doesn't exist
         
-        return dump_folder(memory_path)
+        return dump_folder(memory_path_to_dump)
         
     def check_facts_reward_func(
             self,
             facts_to_check: List[List[Dict]], # Expecting List of Lists of Dictionaries now
+            memory_paths: List[str], # Added memory_paths
             # Other batch-level args like prompts, completions are in **kwargs if needed by other funcs
             **kwargs 
     ) -> List[Union[float, None]]: # Must return a list of rewards, one per batch item
@@ -59,6 +59,7 @@ class MemoryRubric(Rubric):
         Args:
             facts_to_check: A list where each element is a List of Dictionaries,
                             each dictionary representing a Fact, for a specific sample in the batch.
+            memory_paths: A list of paths to memory directories for each sample in the batch.
             **kwargs: Absorbs other arguments passed by the trainer like 'prompts', 'completions'.
             
         Returns:
@@ -66,9 +67,7 @@ class MemoryRubric(Rubric):
         """
         batched_rewards: List[Union[float, None]] = []
         
-        memory_dump_str = self._get_memory_dump_str()
-
-        for single_sample_facts_as_dicts in facts_to_check: # Iterate over each sample in the batch
+        for i, single_sample_facts_as_dicts in enumerate(facts_to_check): # Iterate over each sample in the batch, get index i
             if not isinstance(single_sample_facts_as_dicts, list):
                 print(f"Warning in check_facts_reward_func: Expected List[Dict] for a sample, but got {type(single_sample_facts_as_dicts)}. Assigning 0.0 reward for this sample.")
                 batched_rewards.append(0.0)
@@ -78,6 +77,10 @@ class MemoryRubric(Rubric):
                 batched_rewards.append(0.0)
                 continue
             
+            # Get memory dump for this specific sample using its memory_paths entry
+            current_sample_memory_path = memory_paths[i]
+            memory_dump_str = self._get_memory_dump_str(current_sample_memory_path)
+
             if not memory_dump_str: # If memory dump is empty, no facts can be found.
                 batched_rewards.append(0.0)
                 continue

@@ -104,6 +104,7 @@ def main():
         # system_prompt=MEMORY_AGENT_PROMPT, # Uses its own default MEMORY_AGENT_PROMPT
         # few_shot=[], # Add if needed
         # sampling_args, max_steps, etc. can be configured if defaults are not suitable
+        num_generations=args.num_generations
     )
 
     grpo_config = GRPOConfig(

@@ -42,6 +42,7 @@ class ObsidianAgentEnv(MultiTurnEnv):
             },
             mask_env_response: bool = MASK_ENV_RESPONSE,
             max_steps: Optional[int] = None, # Max steps per persona if needed, else full convo
+            num_generations: int = 1, # Added num_generations
             **kwargs: Any
         ):
         
@@ -74,8 +75,9 @@ class ObsidianAgentEnv(MultiTurnEnv):
         self.llm_parser = XMLParser(fields=["thoughts", ("python", "answer")])
         self.env_parser = XMLParser(fields=["result"]) # For parsing <result> tags if any
         self.rubric = MemoryRubric()
+        self.num_generations = num_generations # Store num_generations
         
-        create_memory_if_not_exists()
+        create_memory_if_not_exists(MEMORY_PATH) # Pass MEMORY_PATH
         self.last_processed_persona_id: Optional[str] = None
         self._last_turn_data_for_info_cache: Optional[Dict[str, Any]] = None
 
@@ -176,16 +178,16 @@ class ObsidianAgentEnv(MultiTurnEnv):
         
         return output_rewards
 
-    def execute_python_code(self, code: str) -> str:
+    def execute_python_code(self, code: str, current_memory_path: str) -> str:
         """
         Execute the given python code in a sandboxed environment.
         """
         # Ensure memory exists (though it should from __init__ and _clear_memory_dir)
-        create_memory_if_not_exists() 
+        create_memory_if_not_exists(current_memory_path) # Use current_memory_path
         
         locals_dict, error = execute_sandboxed_code(
             code=code,
-            allowed_path=MEMORY_PATH,
+            allowed_path=current_memory_path, # Use current_memory_path
             import_module=TOOLS_MODULE 
         )
         
@@ -214,24 +216,40 @@ class ObsidianAgentEnv(MultiTurnEnv):
         # self.logger.warning(f"is_completed: Could not find turn_data for messages: {messages}. Assuming completed.")
         return True # If turn_data couldn't be found, end the trajectory.
     
-    def env_response(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, str]:
+    def env_response(self, messages: List[Dict[str, str]], rollout_info: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Dict[str, str]:
         """
         Generates the environment's response based on the model's last action (typically Python code execution).
         Also handles memory clearing when a new persona is encountered.
         """
         # Memory clearing logic:
-        # This needs to be done carefully if MultiTurnEnv processes batches with mixed personas concurrently.
-        # Assuming for now that either batch size is 1, or personas are not mixed in concurrent execution segments
-        # impacting self.last_processed_persona_id.
         current_turn_data = self._get_turn_data(messages)
         self._last_turn_data_for_info_cache = current_turn_data # Cache for _get_info
 
+        current_persona_id = None
         if current_turn_data:
             current_persona_id = current_turn_data.get("persona_id")
-            if current_persona_id and self.last_processed_persona_id != current_persona_id:
-                # self.logger.info(f"New persona '{current_persona_id}' detected (was '{self.last_processed_persona_id}'). Clearing memory.")
-                self._clear_memory_dir()
-                self.last_processed_persona_id = current_persona_id
+
+        if current_persona_id and self.last_processed_persona_id != current_persona_id:
+            # self.logger.info(f"New persona '{current_persona_id}' detected (was '{self.last_processed_persona_id}'). Clearing base memory.")
+            self._clear_memory_dir() # Clears the base MEMORY_PATH
+            self.last_processed_persona_id = current_persona_id
+        
+        # Determine effective memory path for this rollout
+        if rollout_info and 'rollout_idx' in rollout_info:
+            # Ensure rollout_idx is valid and self.num_generations is positive
+            if self.num_generations > 0:
+                 effective_rollout_idx = rollout_info['rollout_idx'] % self.num_generations
+            else: # Fallback if num_generations is not set or zero, though it should be.
+                 effective_rollout_idx = rollout_info['rollout_idx']
+            effective_memory_path = os.path.join(MEMORY_PATH, f"rollout_{effective_rollout_idx}")
+        else:
+            # Fallback if rollout_info is not available (e.g., during initial setup or non-GRPO use)
+            # This could also point to a default shared path or a single rollout_0 path.
+            # For safety, let's default to a general path or the base MEMORY_PATH if not in rollout context.
+            # Consider if a warning is needed here if rollouts are expected.
+            effective_memory_path = MEMORY_PATH # Or os.path.join(MEMORY_PATH, "rollout_default")
+
+        create_memory_if_not_exists(effective_memory_path) # Ensure this specific rollout's subfolder exists
         
         last_msg = messages[-1]
         if last_msg["role"] != "assistant":
@@ -248,7 +266,7 @@ class ObsidianAgentEnv(MultiTurnEnv):
                 else:
                     code = parsed.python
                 # Execute the Python code
-                execution_result_str = self.execute_python_code(code)
+                execution_result_str = self.execute_python_code(code, current_memory_path=effective_memory_path)
                 return {"role": "user", "content": execution_result_str}
             
             return {"role": "user", "content": "<result>\nPlease continue. You can use tools or provide a final answer if all tasks for the current user are complete.\n</result>"}
