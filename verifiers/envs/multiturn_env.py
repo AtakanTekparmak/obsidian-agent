@@ -169,7 +169,7 @@ class MultiTurnEnv(Environment):
                 state["completion_ids"] = state["completion_ids"][:sampling_params.max_tokens]
                 state["completion_mask"] = state["completion_mask"][:len(state["completion_ids"])]
             else:
-                state["messages"].append(self.env_response(state["messages"]))
+                state["messages"].append(self.env_response(state["messages"], rollout_info={'rollout_idx': state['rollout_idx']}))
 
             # enforce that the completion mask and completion ids are the same length
             # weird bug that happens rarely and only for certain models; something tokenizer related :(
@@ -210,8 +210,9 @@ class MultiTurnEnv(Environment):
             "prompt_ids": [],
             "completed": False,
             "completion_ids": [],
-            "completion_mask": []
-        } for m in prompts]
+            "completion_mask": [],
+            "rollout_idx": i
+        } for i, m in enumerate(prompts)]
 
         # main loop
         while not all_completed:

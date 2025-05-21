@@ -104,6 +104,7 @@ def main():
         # system_prompt=MEMORY_AGENT_PROMPT, # Uses its own default MEMORY_AGENT_PROMPT
         # few_shot=[], # Add if needed
         # sampling_args, max_steps, etc. can be configured if defaults are not suitable
+        num_generations=args.num_generations
     )
 
     grpo_config = GRPOConfig(
@@ -123,7 +124,7 @@ def main():
         eval_steps=20 if eval_ds else 0, # Example: evaluate every 100 steps
         save_strategy="steps",
         save_steps=20, # Example: save every 200 steps
-        logging_steps=10,
+        logging_steps=5,
         report_to="wandb", # if configured
         # vLLM server details if use_vllm=True
         vllm_server_host="0.0.0.0",

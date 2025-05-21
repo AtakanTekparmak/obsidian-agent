@@ -170,3 +170,10 @@ def check_if_file_exists(file_path: str) -> bool:
     Check if a file exists in the given filepath.
     """
     return os.path.exists(file_path)
+
+def check_if_dir_exists(dir_path: str) -> bool:
+    """
+    Check if a directory exists in the given filepath.
+    """
+    return os.path.exists(dir_path)
+

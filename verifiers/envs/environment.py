@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Sequence, Callable
+from typing import Any, Dict, List, Sequence, Callable, Optional
 import logging
 
 from datasets import Dataset
@@ -37,6 +37,10 @@ class Environment(ABC):
     def get_reward_weights(self, **kwargs: Any) -> List[float]:
         pass
     
+    @abstractmethod
+    def env_response(self, messages: List[Dict[str, str]], rollout_info: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Dict[str, str]:
+        pass
+
     @abstractmethod
     def generate(self,
                  prompts: List[List[Dict[str, Any]]],
