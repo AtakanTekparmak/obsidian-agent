@@ -4,8 +4,10 @@ import os
 
 from pydantic import BaseModel
 
-from data.settings import OUTPUT_PATH, KB_PATH
+from data.settings import OUTPUT_PATH, KB_PATH, CONVO_PATH
 from data.schemas.kb import KnowledgeBase
+from data.schemas.convo import MultiTurnConvos
+
 def save_pydantic_to_json(model: BaseModel, filepath: str) -> None:
     """
     Save a Pydantic model to a JSON file.
@@ -38,6 +40,21 @@ def load_kb_from_json(filepath: str = os.path.join(OUTPUT_PATH, KB_PATH, "kb.jso
         with open(filepath, "r") as f:
             data = json.load(f)
         return KnowledgeBase.model_validate(data)
+    except IOError as e:
+        print(f"Error loading file {filepath}: {e}")
+        raise
+
+def load_convos_from_json(filepath: str = os.path.join(OUTPUT_PATH, CONVO_PATH, "convos.json")) -> MultiTurnConvos:
+    """
+    Load a MultiTurnConvos object from a JSON file.
+
+    Args:
+        filepath: The path to the JSON file
+    """
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+        return MultiTurnConvos.model_validate(data)
     except IOError as e:
         print(f"Error loading file {filepath}: {e}")
         raise

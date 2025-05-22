@@ -2,3 +2,4 @@ from .generate_personas import generate_personas
 from .generate_stories import generate_momentary_stories
 from .generate_kb import generate_kb
 from .generate_multiturn import generate_multiturn_convos
+from .generate_sft import generate_sft
