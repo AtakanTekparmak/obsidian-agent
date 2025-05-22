@@ -1,23 +1,10 @@
-from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from data.schemas.base import BaseSchema
 from data.schemas.personas import Persona
-from data.schemas.stories import MomentaryPersonaStory
-
-
-class PersonaWithStories(BaseSchema):
-    persona: Persona
-    stories: List[MomentaryPersonaStory]
-
-
-class PersonasWithStories(BaseSchema):
-    personas: List[PersonaWithStories]
-
 
 class Fact(BaseSchema):
-    fact_description_or_change: str
-    timestamp: Optional[datetime] = None
+    fact_description: str
 
 
 class PersonalFact(BaseSchema):
@@ -30,7 +17,7 @@ class PersonalFacts(BaseSchema):
 
 
 class KnowledgeBaseItem(BaseSchema):
-    persona_with_stories: PersonaWithStories
+    persona: Persona
     facts: List[Fact]
 
 

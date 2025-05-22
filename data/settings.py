@@ -17,6 +17,7 @@ OPENROUTER_STRONG_MODEL = "google/gemini-2.5-pro-preview-03-25"
 # OpenAI
 GPT_4O = "gpt-4o-2024-11-20"
 O4_MINI = "o4-mini-2025-04-16"
+GPT_4_5 = "gpt-4.5-preview-2025-02-27"
 
 # File paths
 OUTPUT_PATH = "output"

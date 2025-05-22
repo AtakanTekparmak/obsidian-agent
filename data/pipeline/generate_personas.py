@@ -1,7 +1,7 @@
 import os
 
 from data.model import get_model_response
-from data.settings import OUTPUT_PATH, PERSONAS_PATH, O4_MINI
+from data.settings import OUTPUT_PATH, PERSONAS_PATH, GPT_4_5
 from data.utils import save_pydantic_to_json
 from data.schemas.personas import Personas  
 
@@ -25,7 +25,11 @@ def generate_personas(
 
     # Generate personas
     print("Generating personas...")
-    response = get_model_response(Personas, prompt, O4_MINI)
+    response = get_model_response(
+        schema=Personas,
+        prompt=prompt,
+        model=GPT_4_5
+    )
 
     if save:
         output_path = os.path.join(OUTPUT_PATH, PERSONAS_PATH)

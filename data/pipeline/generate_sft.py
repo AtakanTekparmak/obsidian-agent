@@ -18,7 +18,7 @@ You have the following stories:
 
 You will be conversing with an LLM assistant that has a self managed, Obsidian-like memory system. Your goal is to have a natural conversation with the LLM assistant, while also providing the LLM assistant with information about yourself (without being too obvious about it). You should not be too direct/forthcoming about the information you're trying to provide, and you should only provide information if you think it can be relevant to the conversation. You necessarily don't need to provide all the information about yourself, but have a genuine every day conversation with the LLM assistant while providing the assistant with some information that can be relevant to the conversation.
 
-You should start the conversation now. Don't be verbose, don't forget the LLM assistant is an AI assistant.
+You should start the conversation now. Don't be verbose, don't forget the LLM assistant is an AI assistant. Don't say more than 2 sentences at a time, that number is absolute. 
 """
 
 class PersonaModel():

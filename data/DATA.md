@@ -2,9 +2,15 @@
 
 ### Data Generation Steps
 
-```
-Personas -> Momentary Stories -> KB -> Multi-turn convo
-                                  L -> QA 
+```mermaid
+graph TD
+    Node_Personas[Personas] --> Node_Stories[Momentary Stories];
+    Node_Personas --> Node_KB[Knowledge Base];
+    Node_Personas --> Node_Facts[Facts];
+    Node_Stories  --> Node_Facts;
+    Node_Stories  --> Node_KB;
+    Node_Facts    --> Node_KB;
+    Node_KB       --> Node_MTC[Multi-turn Convos];
 ```
 
 #### Personas
