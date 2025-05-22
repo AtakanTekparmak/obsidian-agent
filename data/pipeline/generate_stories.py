@@ -32,7 +32,7 @@ def generate_momentary_stories(
     if save:
         output_path = os.path.join(OUTPUT_PATH, STORIES_PATH)
         os.makedirs(output_path, exist_ok=True)
-        file_path = os.path.join(output_path, "momentary_stories.json")
+        file_path = os.path.join(output_path, "stories.json")
         save_pydantic_to_json(response, file_path)
 
     return response
