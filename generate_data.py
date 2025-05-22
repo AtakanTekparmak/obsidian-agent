@@ -11,9 +11,8 @@ def main():
     multiturn_convos = generate_multiturn_convos(kb, save=True) 
     generate_sft(multiturn_convos)
     """
-    personas = load_personas_from_json()
-    stories = load_stories_from_json()
-    kb = generate_kb(personas, stories, save=True)
+    kb = load_kb_from_json()
+    generate_sft(kb, num_turns=10)
 
 if __name__ == "__main__":
     main()
