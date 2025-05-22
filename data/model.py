@@ -1,14 +1,12 @@
-from google import genai
+from openai import OpenAI
 from pydantic import BaseModel
 
-from data.settings import GEMINI_API_KEY
-
 # Initialize the client
-CLIENT = genai.Client(api_key=GEMINI_API_KEY)
+CLIENT = OpenAI()
 
 def get_model_response(schema: BaseModel, prompt: str, model: str) -> BaseModel:
     """
-    Get a structured response from the Gemini model
+    Get a structured response from the OpenAI model
 
     Args:
         schema: The schema of the response
@@ -18,13 +16,12 @@ def get_model_response(schema: BaseModel, prompt: str, model: str) -> BaseModel:
     Returns:
         The structured response
     """
-    response = CLIENT.models.generate_content(
+    response = CLIENT.responses.parse(
         model=model,
-        contents=prompt,
-        config={
-            'response_mime_type': 'application/json',
-            'response_schema': schema,
-        },
+        input=[
+            {"role": "user", "content": prompt}
+        ],
+        text_format=schema
     )
 
-    return response.parsed
+    return response.output_parsed   

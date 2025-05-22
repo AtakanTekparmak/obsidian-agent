@@ -2,7 +2,7 @@ from typing import List
 import os
 
 from data.model import get_model_response
-from data.settings import OUTPUT_PATH, STORIES_PATH, GEMINI_PRO
+from data.settings import OUTPUT_PATH, STORIES_PATH, O4_MINI
 from data.utils import save_pydantic_to_json
 from data.schemas.personas import Persona
 from data.schemas.stories import MomentaryStories
@@ -27,7 +27,7 @@ def generate_momentary_stories(
 
     # Generate stories
     print("Generating stories...")
-    response = get_model_response(MomentaryStories, prompt, GEMINI_PRO)
+    response = get_model_response(MomentaryStories, prompt, O4_MINI)
 
     if save:
         output_path = os.path.join(OUTPUT_PATH, STORIES_PATH)
