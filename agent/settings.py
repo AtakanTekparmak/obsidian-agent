@@ -20,3 +20,4 @@ SANDBOX_TIMEOUT = 20
 
 # Path settings
 SYSTEM_PROMPT_PATH = "agent/system_prompt.txt"
+SAVE_CONVERSATION_PATH = "output/conversations/"

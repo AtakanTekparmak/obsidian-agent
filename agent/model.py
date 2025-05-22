@@ -12,7 +12,7 @@ CLIENT =  OpenAI(
     base_url = OPENROUTER_BASE_URL,
 )
 
-def _as_dict(msg: ChatMessage | dict) -> dict:
+def _as_dict(msg: Union[ChatMessage, dict]) -> dict:
     """
     Accept either ChatMessage or raw dict and return the raw dict.
 

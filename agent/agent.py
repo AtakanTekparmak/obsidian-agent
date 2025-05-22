@@ -1,10 +1,14 @@
 from agent.engine import execute_sandboxed_code
 from agent.model import get_model_response
 from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
-from agent.settings import MEMORY_PATH
+from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH
 from agent.schemas import ChatMessage, Role, AgentResponse, UnifiedAgentTurn
 
 from typing import Union
+
+import json
+import os
+import uuid
 
 class Agent:
     def __init__(self):
@@ -64,3 +68,22 @@ class Agent:
             execution_result=result,
             agent_response_2=response_2
         )
+
+    def save_conversation(self):
+        """
+        Save the conversation messages to a JSON file in
+        the output/conversations directory.
+        """
+        if not os.path.exists(SAVE_CONVERSATION_PATH):
+            os.makedirs(SAVE_CONVERSATION_PATH, exist_ok=True)
+
+        unique_id = uuid.uuid4()
+        file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
+
+        try:
+            with open(file_path, "w") as f:
+                json.dump([message.model_dump() for message in self.messages], f, indent=4)
+        except Exception as e:
+            print(f"Error saving conversation: {e}")
+        
+        print(f"Conversation saved to {file_path}")
