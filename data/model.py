@@ -1,27 +1,42 @@
 from openai import OpenAI
 from pydantic import BaseModel
 
-# Initialize the client
-CLIENT = OpenAI()
+from data.settings import OPENROUTER_BASE_URL, OPENROUTER_API_KEY
 
-def get_model_response(schema: BaseModel, prompt: str, model: str) -> BaseModel:
+# Initialize the client
+CLIENT =  OpenAI(
+    api_key = OPENROUTER_API_KEY,
+    base_url = OPENROUTER_BASE_URL,
+)
+
+def get_model_response(
+        prompt: str,
+        schema: BaseModel,
+        model: str 
+) -> BaseModel:
     """
-    Get a structured response from the OpenAI model
+    Get a response from a model using OpenRouter, with schema for structured output.
 
     Args:
-        schema: The schema of the response
-        prompt: The prompt to send to the model
-        model: The model to use
+        prompt: The user prompt
+        schema: A Pydantic BaseModel for structured output.
+        model: The model to use.
 
     Returns:
-        The structured response
+        A BaseModel object.
     """
-    response = CLIENT.responses.parse(
-        model=model,
-        input=[
-            {"role": "user", "content": prompt}
-        ],
-        text_format=schema
-    )
+    # Modify the propt to enforce the JSON schema
+    addition = f"\n\nGive only the JSON output. Below is the schema for you to adhere to:\n {schema.model_json_schema()}"
+    prompt = prompt + addition
 
-    return response.output_parsed   
+    # Get the raw response from model
+    completion = CLIENT.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    response = completion.choices[0].message.content
+
+    if "```json" in response and "```" in response:
+        response = response.split("```json")[1].split("```")[0]
+
+    return schema.model_validate_json(response)  

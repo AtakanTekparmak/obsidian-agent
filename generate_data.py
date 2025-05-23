@@ -1,8 +1,5 @@
 from data.pipeline import generate_personas, generate_kb
 
-from data.utils import load_kb_from_json, load_personas_from_json
-
-
 def main():
     scenario = "Groningen, Netherlands in 2025"
     personas = generate_personas(6, scenario, save=True)
