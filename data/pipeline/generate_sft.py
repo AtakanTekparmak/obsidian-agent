@@ -1,6 +1,7 @@
 from typing import Union, Optional
+from random import choice
 
-from data.schemas.kb import KnowledgeBase, PersonaWithStories
+from data.schemas.kb import KnowledgeBase, Persona
 
 from agent.agent import Agent
 from agent.utils import delete_memory
@@ -13,10 +14,10 @@ You are {persona.name_surname}. You are a {persona.age} year old {persona.gender
 You have the following relationships:
 {persona.relationships}
 
-You have the following stories:
-{stories}
+This is the fact you will be providing to the LLM assistant:
+{fact}
 
-You will be conversing with an LLM assistant that has a self managed, Obsidian-like memory system. Your goal is to have a natural conversation with the LLM assistant, while also providing the LLM assistant with information about yourself (without being too obvious about it). You should not be too direct/forthcoming about the information you're trying to provide, and you should only provide information if you think it can be relevant to the conversation. You necessarily don't need to provide all the information about yourself, but have a genuine every day conversation with the LLM assistant while providing the assistant with some information that can be relevant to the conversation.
+You will be conversing with an LLM assistant that has a self managed, Obsidian-like memory system. Your goal is to have a natural conversation with the LLM assistant, and in one of the message you will provide the fact you are given. You should not be too direct/forthcoming about the fact you're trying to provide. Given the fact you are going to provide, you should start the conversation and steer it so you can provide the fact in a natural way. You have {num_turns} of allowed conversation, and you should choose in which message you will provide the fact.
 
 You should start the conversation now. Don't be verbose, don't forget the LLM assistant is an AI assistant. Don't say more than 2 sentences at a time, that number is absolute. 
 """
@@ -25,10 +26,12 @@ class PersonaModel():
     """
     Utility class for an LLM assuming the role of a persona.
     """
-    def __init__(self, persona_with_stories: PersonaWithStories):
-        self.persona_with_stories = persona_with_stories
+    def __init__(self, persona: Persona, fact: str, num_turns: int):
+        self.persona = persona
+        self.fact = fact
+        self.num_turns = num_turns
         self.messages: list[ChatMessage] = [
-            ChatMessage(role=Role.SYSTEM, content=PERSONA_PROMPT.format(persona=self.persona_with_stories.persona, stories=self.persona_with_stories.stories))
+            ChatMessage(role=Role.SYSTEM, content=PERSONA_PROMPT.format(persona=self.persona, fact=self.fact, num_turns=self.num_turns))
         ]
 
     def _add_message(self, message: Union[ChatMessage, dict]):
@@ -52,7 +55,7 @@ class PersonaModel():
 
 def generate_sft(
         kb: KnowledgeBase,
-        num_turns: int = 10
+        num_turns: int = 4
     ) -> None:
     """
     Generate a SFT dataset by the agent interacting
@@ -66,16 +69,20 @@ def generate_sft(
         None
     """
     for kb_item in kb.items:
-        persona_with_stories = kb_item.persona_with_stories
-        persona_model = PersonaModel(persona_with_stories)
-        agent = Agent()
-        persona_message = persona_model.chat()
 
-        for _ in range(num_turns):
-            agent_message = agent.chat(persona_message).agent_response_2
-            persona_message = persona_model.chat(agent_message)
+        persona = kb_item.persona
+        facts = kb_item.facts
 
-        agent.save_conversation()
-        delete_memory()
+        for fact in facts:
+            persona_model = PersonaModel(persona, fact, num_turns)
+            agent = Agent()
+            persona_message = persona_model.chat()
+
+            for _ in range(num_turns):
+                agent_message = agent.chat(persona_message).agent_response_2
+                persona_message = persona_model.chat(agent_message)
+
+            agent.save_conversation()
+            delete_memory()
 
     
