@@ -1,5 +1,6 @@
 from typing import Union, Optional
 from random import choice
+from tqdm import tqdm
 
 from data.schemas.kb import KnowledgeBase, Persona
 
@@ -68,19 +69,28 @@ def generate_sft(
     Returns:
         None
     """
-    for kb_item in kb.items:
+    for kb_item in tqdm(kb.items, desc="Processing personas", unit="persona"):
 
         persona = kb_item.persona
         facts = kb_item.facts
 
-        for fact in facts:
+        for fact in tqdm(facts, desc=f"Generating conversations for {persona.name_surname}", unit="fact", leave=False):
+            error = False
             persona_model = PersonaModel(persona, fact, num_turns)
             agent = Agent()
             persona_message = persona_model.chat()
 
-            for _ in range(num_turns):
-                agent_message = agent.chat(persona_message).agent_response_2
+            for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
+                agent_response = agent.chat(persona_message)
+                agent_message = agent_response.agent_response_2
+                if agent_response.error:
+                    error = True
+                    break
                 persona_message = persona_model.chat(agent_message)
+
+            if error:
+                print(f"Error for {persona.name_surname} with fact {fact}, skipping...")
+                continue
 
             agent.save_conversation()
             delete_memory()

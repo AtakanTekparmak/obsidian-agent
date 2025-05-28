@@ -16,7 +16,7 @@ from agent.settings import SANDBOX_TIMEOUT
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # or DEBUG for more verbosity
 
-def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, result_queue: multiprocessing.Queue) -> None:
+def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, result_queue: multiprocessing.Queue, log: bool = False) -> None:
     """
     Worker function to run in a separate process. It executes the given code string
     under sandboxed conditions (limited file access, optional installs, blacklisting).
@@ -121,13 +121,15 @@ def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklis
             # Catch any exception and format it
             tb = traceback.format_exc()
             error_msg = f"Exception in sandboxed code:\n{tb}"
-            logger.error("Sandbox: code raised an exception: %s", e)
+            if log:
+                logger.error("Sandbox: code raised an exception: %s", e)
         except SystemExit as e:
             # Handle sys.exit calls (which raise SystemExit)
             code_val = e.code if isinstance(e.code, int) or e.code else 0
             if code_val != 0:
                 error_msg = f"Sandboxed code called sys.exit({code_val})"
-                logger.warning("Sandbox: code exited with non-zero status %s", code_val)
+                if log:
+                    logger.warning("Sandbox: code exited with non-zero status %s", code_val)
             # For sys.exit(0), we treat it as normal termination (no error)
 
         # Clean up any blacklisted or internal entries in locals
@@ -143,11 +145,14 @@ def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklis
                 safe_locals[var] = repr(val)  # fallback: use string representation
 
         result_queue.put((safe_locals, error_msg))
-        logger.info("Sandbox worker successfully put results in queue")
+        
+        if log:
+            logger.info("Sandbox worker successfully put results in queue")
         
     except Exception as e:
         # Catch any unhandled exceptions in the worker process
-        logger.error("Unhandled exception in sandbox worker: %s", traceback.format_exc())
+        if log:
+            logger.error("Unhandled exception in sandbox worker: %s", traceback.format_exc())
         try:
             result_queue.put((None, f"Sandbox worker error: {str(e)}"))
         except Exception as queue_err:
@@ -161,7 +166,8 @@ def execute_sandboxed_code(
         allowed_path: str = None,
         blacklist: list = None,
         available_functions: dict = None,
-        import_module: str = None
+        import_module: str = None,
+        log: bool = False
     ) -> tuple[dict, str]:
     """
     Execute the given Python code string in a sandboxed subprocess with specified restrictions.
