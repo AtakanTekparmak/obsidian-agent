@@ -1,6 +1,8 @@
 from openai import OpenAI
 from pydantic import BaseModel
 
+from typing import Optional
+
 from data.settings import OPENROUTER_BASE_URL, OPENROUTER_API_KEY
 
 # Initialize the client
@@ -11,8 +13,8 @@ CLIENT =  OpenAI(
 
 def get_model_response(
         prompt: str,
-        schema: BaseModel,
-        model: str 
+        model: str,
+        schema: Optional[BaseModel] = None
 ) -> BaseModel:
     """
     Get a response from a model using OpenRouter, with schema for structured output.
@@ -26,8 +28,9 @@ def get_model_response(
         A BaseModel object.
     """
     # Modify the propt to enforce the JSON schema
-    addition = f"\n\nGive only the JSON output. Below is the schema for you to adhere to:\n {schema.model_json_schema()}"
-    prompt = prompt + addition
+    if schema is not None:
+        addition = f"\n\nGive only the JSON output. Below is the schema for you to adhere to:\n {schema.model_json_schema()}"
+        prompt = prompt + addition
 
     # Get the raw response from model
     completion = CLIENT.chat.completions.create(
@@ -39,4 +42,7 @@ def get_model_response(
     if "```json" in response and "```" in response:
         response = response.split("```json")[1].split("```")[0]
 
-    return schema.model_validate_json(response)  
+    if schema is not None:
+        return schema.model_validate_json(response) 
+    else:
+        return response
