@@ -27,13 +27,18 @@ class PersonaModel():
     """
     Utility class for an LLM assuming the role of a persona.
     """
-    def __init__(self, persona: Persona, fact: str, num_turns: int):
+    def __init__(self, persona: Persona, fact: str, num_turns: int, prompt: Optional[str] = None):
         self.persona = persona
         self.fact = fact
         self.num_turns = num_turns
-        self.messages: list[ChatMessage] = [
-            ChatMessage(role=Role.SYSTEM, content=PERSONA_PROMPT.format(persona=self.persona, fact=self.fact, num_turns=self.num_turns))
-        ]
+        if not prompt:
+            self.messages: list[ChatMessage] = [
+                ChatMessage(role=Role.SYSTEM, content=PERSONA_PROMPT.format(persona=self.persona, fact=self.fact, num_turns=self.num_turns))
+            ]
+        else:
+            self.messages: list[ChatMessage] = [
+                ChatMessage(role=Role.SYSTEM, content=prompt)
+            ]
 
     def _add_message(self, message: Union[ChatMessage, dict]):
         """ Add a message to the conversation history. """

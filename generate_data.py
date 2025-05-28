@@ -13,7 +13,11 @@ def main():
     )
     """
     kb = load_kb_from_json()
-    generate_sft(kb, num_turns=4)
+    static_memory = generate_static_memory(
+        persona=kb.items[0].persona, 
+        fact=kb.items[0].facts[0].fact_description
+    )
+    static_memory.instantiate()
 
 if __name__ == "__main__":
     main()
