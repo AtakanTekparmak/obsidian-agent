@@ -16,7 +16,7 @@ def main():
     static_memory.instantiate()
     """
     kb = load_kb_from_json()
-    generate_convo_for_persona_and_fact(
+    convo_success = generate_convo_for_persona_and_fact(
         persona=kb.items[0].persona, 
         fact=kb.items[0].facts[0], 
         num_turns=4

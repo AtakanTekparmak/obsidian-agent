@@ -58,6 +58,13 @@ def generate_static_memory(
     ) -> StaticMemory:
         """
         Generate a static memory for the agent.
+
+        Args:
+            persona: The persona
+            fact: The fact
+
+        Returns:
+            StaticMemory: The static memory
         """
         prompt = MEMORY_GEN_PROMPT.format(
                 agent_prompt=load_system_prompt(), 
@@ -71,3 +78,21 @@ def generate_static_memory(
             )
         
         return response
+
+class UpdateModel(SFTModel):
+    """
+    Utility class for an LLM assuming the role of a persona
+    that is going to provide an update to an existing fact.
+    """
+    def __init__(self, persona: Persona, fact: str, num_turns: int):
+        super().__init__(num_turns)
+        self.messages: list[ChatMessage] = [
+            ChatMessage(
+                role=Role.SYSTEM, 
+                content=SFT_PROMPT.format(
+                    persona=persona, 
+                    fact=fact, 
+                    num_turns=num_turns
+                )
+            )
+        ]

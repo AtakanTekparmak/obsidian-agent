@@ -47,7 +47,7 @@ class Agent:
         )
 
         # Execute the code from the agent's response
-        result = ({}, "No code to execute, no result to return.")
+        result = ({}, "")
         if response.python_block:
             create_memory_if_not_exists()
             result = execute_sandboxed_code(
@@ -57,13 +57,13 @@ class Agent:
             )
 
         remaining_retries = self.max_retries
-        while result[1] and remaining_retries > 0:
+        while result[1] and remaining_retries > 0 and response.python_block:
             remaining_retries -= 1
             response = get_model_response(
                 messages=self.messages,
                 schema=AgentResponse
             )
-            result = ({}, "No code to execute, no result to return.")
+            result = ({}, "")
             if response.python_block:
                 create_memory_if_not_exists()
                 result = execute_sandboxed_code(

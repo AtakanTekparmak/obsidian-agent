@@ -1,122 +1,110 @@
 import os
-import sys
-import subprocess
 
-def is_git_repo(path):
-    """Check if the path is within a Git repository."""
-    try:
-        subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'],
-                       cwd=path, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return True
-    except subprocess.CalledProcessError:
-        return False
+def should_ignore(name):
+    """Check if a file/directory should be ignored based on simple patterns."""
+    ignore_patterns = {
+        '.git', '.DS_Store', 'Thumbs.db', '__pycache__',
+        '.pytest_cache', '.mypy_cache', 'node_modules',
+        '.env', '.venv', 'venv', '.idea', '.vscode'
+    }
+    return name in ignore_patterns or name.startswith('.')
 
-def get_git_root(path):
-    """Get the root directory of the Git repository."""
-    try:
-        result = subprocess.run(['git', 'rev-parse', '--show-toplevel'],
-                                cwd=path, check=True, capture_output=True, text=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
-
-def is_ignored(path, git_root):
-    """Check if a path is ignored by Git."""
-    if '.git/' in path.replace(os.sep, '/'):
-        return True  # Always ignore .git directory
-    
-    if not git_root:
-        return False
-    
-    try:
-        rel_path = os.path.relpath(path, git_root)
-        result = subprocess.run(['git', 'check-ignore', '--quiet', rel_path],
-                                cwd=git_root, check=False)
-        return result.returncode == 0
-    except Exception:
-        return False
-
-def generate_tree(directory, prefix='', is_last=True, git_root=None, output=None):
-    """Generate directory tree structure with Git ignore support."""
-    if output is None:
-        output = []
+def generate_tree(directory, prefix='', is_last=True):
+    """Generate directory tree structure."""
+    result = []
     
     dir_name = os.path.basename(directory)
-    if dir_name == '.git':
-        return output
-    
-    if is_ignored(directory, git_root):
-        return output
     
     # Add current directory to output
     if prefix == '':
-        output.append(f"{dir_name}/")
+        result.append(f"{dir_name}/")
     else:
         connector = '└── ' if is_last else '├── '
-        output.append(f"{prefix}{connector}{dir_name}/")
+        result.append(f"{prefix}{connector}{dir_name}/")
     
-    # Get sorted list of children
     try:
-        children = sorted(os.listdir(directory), key=lambda x: (not os.path.isdir(os.path.join(directory, x)), x))
-    except PermissionError:
-        return output
-    
-    # Filter ignored paths
-    children = [c for c in children if not is_ignored(os.path.join(directory, c), git_root)]
-    
-    for i, child in enumerate(children):
-        child_path = os.path.join(directory, child)
-        is_last_child = i == len(children) - 1
+        # Get all items and sort them (directories first, then files)
+        all_items = os.listdir(directory)
+        all_items = [item for item in all_items if not should_ignore(item)]
+        all_items.sort(key=lambda x: (not os.path.isdir(os.path.join(directory, x)), x.lower()))
         
-        if os.path.isdir(child_path):
-            new_prefix = prefix + ('    ' if is_last else '│   ')
-            generate_tree(child_path, new_prefix, is_last_child, git_root, output)
-        else:
-            connector = '└── ' if is_last_child else '├── '
-            output.append(f"{prefix}{connector}{child}")
+        for i, item in enumerate(all_items):
+            item_path = os.path.join(directory, item)
+            is_last_child = i == len(all_items) - 1
+            
+            if os.path.isdir(item_path):
+                new_prefix = prefix + ('    ' if is_last else '│   ')
+                result.extend(generate_tree(item_path, new_prefix, is_last_child))
+            else:
+                connector = '└── ' if is_last_child else '├── '
+                result.append(f"{prefix}{'    ' if is_last else '│   '}{connector}{item}")
     
-    return output
+    except PermissionError:
+        pass
+    
+    return result
 
-def get_file_contents(directory, git_root):
-    """Collect non-ignored file contents with error handling."""
+def get_file_contents(directory):
+    """Get all file contents from directory recursively."""
     contents = {}
+    
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not is_ignored(os.path.join(root, d), git_root)]
-        files = [f for f in files if not is_ignored(os.path.join(root, f), git_root)]
+        # Filter out ignored directories
+        dirs[:] = [d for d in dirs if not should_ignore(d)]
+        
+        # Filter out ignored files
+        files = [f for f in files if not should_ignore(f)]
         
         for file in files:
             file_path = os.path.join(root, file)
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
-                    contents[os.path.relpath(file_path, directory)] = f.read()
+                    relative_path = os.path.relpath(file_path, directory)
+                    contents[relative_path] = f.read()
             except UnicodeDecodeError:
-                contents[os.path.relpath(file_path, directory)] = "Skipped: Binary/non-text file"
+                relative_path = os.path.relpath(file_path, directory)
+                contents[relative_path] = "Skipped: Binary/non-text file"
             except Exception as e:
-                contents[os.path.relpath(file_path, directory)] = f"Skipped: {str(e)}"
+                relative_path = os.path.relpath(file_path, directory)
+                contents[relative_path] = f"Skipped: {str(e)}"
+    
     return contents
 
 def dump_folder(folder_path: str):
     """
-    Dump the contents of a folder to a file.
+    Dump the contents of a folder to a string.
+    Works with any folder, no git functionality required.
     """
+    # Clean up path
+    folder_path = os.path.abspath(folder_path.rstrip(os.sep))
     
-    # Git configuration
-    git_root = get_git_root(folder_path) if is_git_repo(folder_path) else None
+    if not os.path.exists(folder_path):
+        raise FileNotFoundError(f"Folder {folder_path} does not exist")
+    
+    if not os.path.isdir(folder_path):
+        raise ValueError(f"Path {folder_path} is not a directory")
     
     # Generate directory tree
-    tree = generate_tree(folder_path, git_root=git_root)
+    tree = generate_tree(folder_path)
     
     # Get file contents
-    file_contents = get_file_contents(folder_path, git_root)
+    file_contents = get_file_contents(folder_path)
     
-    # Write output to a string
-    output = ""
-    output += "DIRECTORY STRUCTURE:\n"
-    output += '\n'.join(tree)
+    # Build output string
+    output = "DIRECTORY STRUCTURE:\n"
+    if tree:
+        output += '\n'.join(tree)
+    else:
+        output += "(empty directory)"
+    
     output += "\n\nFILE CONTENTS:\n\n"
-    for path, content in file_contents.items():
-        output += f"════════ {path} ════════\n"
-        output += content + "\n\n"
-        output += "-"*80 + "\n\n"
+    
+    if file_contents:
+        for path, content in sorted(file_contents.items()):
+            output += f"════════ {path} ════════\n"
+            output += content + "\n\n"
+            output += "-"*80 + "\n\n"
+    else:
+        output += "(no files found)\n\n"
 
     return output
