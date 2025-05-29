@@ -28,3 +28,8 @@ class StaticMemory(BaseSchema):
             print(f"Error instantiating static memory: {e}")
             raise e
             
+
+class FactUpdate(BaseSchema):
+    initial_fact: str
+    updated_fact: str
+    fact_update_possible: bool
