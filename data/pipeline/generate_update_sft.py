@@ -4,13 +4,14 @@ from tqdm import tqdm
 
 from data.schemas.kb import KnowledgeBase, Persona
 from data.schemas.sft import StaticMemory
-from data.model import get_model_response
+from data.model import get_model_response, SFTModel
 from data.settings import OPENROUTER_SONNET
 
 from agent.agent import Agent
 from agent.utils import delete_memory, load_system_prompt
 from agent.schemas import ChatMessage, Role
 
+# Prompts
 MEMORY_GEN_PROMPT = """
 Below is the system prompt of an LLM agent with a self managed, Obsidian-like memory system.
 

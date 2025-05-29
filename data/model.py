@@ -1,9 +1,12 @@
 from openai import OpenAI
 from pydantic import BaseModel
 
-from typing import Optional
+from typing import Optional, Union
+from abc import ABC
 
 from data.settings import OPENROUTER_BASE_URL, OPENROUTER_API_KEY
+from agent.model import get_model_response as get_agent_response
+from agent.schemas import ChatMessage, Role
 
 # Initialize the client
 CLIENT =  OpenAI(
@@ -45,4 +48,29 @@ def get_model_response(
     if schema is not None:
         return schema.model_validate_json(response) 
     else:
+        return response
+    
+class SFTModel(ABC):
+    """
+    Abstract class for an SFT model.
+    """
+    def __init__(self, num_turns: int):
+        self.num_turns = num_turns
+        self.messages: list[ChatMessage] = []
+        
+    def _add_message(self, message: Union[ChatMessage, dict]):
+        """ Add a message to the conversation history. """
+        if isinstance(message, dict):
+            self.messages.append(ChatMessage(**message))
+        elif isinstance(message, ChatMessage):
+            self.messages.append(message)
+            
+    def chat(self, message: Optional[str] = None) -> str:
+        """ Chat with the LLM assistant. """
+        if message:
+            self._add_message(ChatMessage(role=Role.USER, content=message))
+
+        response = get_agent_response(messages=self.messages)
+        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
+
         return response

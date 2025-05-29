@@ -99,9 +99,14 @@ class Agent:
         unique_id = uuid.uuid4()
         file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
 
+        # Convert the execution result messages to tool role
+        messages = [
+            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<result>") else ChatMessage(role=message.role, content=message.content)
+            for message in self.messages 
+        ]
         try:
             with open(file_path, "w") as f:
-                json.dump([message.model_dump() for message in self.messages], f, indent=4)
+                json.dump([message.model_dump() for message in messages], f, indent=4)
         except Exception as e:
             if log:
                 print(f"Error saving conversation: {e}")
