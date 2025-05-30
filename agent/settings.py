@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Agent settings
+MAX_TOOL_TURNS = 4
+
 # OpenRouter
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")

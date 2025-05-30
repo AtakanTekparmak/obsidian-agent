@@ -15,7 +15,11 @@ class ChatMessage(BaseModel):
 
 class AgentResponse(BaseModel):
     thoughts: str
-    python_block: str
+    python_block: Optional[str] = None
+    stop_acting: bool = False
+
+    def __str__(self):
+        return f"Thoughts: {self.thoughts}\nPython block:\n {self.python_block}\nStop acting: {self.stop_acting}"
 
 class UnifiedAgentTurn(BaseModel):
     agent_response: AgentResponse

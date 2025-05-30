@@ -1,7 +1,7 @@
 from agent.engine import execute_sandboxed_code
 from agent.model import get_model_response
 from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
-from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH
+from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS
 from agent.schemas import ChatMessage, Role, AgentResponse, UnifiedAgentTurn
 
 from typing import Union
@@ -11,12 +11,12 @@ import os
 import uuid
 
 class Agent:
-    def __init__(self, max_retries: int = 3):
+    def __init__(self, max_tool_turns: int = MAX_TOOL_TURNS):
         self.system_prompt = load_system_prompt()
         self.messages: list[ChatMessage] = [
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
-        self.max_retries = max_retries
+        self.max_tool_turns = max_tool_turns
 
     def _add_message(self, message: Union[ChatMessage, dict]):
         """ Add a message to the conversation history. """
@@ -48,7 +48,7 @@ class Agent:
 
         # Execute the code from the agent's response
         result = ({}, "")
-        if response.python_block:
+        if response.python_block and not response.stop_acting:
             create_memory_if_not_exists()
             result = execute_sandboxed_code(
                 code=extract_python_code(response.python_block),
@@ -56,24 +56,25 @@ class Agent:
                 import_module="agent.tools"
             )
 
-        remaining_retries = self.max_retries
-        while result[1] and remaining_retries > 0 and response.python_block:
-            remaining_retries -= 1
+        # Add the agent's response to the conversation history
+        self._add_message(ChatMessage(role=Role.ASSISTANT, content=str(response)))
+
+        remaining_tool_turns = self.max_tool_turns
+        while remaining_tool_turns > 0 and not response.stop_acting:
+            self._add_message(ChatMessage(role=Role.USER, content=format_results(result)))
             response = get_model_response(
                 messages=self.messages,
                 schema=AgentResponse
             )
-            result = ({}, "")
-            if response.python_block:
+            self._add_message(ChatMessage(role=Role.ASSISTANT, content=str(response)))
+            if response.python_block and not response.stop_acting:
                 create_memory_if_not_exists()
                 result = execute_sandboxed_code(
                     code=extract_python_code(response.python_block),
                     allowed_path=MEMORY_PATH,
                     import_module="agent.tools"
                 )
-
-        # Add the agent's response to the conversation history
-        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
+            remaining_tool_turns -= 1
 
         # Add the result to the conversation history
         response_2 = None

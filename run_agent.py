@@ -3,9 +3,7 @@ from agent.agent import Agent
 def run_agent():
     agent = Agent()
     response = agent.chat("Hard to believe I'm already 28. I'm not sure how I feel about it. What feels good though, is I will have my favourite dessert today: chocolate cake.")
-    print(response)
     response_2 = agent.chat("You know what is great about growing older though? There's less expectations on you.")
-    print(response_2)
     agent.save_conversation()
     
 if __name__ == "__main__":
