@@ -8,7 +8,7 @@ from data.model import get_model_response, SFTModel
 from data.settings import OPENROUTER_SONNET
 
 from agent.agent import Agent
-from agent.utils import delete_memory, load_system_prompt
+from agent.utils import delete_memory, load_system_prompt, create_memory_if_not_exists
 from agent.schemas import ChatMessage, Role
 from agent.settings import MEMORY_PATH
 
@@ -159,6 +159,10 @@ def generate_convo_for_persona_and_update(
             num_turns=num_turns
         )
         agent = Agent()
+
+        # Create the memory if it doesn't exist
+        create_memory_if_not_exists()
+
         update_message = update_model.chat()
 
         for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):

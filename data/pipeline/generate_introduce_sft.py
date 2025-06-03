@@ -5,7 +5,7 @@ from data.schemas.kb import KnowledgeBase, Persona, Fact
 from data.model import SFTModel
 
 from agent.agent import Agent
-from agent.utils import delete_memory
+from agent.utils import delete_memory, create_memory_if_not_exists
 from agent.schemas import ChatMessage, Role
 from agent.settings import MEMORY_PATH
 
@@ -66,6 +66,10 @@ def generate_convo_for_persona_and_fact(
             num_turns=num_turns
         )
         agent = Agent()
+
+        # Create the memory if it doesn't exist
+        create_memory_if_not_exists()
+
         persona_message = persona_model.chat()
 
         # Generate the conversation

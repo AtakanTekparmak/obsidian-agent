@@ -46,7 +46,11 @@ def get_model_response(
         response = response.split("```json")[1].split("```")[0]
 
     if schema is not None:
-        return schema.model_validate_json(response) 
+        try:
+            return schema.model_validate_json(response) 
+        except Exception as e:
+            # If the response is not valid, try again
+            return get_model_response(prompt, model, schema)
     else:
         return response
     
