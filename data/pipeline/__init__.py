@@ -1,4 +1,3 @@
 from .generate_personas import generate_personas
 from .generate_kb import generate_kb
-from .generate_introduce_sft import generate_introduce_sft
-from .generate_update_sft import generate_update_sft
+from .sft import generate_introduce_sft, generate_update_sft
