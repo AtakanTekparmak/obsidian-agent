@@ -33,6 +33,21 @@ class BaseSFTModel(SFTModel, ABC):
         pass
 
 
+def default_fact_validation(facts_to_check: list[Fact]) -> bool:
+    """
+    Default validation function that checks if facts are present in memory.
+    
+    Args:
+        facts_to_check: List of facts to validate
+        
+    Returns:
+        bool: True if validation passes, False otherwise
+    """
+    folder_dump_str = dump_folder(MEMORY_PATH)
+    reward = get_reward(folder_dump_str=folder_dump_str, facts_to_check=facts_to_check)
+    return reward >= 0.99
+
+
 def generate_conversation_with_retries(
         conversation_generator_func: Callable,
         max_retries: int = 3,
@@ -72,7 +87,8 @@ def generate_conversation_for_persona(
         persona_model: BaseSFTModel,
         agent: Agent,
         num_turns: int,
-        facts_to_check: list[Fact]
+        facts_to_check: list[Fact],
+        validation_func: Callable[[list[Fact]], bool] = default_fact_validation
     ) -> bool:
     """
     Generate a conversation between a persona model and an agent.
@@ -81,10 +97,11 @@ def generate_conversation_for_persona(
         persona_model: The persona model
         agent: The agent
         num_turns: Number of conversation turns
-        facts_to_check: Facts to verify in memory after conversation
+        facts_to_check: Facts to verify after conversation
+        validation_func: Function to validate the conversation results
     
     Returns:
-        bool: True if conversation was successful and facts were recorded
+        bool: True if conversation was successful and validation passed
     """
     # Create the memory if it doesn't exist
     create_memory_if_not_exists()
@@ -96,10 +113,8 @@ def generate_conversation_for_persona(
         agent_response = agent.chat(persona_message)
         persona_message = persona_model.chat(agent_response.reply)
     
-    # Check if the facts are present in the memory
-    folder_dump_str = dump_folder(MEMORY_PATH)
-    reward = get_reward(folder_dump_str=folder_dump_str, facts_to_check=facts_to_check)
-    if reward < 0.99:
+    # Validate the conversation results
+    if not validation_func(facts_to_check):
         delete_memory()
         return False
     
@@ -115,6 +130,7 @@ def generate_sft_for_kb(
         num_turns: int = 4,
         max_retries: int = 3,
         setup_func: Optional[Callable] = None,
+        validation_func: Callable[[list[Fact]], bool] = default_fact_validation,
         **kwargs
     ) -> None:
     """
@@ -126,6 +142,7 @@ def generate_sft_for_kb(
         num_turns: Number of conversation turns
         max_retries: Maximum number of retries
         setup_func: Optional setup function to call before each attempt
+        validation_func: Function to validate conversation results
         **kwargs: Additional arguments for the conversation function
     """
     for kb_item in tqdm(kb.items, desc="Processing personas", unit="persona"):
@@ -140,6 +157,7 @@ def generate_sft_for_kb(
                 persona=persona,
                 fact=fact,
                 num_turns=num_turns,
+                validation_func=validation_func,
                 **kwargs
             )
             if not success:

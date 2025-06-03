@@ -6,7 +6,8 @@ from agent.agent import Agent
 from .base import (
     BaseSFTModel, 
     generate_conversation_for_persona, 
-    generate_sft_for_kb
+    generate_sft_for_kb,
+    default_fact_validation
 )
 
 PERSONA_PROMPT = """
@@ -42,7 +43,8 @@ class PersonaModel(BaseSFTModel):
 def generate_convo_for_persona_and_fact(
         persona: Persona,
         fact: Fact,
-        num_turns: int
+        num_turns: int,
+        validation_func=default_fact_validation
     ) -> bool:
     """
     Generate a conversation for a persona and a fact.
@@ -51,6 +53,7 @@ def generate_convo_for_persona_and_fact(
         persona: The persona
         fact: The fact
         num_turns: The number of turns
+        validation_func: Function to validate conversation results
 
     Returns:
         bool: True if the conversation was generated successfully, False otherwise
@@ -66,14 +69,16 @@ def generate_convo_for_persona_and_fact(
         persona_model=persona_model,
         agent=agent,
         num_turns=num_turns,
-        facts_to_check=[fact]
+        facts_to_check=[fact],
+        validation_func=validation_func
     )
 
 
 def generate_introduce_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
-        max_retries: int = 3
+        max_retries: int = 3,
+        validation_func=default_fact_validation
     ) -> None:
     """
     Generate a SFT dataset by the agent interacting
@@ -83,6 +88,7 @@ def generate_introduce_sft(
         kb: The knowledge base
         num_turns: The number of turns
         max_retries: The number of retries
+        validation_func: Function to validate conversation results
 
     Returns:
         None
@@ -91,6 +97,7 @@ def generate_introduce_sft(
         kb=kb,
         conversation_func=generate_convo_for_persona_and_fact,
         num_turns=num_turns,
-        max_retries=max_retries
+        max_retries=max_retries,
+        validation_func=validation_func
     )
     

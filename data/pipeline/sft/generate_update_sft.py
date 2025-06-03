@@ -12,7 +12,8 @@ from agent.utils import load_system_prompt
 from .base import (
     BaseSFTModel, 
     generate_conversation_for_persona, 
-    generate_sft_for_kb
+    generate_sft_for_kb,
+    default_fact_validation
 )
 
 # Prompts
@@ -139,7 +140,8 @@ class UpdateModel(BaseSFTModel):
 def generate_convo_for_persona_and_update(
         persona: Persona,
         fact_update: FactUpdate,
-        num_turns: int
+        num_turns: int,
+        validation_func=default_fact_validation
     ) -> bool:
         """
         Generate a conversation for a persona and a fact update.
@@ -148,6 +150,7 @@ def generate_convo_for_persona_and_update(
             persona: The persona
             fact_update: The fact update
             num_turns: The number of turns
+            validation_func: Function to validate conversation results
 
         Returns:
             bool: True if the conversation was generated successfully, False otherwise
@@ -165,58 +168,73 @@ def generate_convo_for_persona_and_update(
             persona_model=update_model,
             agent=agent,
             num_turns=num_turns,
-            facts_to_check=[updated_fact]
+            facts_to_check=[updated_fact],
+            validation_func=validation_func
         )
 
-# Global variables to store state for retry attempts
-_fact_update_cache = {}
-_static_memory_cache = {}
+class UpdateSFTCache:
+    """Clean cache management for update SFT generation."""
+    
+    def __init__(self):
+        self.fact_updates = {}
+        self.static_memories = {}
+    
+    def clear(self):
+        """Clear all cached data."""
+        self.fact_updates.clear()
+        self.static_memories.clear()
+    
+    def get_or_create_fact_update(self, persona: Persona, fact: Fact) -> Optional[FactUpdate]:
+        """Get cached fact update or create a new one."""
+        cache_key = (persona.name_surname, fact.fact_description)
+        
+        if cache_key not in self.fact_updates:
+            fact_update = generate_fact_update(persona=persona, fact=fact.fact_description)
+            if not fact_update.fact_update_possible:
+                return None
+            self.fact_updates[cache_key] = fact_update
+        
+        return self.fact_updates[cache_key]
+    
+    def get_or_create_static_memory(self, persona: Persona, fact: Fact) -> StaticMemory:
+        """Get cached static memory or create a new one."""
+        cache_key = (persona.name_surname, fact.fact_description)
+        
+        if cache_key not in self.static_memories:
+            static_memory = generate_static_memory(persona=persona, fact=fact.fact_description)
+            self.static_memories[cache_key] = static_memory
+        
+        return self.static_memories[cache_key]
 
-def _setup_static_memory(persona: Persona, fact: Fact, **kwargs):
+def _setup_static_memory_with_cache(cache: UpdateSFTCache, persona: Persona, fact: Fact, **kwargs):
     """Setup function that creates static memory for each retry attempt."""
-    cache_key = (persona.name_surname, fact.fact_description)
-    
-    if cache_key not in _static_memory_cache:
-        static_memory = generate_static_memory(
-            persona=persona, 
-            fact=fact.fact_description
-        )
-        _static_memory_cache[cache_key] = static_memory
-    
-    _static_memory_cache[cache_key].instantiate()
+    static_memory = cache.get_or_create_static_memory(persona, fact)
+    static_memory.instantiate()
 
-def _generate_update_conversation(
+def _generate_update_conversation_with_cache(
+        cache: UpdateSFTCache,
         persona: Persona,
         fact: Fact,
-        num_turns: int
+        num_turns: int,
+        validation_func=default_fact_validation
     ) -> bool:
-    """
-    Helper function to generate update conversation.
-    """
-    cache_key = (persona.name_surname, fact.fact_description)
-    
-    # Generate or retrieve cached fact update
-    if cache_key not in _fact_update_cache:
-        fact_update = generate_fact_update(
-            persona=persona, 
-            fact=fact.fact_description
-        )
-        if not fact_update.fact_update_possible:
-            return False
-        _fact_update_cache[cache_key] = fact_update
-    
-    fact_update = _fact_update_cache[cache_key]
+    """Helper function to generate update conversation with cache."""
+    fact_update = cache.get_or_create_fact_update(persona, fact)
+    if fact_update is None:
+        return False
     
     return generate_convo_for_persona_and_update(
         persona=persona, 
         fact_update=fact_update, 
-        num_turns=num_turns
+        num_turns=num_turns,
+        validation_func=validation_func
     )
 
 def generate_update_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
-        max_retries: int = 3
+        max_retries: int = 3,
+        validation_func=default_fact_validation
     ) -> None:
         """
         Generate a SFT dataset by the agent interacting
@@ -226,19 +244,25 @@ def generate_update_sft(
             kb: The knowledge base
             num_turns: The number of turns
             max_retries: The number of retries
+            validation_func: Function to validate conversation results
 
         Returns:
             None
         """
-        # Clear caches
-        global _fact_update_cache, _static_memory_cache
-        _fact_update_cache.clear()
-        _static_memory_cache.clear()
+        cache = UpdateSFTCache()
+        
+        # Create wrapper functions that include the cache
+        def conversation_func_with_cache(persona, fact, num_turns, validation_func=default_fact_validation):
+            return _generate_update_conversation_with_cache(cache, persona, fact, num_turns, validation_func)
+        
+        def setup_func_with_cache(persona, fact, **kwargs):
+            return _setup_static_memory_with_cache(cache, persona, fact, **kwargs)
         
         generate_sft_for_kb(
             kb=kb,
-            conversation_func=_generate_update_conversation,
-            setup_func=_setup_static_memory,
+            conversation_func=conversation_func_with_cache,
+            setup_func=setup_func_with_cache,
             num_turns=num_turns,
-            max_retries=max_retries
+            max_retries=max_retries,
+            validation_func=validation_func
         )
