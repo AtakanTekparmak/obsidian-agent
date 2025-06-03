@@ -2,7 +2,7 @@ from agent.engine import execute_sandboxed_code
 from agent.model import get_model_response
 from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
 from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS
-from agent.schemas import ChatMessage, Role, AgentResponse, UnifiedAgentTurn
+from agent.schemas import ChatMessage, Role, AgentResponse
 
 from typing import Union
 
@@ -27,7 +27,7 @@ class Agent:
         else:
             raise ValueError("Invalid message type")
 
-    def chat(self, message: str) -> Union[AgentResponse, UnifiedAgentTurn]:
+    def chat(self, message: str) -> AgentResponse:
         """
         Chat with the agent.
 
@@ -57,7 +57,7 @@ class Agent:
             )
 
         # Add the agent's response to the conversation history
-        self._add_message(ChatMessage(role=Role.ASSISTANT, content=str(response)))
+        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
 
         remaining_tool_turns = self.max_tool_turns
         while remaining_tool_turns > 0 and not response.stop_acting:
@@ -66,7 +66,7 @@ class Agent:
                 messages=self.messages,
                 schema=AgentResponse
             )
-            self._add_message(ChatMessage(role=Role.ASSISTANT, content=str(response)))
+            self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
             if response.python_block and not response.stop_acting:
                 create_memory_if_not_exists()
                 result = execute_sandboxed_code(
@@ -76,18 +76,7 @@ class Agent:
                 )
             remaining_tool_turns -= 1
 
-        # Add the result to the conversation history
-        response_2 = None
-        self._add_message(ChatMessage(role=Role.USER, content=format_results(result)))
-        response_2 = get_model_response(messages=self.messages)
-        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response_2))
-
-        return response if response_2 is None else UnifiedAgentTurn(
-            agent_response=response,
-            execution_result=result,
-            agent_response_2=response_2,
-            error=result[1] if result[1] else None
-        )
+        return response
 
     def save_conversation(self, log: bool = False):
         """

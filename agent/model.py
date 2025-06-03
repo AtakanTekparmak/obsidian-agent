@@ -1,16 +1,18 @@
 from openai import OpenAI
-
 from pydantic import BaseModel
+import instructor
+
 from typing import Optional, Union
 
 from agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL
 from agent.schemas import ChatMessage, Role
 
-# Initialize OpenAI client
+# Initialize OpenAI client and the instructor client
 CLIENT =  OpenAI(
     api_key = OPENROUTER_API_KEY,
     base_url = OPENROUTER_BASE_URL,
 )
+INSTRUCTOR_CLIENT = instructor.from_openai(CLIENT, mode=instructor.Mode.TOOLS)
 
 def _as_dict(msg: Union[ChatMessage, dict]) -> dict:
     """
@@ -63,9 +65,10 @@ def get_model_response(
         )
         return completion.choices[0].message.content
     else: 
-        completion = CLIENT.beta.chat.completions.parse(
+        completion = INSTRUCTOR_CLIENT.chat.completions.create(
             model=model,
             messages=messages,
-            response_format=schema
+            extra_body={"provider": {"require_parameters": True}},
+            response_model=schema
         )
-        return completion.choices[0].message.parsed
+        return completion

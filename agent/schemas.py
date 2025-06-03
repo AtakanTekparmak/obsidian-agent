@@ -17,15 +17,7 @@ class AgentResponse(BaseModel):
     thoughts: str
     python_block: Optional[str] = None
     stop_acting: bool = False
+    reply: Optional[str] = None
 
     def __str__(self):
-        return f"Thoughts: {self.thoughts}\nPython block:\n {self.python_block}\nStop acting: {self.stop_acting}"
-
-class UnifiedAgentTurn(BaseModel):
-    agent_response: AgentResponse
-    execution_result: tuple[dict, str]
-    agent_response_2: str
-    error: Optional[str] = None
-
-    def __str__(self):
-        return f"Thoughts: {self.agent_response.thoughts}\nPython block:\n {self.agent_response.python_block}\nExecution result:\n {self.execution_result}\nAgent response to user:\n {self.agent_response_2}\nError:\n {self.error}"
+        return f"Thoughts: {self.thoughts}\nPython block:\n {self.python_block}\nStop acting: {self.stop_acting}\nReply: {self.reply}"

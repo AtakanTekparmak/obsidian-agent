@@ -167,13 +167,7 @@ def generate_convo_for_persona_and_update(
 
         for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
             agent_response = agent.chat(update_message)
-            agent_message = agent_response.agent_response_2
-
-            if agent_response.error:
-                print(f"Error: {agent_response.error}")
-                return False
-            
-            update_message = update_model.chat(agent_message)
+            update_message = update_model.chat(agent_response.reply)
 
         # Check if the updated fact is present in the memory
         folder_dump_str = dump_folder(MEMORY_PATH)

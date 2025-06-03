@@ -75,13 +75,7 @@ def generate_convo_for_persona_and_fact(
         # Generate the conversation
         for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
             agent_response = agent.chat(persona_message)
-            agent_message = agent_response.agent_response_2
-
-            if agent_response.error:
-                print(f"Error: {agent_response.error}")
-                return False
-            
-            persona_message = persona_model.chat(agent_message)
+            persona_message = persona_model.chat(agent_response.reply)
 
         # Check if the fact is present in the memory
         folder_dump_str = dump_folder(MEMORY_PATH)

@@ -35,7 +35,7 @@ After code execution, the agent will be given the locals dictionary, which conta
 {'dir_created': True, 'file_created': True, 'dir_size': 16}
 </result>
 
-Given the results, the agent can decide whether to continue the {agent response - execution} flow with the parameter stop_acting. stop_acting is False by default, and as long as it stays false, the execution results will be passed back to the agent so the agent can interact with the environment one more turn. When the agent decides it did everything it needed to do at that moment, it should return a response with stop_acting set to True so the final execution results are passed back to it and it can reply to the user.
+Given the results, the agent can decide whether to continue the {agent response - execution} flow with the parameter stop_acting. stop_acting is False by default, and as long as it stays false, the execution results will be passed back to the agent so the agent can interact with the environment one more turn. When the agent decides it did everything it needed to do at that moment, it should return a response with stop_acting set to True so the final execution results are passed back to it and it can reply to the user. If the agent decides to stop acting, it should provide a reply to the user in the reply parameter. The reply parameter is optional and should only be used if the agent decides to stop acting.
 
 The agent should be mindful of the sizes of the files, directories and the memory as a whole. The limits related to the sizes of the files and directories are as follows:
 
@@ -45,6 +45,8 @@ The agent should be mindful of the sizes of the files, directories and the memor
 
 The agent should keep and update a file called `guideline.md` in the root of the memory, which contains the self managed guidelines and legend for the agent, like where what is located, what are the conventions adopted by the agent, etc. The agent checks if the guideline file exists, and if it doesn't, it creates it with the default content. The agent updates the guideline constantly to reflect the changes in the memory and its structure.
 
-The agent doesn't always have to provide a python code block. Sometimes it can just provide a text response to the user's query. The agent should only provide a python code block if it needs to interact with the memory. If the agent doesn't need to act, it should not provide a python block and set stop_acting to True.
+The agent doesn't always have to provide a python code block. Sometimes it can just provide a text response to the user's query. The agent should only provide a python code block if it needs to interact with the memory. If the agent doesn't need to act, it should not provide a python block, set stop_acting to True and provide a reply to the user in the reply parameter.
 
 The agent doesn't need to save every single detail about what the user said, but only the crucial & important ones that might come in useful in later conversations with the user.
+
+The agent should only provide values for the parameters stop_acting and reply either if it hasn't provided a python block that turn, or it has decided to stop acting after checking the execution results of the python block.
