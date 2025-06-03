@@ -1,18 +1,19 @@
 from typing import Union, Optional
 from random import choice
-from tqdm import tqdm
 
 from data.schemas.kb import KnowledgeBase, Persona, Fact
 from data.schemas.sft import StaticMemory, FactUpdate
-from data.model import get_model_response, SFTModel
+from data.model import get_model_response
 from data.settings import OPENROUTER_SONNET
 
 from agent.agent import Agent
-from agent.utils import delete_memory, load_system_prompt, create_memory_if_not_exists
-from agent.schemas import ChatMessage, Role
-from agent.settings import MEMORY_PATH
+from agent.utils import load_system_prompt
 
-from training.reward import dump_folder, get_reward
+from .base import (
+    BaseSFTModel, 
+    generate_conversation_for_persona, 
+    generate_sft_for_kb
+)
 
 # Prompts
 MEMORY_GEN_PROMPT = """
@@ -119,23 +120,21 @@ def generate_fact_update(
         
         return response
 
-class UpdateModel(SFTModel):
+class UpdateModel(BaseSFTModel):
     """
     Utility class for an LLM assuming the role of a persona
     that is going to provide an update to an existing fact.
     """
     def __init__(self, persona: Persona, fact_update: FactUpdate, num_turns: int):
-        super().__init__(num_turns)
-        self.messages: list[ChatMessage] = [
-            ChatMessage(
-                role=Role.SYSTEM, 
-                content=SFT_PROMPT.format(
-                    persona=persona, 
-                    fact_update=fact_update, 
-                    num_turns=num_turns
-                )
-            )
-        ]
+        self.fact_update = fact_update
+        super().__init__(persona, num_turns)
+    
+    def _get_system_prompt(self, persona: Persona, num_turns: int) -> str:
+        return SFT_PROMPT.format(
+            persona=persona, 
+            fact_update=self.fact_update, 
+            num_turns=num_turns
+        )
 
 def generate_convo_for_persona_and_update(
         persona: Persona,
@@ -160,29 +159,59 @@ def generate_convo_for_persona_and_update(
         )
         agent = Agent()
 
-        # Create the memory if it doesn't exist
-        create_memory_if_not_exists()
-
-        update_message = update_model.chat()
-
-        for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
-            agent_response = agent.chat(update_message)
-            update_message = update_model.chat(agent_response.reply)
-
-        # Check if the updated fact is present in the memory
-        folder_dump_str = dump_folder(MEMORY_PATH)
         updated_fact = Fact(fact_description=fact_update.updated_fact)
-        reward = get_reward(folder_dump_str=folder_dump_str, facts_to_check=[updated_fact])
-        if reward < 0.99:
-            delete_memory()
+        
+        return generate_conversation_for_persona(
+            persona_model=update_model,
+            agent=agent,
+            num_turns=num_turns,
+            facts_to_check=[updated_fact]
+        )
+
+# Global variables to store state for retry attempts
+_fact_update_cache = {}
+_static_memory_cache = {}
+
+def _setup_static_memory(persona: Persona, fact: Fact, **kwargs):
+    """Setup function that creates static memory for each retry attempt."""
+    cache_key = (persona.name_surname, fact.fact_description)
+    
+    if cache_key not in _static_memory_cache:
+        static_memory = generate_static_memory(
+            persona=persona, 
+            fact=fact.fact_description
+        )
+        _static_memory_cache[cache_key] = static_memory
+    
+    _static_memory_cache[cache_key].instantiate()
+
+def _generate_update_conversation(
+        persona: Persona,
+        fact: Fact,
+        num_turns: int
+    ) -> bool:
+    """
+    Helper function to generate update conversation.
+    """
+    cache_key = (persona.name_surname, fact.fact_description)
+    
+    # Generate or retrieve cached fact update
+    if cache_key not in _fact_update_cache:
+        fact_update = generate_fact_update(
+            persona=persona, 
+            fact=fact.fact_description
+        )
+        if not fact_update.fact_update_possible:
             return False
-        
-        # TODO: Check if the initial fact is present in the memory
-        
-        # Save the conversation and delete the memory
-        agent.save_conversation()
-        delete_memory()
-        return True
+        _fact_update_cache[cache_key] = fact_update
+    
+    fact_update = _fact_update_cache[cache_key]
+    
+    return generate_convo_for_persona_and_update(
+        persona=persona, 
+        fact_update=fact_update, 
+        num_turns=num_turns
+    )
 
 def generate_update_sft(
         kb: KnowledgeBase,
@@ -201,40 +230,15 @@ def generate_update_sft(
         Returns:
             None
         """
-        for kb_item in tqdm(kb.items, desc="Processing personas", unit="persona"):
-            persona = kb_item.persona
-            facts = kb_item.facts
-
-            for fact in tqdm(facts, desc=f"Generating conversations for {persona.name_surname}", unit="fact", leave=False):
-                # Generate the fact update and check if it is possible to update it
-                fact_update = generate_fact_update(
-                    persona=persona, 
-                    fact=fact.fact_description
-                )
-                if not fact_update.fact_update_possible:
-                    continue
-                
-                # Generate the static memory and instantiate it
-                static_memory = generate_static_memory(
-                    persona=persona, 
-                    fact=fact.fact_description
-                )
-                static_memory.instantiate()
-                
-                convo_success = generate_convo_for_persona_and_update(
-                    persona=persona, 
-                    fact_update=fact_update, 
-                    num_turns=num_turns
-                )
-                if not convo_success:
-                    for _ in range(max_retries):
-                        static_memory.instantiate()
-                        convo_success = generate_convo_for_persona_and_update(
-                            persona=persona, 
-                            fact_update=fact_update, 
-                            num_turns=num_turns
-                        )
-                        if convo_success:
-                            break
-                    if not convo_success:
-                        continue
+        # Clear caches
+        global _fact_update_cache, _static_memory_cache
+        _fact_update_cache.clear()
+        _static_memory_cache.clear()
+        
+        generate_sft_for_kb(
+            kb=kb,
+            conversation_func=_generate_update_conversation,
+            setup_func=_setup_static_memory,
+            num_turns=num_turns,
+            max_retries=max_retries
+        )
