@@ -11,12 +11,16 @@ import os
 import uuid
 
 class Agent:
-    def __init__(self, max_tool_turns: int = MAX_TOOL_TURNS):
+    def __init__(self, max_tool_turns: int = MAX_TOOL_TURNS, memory_path: str = None):
         self.system_prompt = load_system_prompt()
         self.messages: list[ChatMessage] = [
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
         self.max_tool_turns = max_tool_turns
+        # Set memory_path: use provided path or fall back to default MEMORY_PATH
+        self.memory_path = memory_path if memory_path is not None else MEMORY_PATH
+        # Ensure memory_path is absolute for consistency
+        self.memory_path = os.path.abspath(self.memory_path)
 
     def _add_message(self, message: Union[ChatMessage, dict]):
         """ Add a message to the conversation history. """
@@ -49,10 +53,10 @@ class Agent:
         # Execute the code from the agent's response
         result = ({}, "")
         if response.python_block and not response.stop_acting:
-            create_memory_if_not_exists()
+            create_memory_if_not_exists(self.memory_path)
             result = execute_sandboxed_code(
                 code=extract_python_code(response.python_block),
-                allowed_path=MEMORY_PATH,
+                allowed_path=self.memory_path,
                 import_module="agent.tools"
             )
 
@@ -68,10 +72,10 @@ class Agent:
             )
             self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
             if response.python_block and not response.stop_acting:
-                create_memory_if_not_exists()
+                create_memory_if_not_exists(self.memory_path)
                 result = execute_sandboxed_code(
                     code=extract_python_code(response.python_block),
-                    allowed_path=MEMORY_PATH,
+                    allowed_path=self.memory_path,
                     import_module="agent.tools"
                 )
             remaining_tool_turns -= 1

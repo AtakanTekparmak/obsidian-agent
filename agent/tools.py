@@ -122,11 +122,21 @@ def list_files(dir_path: str = None) -> list[str]:
         if dir_path is None:
             dir_path = os.getcwd()
             
+        # Get the current working directory to use as base for relative paths
+        cwd = os.getcwd()
+            
         result_files = []
         for root, _, files_list in os.walk(dir_path):
             for file in files_list:
-                result_files.append(os.path.join(root, file))
-        return [file.split(f"{MEMORY_PATH}/", 1)[1] if f"{MEMORY_PATH}/" in file else file for file in result_files]
+                full_path = os.path.join(root, file)
+                # Try to make the path relative to the current working directory
+                try:
+                    rel_path = os.path.relpath(full_path, cwd)
+                    result_files.append(rel_path)
+                except ValueError:
+                    # If paths are on different drives on Windows, use absolute path
+                    result_files.append(full_path)
+        return result_files
     except Exception as e:
         return [f"Error: {e}"]
     
