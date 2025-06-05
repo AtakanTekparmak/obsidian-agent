@@ -24,3 +24,8 @@ python-dotenv
 openai
 google-genai
 RestrictedPython
+tqdm
+pytest
+pytest-asyncio
+asyncio
+aiofiles
