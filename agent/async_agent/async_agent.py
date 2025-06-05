@@ -59,7 +59,7 @@ class AsyncAgent:
             result = await execute_sandboxed_code(
                 code=extract_python_code(response.python_block),
                 allowed_path=self.memory_path,
-                import_module="agent.tools"
+                import_module="agent.async_agent.async_tools"
             )
 
         # Add the agent's response to the conversation history
@@ -78,7 +78,7 @@ class AsyncAgent:
                 result = await execute_sandboxed_code(
                     code=extract_python_code(response.python_block),
                     allowed_path=self.memory_path,
-                    import_module="agent.tools"
+                    import_module="agent.async_agent.async_tools"
                 )
             remaining_tool_turns -= 1
 
