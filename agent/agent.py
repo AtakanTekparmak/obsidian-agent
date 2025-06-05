@@ -17,8 +17,15 @@ class Agent:
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
         self.max_tool_turns = max_tool_turns
+        
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
-        self.memory_path = memory_path if memory_path is not None else MEMORY_PATH
+        if memory_path is not None:
+            # Always place custom memory paths inside a "memory/" folder
+            self.memory_path = os.path.join("memory", memory_path)
+        else:
+            # Use default MEMORY_PATH but also place it inside "memory/" folder
+            self.memory_path = os.path.join("memory", MEMORY_PATH)
+            
         # Ensure memory_path is absolute for consistency
         self.memory_path = os.path.abspath(self.memory_path)
 
