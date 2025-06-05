@@ -6,7 +6,7 @@ from data.schemas.sft import StaticMemory, FactUpdate
 from data.model import get_model_response
 from data.settings import OPENROUTER_SONNET
 
-from agent.agent import Agent
+from agent.async_agent import AsyncAgent
 from agent.utils import load_system_prompt
 
 from .base import (
@@ -69,7 +69,7 @@ You should start the conversation now. Don't be verbose, don't forget the LLM as
 """
 
 def generate_static_memory(
-        persona: Persona, 
+        persona: Persona,
         fact: str
     ) -> StaticMemory:
         """
@@ -137,11 +137,12 @@ class UpdateModel(BaseSFTModel):
             num_turns=num_turns
         )
 
-def generate_convo_for_persona_and_update(
+async def generate_convo_for_persona_and_update(
         persona: Persona,
         fact_update: FactUpdate,
         num_turns: int,
-        validation_func=default_fact_validation
+        validation_func=default_fact_validation,
+        memory_path: str = None
     ) -> bool:
         """
         Generate a conversation for a persona and a fact update.
@@ -160,11 +161,11 @@ def generate_convo_for_persona_and_update(
             fact_update=fact_update, 
             num_turns=num_turns
         )
-        agent = Agent()
+        agent = AsyncAgent(memory_path=memory_path)
 
         updated_fact = Fact(fact_description=fact_update.updated_fact)
         
-        return generate_conversation_for_persona(
+        return await generate_conversation_for_persona(
             persona_model=update_model,
             agent=agent,
             num_turns=num_turns,
@@ -206,31 +207,33 @@ class UpdateSFTCache:
         
         return self.static_memories[cache_key]
 
-def _setup_static_memory_with_cache(cache: UpdateSFTCache, persona: Persona, fact: Fact, **kwargs):
+def _setup_static_memory_with_cache(cache: UpdateSFTCache, persona: Persona, fact: Fact, memory_path: str, **kwargs):
     """Setup function that creates static memory for each retry attempt."""
     static_memory = cache.get_or_create_static_memory(persona, fact)
-    static_memory.instantiate()
+    static_memory.instantiate(memory_path)
 
-def _generate_update_conversation_with_cache(
+async def _generate_update_conversation_with_cache(
         cache: UpdateSFTCache,
         persona: Persona,
         fact: Fact,
         num_turns: int,
-        validation_func=default_fact_validation
+        validation_func=default_fact_validation,
+        memory_path: str = None
     ) -> bool:
     """Helper function to generate update conversation with cache."""
     fact_update = cache.get_or_create_fact_update(persona, fact)
     if fact_update is None:
         return False
     
-    return generate_convo_for_persona_and_update(
-        persona=persona, 
-        fact_update=fact_update, 
+    return await generate_convo_for_persona_and_update(
+        persona=persona,
+        fact_update=fact_update,
         num_turns=num_turns,
-        validation_func=validation_func
+        validation_func=validation_func,
+        memory_path=memory_path
     )
 
-def generate_update_sft(
+async def generate_update_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
         max_retries: int = 3,
@@ -252,13 +255,13 @@ def generate_update_sft(
         cache = UpdateSFTCache()
         
         # Create wrapper functions that include the cache
-        def conversation_func_with_cache(persona, fact, num_turns, validation_func=default_fact_validation):
-            return _generate_update_conversation_with_cache(cache, persona, fact, num_turns, validation_func)
-        
-        def setup_func_with_cache(persona, fact, **kwargs):
-            return _setup_static_memory_with_cache(cache, persona, fact, **kwargs)
-        
-        generate_sft_for_kb(
+        async def conversation_func_with_cache(persona, fact, num_turns, validation_func=default_fact_validation, memory_path=None):
+            return await _generate_update_conversation_with_cache(cache, persona, fact, num_turns, validation_func, memory_path)
+
+        async def setup_func_with_cache(persona, fact, memory_path=None, **kwargs):
+            return _setup_static_memory_with_cache(cache, persona, fact, memory_path, **kwargs)
+
+        await generate_sft_for_kb(
             kb=kb,
             conversation_func=conversation_func_with_cache,
             setup_func=setup_func_with_cache,

@@ -10,16 +10,16 @@ class StaticMemory(BaseSchema):
     user_file_path: str
     user_file_content: str
 
-    def instantiate(self):
+    def instantiate(self, path: str = MEMORY_PATH):
         """
         Instantiate the static memory inside the memory path.
         """
-        create_memory_if_not_exists()
+        create_memory_if_not_exists(path)
         try:
-            guideline_path = os.path.join(MEMORY_PATH, "guideline.md")
+            guideline_path = os.path.join(path, "guideline.md")
             with open(guideline_path, "w") as f:
                 f.write(self.guideline)
-            user_file_path = os.path.join(MEMORY_PATH, self.user_file_path)
+            user_file_path = os.path.join(path, self.user_file_path)
             user_dir = os.path.dirname(user_file_path)
             os.makedirs(user_dir, exist_ok=True)
             with open(user_file_path, "w") as f:

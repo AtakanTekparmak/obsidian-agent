@@ -1,7 +1,8 @@
 from typing import Optional
+import uuid
 
 from data.schemas.kb import KnowledgeBase, Persona, Fact
-from agent.agent import Agent
+from agent.async_agent import AsyncAgent
 
 from .base import (
     BaseSFTModel, 
@@ -40,11 +41,12 @@ class PersonaModel(BaseSFTModel):
             num_turns=num_turns
         )
 
-def generate_convo_for_persona_and_fact(
+async def generate_convo_for_persona_and_fact(
         persona: Persona,
         fact: Fact,
         num_turns: int,
-        validation_func=default_fact_validation
+        validation_func=default_fact_validation,
+        memory_path: str = None
     ) -> bool:
     """
     Generate a conversation for a persona and a fact.
@@ -63,9 +65,9 @@ def generate_convo_for_persona_and_fact(
         fact=fact.fact_description, 
         num_turns=num_turns
     )
-    agent = Agent()
-    
-    return generate_conversation_for_persona(
+    agent = AsyncAgent(memory_path=memory_path)
+
+    return await generate_conversation_for_persona(
         persona_model=persona_model,
         agent=agent,
         num_turns=num_turns,
@@ -74,7 +76,7 @@ def generate_convo_for_persona_and_fact(
     )
 
 
-def generate_introduce_sft(
+async def generate_introduce_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
         max_retries: int = 3,
@@ -93,7 +95,7 @@ def generate_introduce_sft(
     Returns:
         None
     """
-    generate_sft_for_kb(
+    await generate_sft_for_kb(
         kb=kb,
         conversation_func=generate_convo_for_persona_and_fact,
         num_turns=num_turns,
