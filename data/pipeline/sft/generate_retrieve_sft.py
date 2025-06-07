@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 from data.schemas.kb import KnowledgeBase, Persona, Fact
 from data.schemas.sft import StaticMemory
+from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
 
 from agent.async_agent import AsyncAgent
 from agent.utils import delete_memory, create_memory_if_not_exists
@@ -95,7 +96,7 @@ async def generate_retrieve_conversation_for_persona(
     persona_message = await persona_model.achat()
     
     # Generate the conversation and collect agent replies
-    for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
+    for turn in range(num_turns):
         agent_response = await agent.chat(persona_message)
         
         # Collect agent replies for validation
@@ -202,7 +203,9 @@ async def generate_retrieve_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
         max_retries: int = 3,
-        save_folder: str = "retrieve"
+        save_folder: str = "retrieve",
+        max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
+        max_concurrent_facts: int = MAX_CONCURRENT_FACTS
     ) -> None:
     """
     Generate a SFT dataset for retrieval by having the agent 
@@ -213,6 +216,8 @@ async def generate_retrieve_sft(
         num_turns: The number of turns
         max_retries: The number of retries
         save_folder: Folder name to save conversations to
+        max_concurrent_personas: Maximum number of personas to process concurrently
+        max_concurrent_facts: Maximum number of facts per persona to process concurrently
 
     Returns:
         None
@@ -238,5 +243,7 @@ async def generate_retrieve_sft(
         max_retries=max_retries,
         validation_func=dummy_validation,
         save_folder=save_folder,
-        task_name="retrieve"
+        task_name="retrieve",
+        max_concurrent_personas=max_concurrent_personas,
+        max_concurrent_facts=max_concurrent_facts
     )

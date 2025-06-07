@@ -2,6 +2,7 @@ from typing import Optional
 import uuid
 
 from data.schemas.kb import KnowledgeBase, Persona, Fact
+from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
 from agent.async_agent import AsyncAgent
 
 from .base import (
@@ -85,7 +86,9 @@ async def generate_introduce_sft(
         num_turns: int = 4,
         max_retries: int = 3,
         validation_func=default_fact_validation,
-        save_folder: str = "introduce"
+        save_folder: str = "introduce",
+        max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
+        max_concurrent_facts: int = MAX_CONCURRENT_FACTS
     ) -> None:
     """
     Generate a SFT dataset by the agent interacting
@@ -97,6 +100,8 @@ async def generate_introduce_sft(
         max_retries: The number of retries
         validation_func: Function to validate conversation results
         save_folder: Folder name to save conversations to
+        max_concurrent_personas: Maximum number of personas to process concurrently
+        max_concurrent_facts: Maximum number of facts per persona to process concurrently
 
     Returns:
         None
@@ -108,6 +113,8 @@ async def generate_introduce_sft(
         max_retries=max_retries,
         validation_func=validation_func,
         save_folder=save_folder,
-        task_name="introduce"
+        task_name="introduce",
+        max_concurrent_personas=max_concurrent_personas,
+        max_concurrent_facts=max_concurrent_facts
     )
     

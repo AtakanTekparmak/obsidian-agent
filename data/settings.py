@@ -28,3 +28,7 @@ STORIES_PATH = "stories"
 KB_PATH = "kb"
 CONVO_PATH = "convos"
 SFT_PATH = "sft"
+
+# SFT Pipeline concurrency settings
+MAX_CONCURRENT_PERSONAS = 4
+MAX_CONCURRENT_FACTS = 8

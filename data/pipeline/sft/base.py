@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 from data.schemas.kb import KnowledgeBase, Persona, Fact
 from data.model import SFTModel
+from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
 
 import asyncio
 import uuid
@@ -120,7 +121,7 @@ async def generate_conversation_for_persona(
     persona_message = await persona_model.achat()
     
     # Generate the conversation
-    for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
+    for turn in range(num_turns):
         agent_response = await agent.chat(persona_message)
         persona_message = await persona_model.achat(agent_response.reply)
     
@@ -144,10 +145,12 @@ async def generate_sft_for_kb(
         validation_func: Callable[[list[Fact], str], bool] = default_fact_validation,
         save_folder: str = None,
         task_name: str = "",
+        max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
+        max_concurrent_facts: int = MAX_CONCURRENT_FACTS,
         **kwargs
     ) -> None:
     """
-    Generate SFT dataset for a knowledge base.
+    Generate SFT dataset for a knowledge base with concurrent processing.
     
     Args:
         kb: The knowledge base
@@ -158,15 +161,17 @@ async def generate_sft_for_kb(
         validation_func: Function to validate conversation results
         save_folder: Folder name to save conversations to
         task_name: Name of the task for progress bar description
+        max_concurrent_personas: Maximum number of personas to process concurrently
+        max_concurrent_facts: Maximum number of facts per persona to process concurrently
         **kwargs: Additional arguments for the conversation function
     """
-    task_desc = f"Processing personas for {task_name}" if task_name else "Processing personas"
+    # Create semaphores to control concurrency
+    persona_semaphore = asyncio.Semaphore(max_concurrent_personas)
+    fact_semaphore = asyncio.Semaphore(max_concurrent_facts)
     
-    for kb_item in tqdm(kb.items, desc=task_desc, unit="persona"):
-        persona = kb_item.persona
-        facts = kb_item.facts
-
-        for fact in tqdm(facts, desc=f"Generating conversations for {persona.name_surname}", unit="fact", leave=False):
+    async def process_fact_for_persona(persona: Persona, fact: Fact) -> bool:
+        """Process a single fact for a persona with fact-level concurrency control."""
+        async with fact_semaphore:
             memory_path = f"{persona.name_surname.replace(' ', '_')}_{uuid.uuid4().hex}"
             success = await generate_conversation_with_retries(
                 conversation_func,
@@ -180,5 +185,49 @@ async def generate_sft_for_kb(
                 save_folder=save_folder,
                 **kwargs
             )
-            if not success:
-                continue
+            return success
+    
+    async def process_persona(kb_item) -> int:
+        """Process all facts for a single persona concurrently."""
+        async with persona_semaphore:
+            persona = kb_item.persona
+            facts = kb_item.facts
+            
+            # Process all facts for this persona concurrently
+            fact_tasks = [
+                process_fact_for_persona(persona, fact) 
+                for fact in facts
+            ]
+            
+            if fact_tasks:
+                # Use tqdm for progress tracking at the fact level
+                fact_results = []
+                with tqdm(total=len(fact_tasks), 
+                         desc=f"Processing facts for {persona.name_surname}", 
+                         unit="fact", 
+                         leave=False) as pbar:
+                    
+                    # Process facts with progress updates
+                    for coro in asyncio.as_completed(fact_tasks):
+                        result = await coro
+                        fact_results.append(result)
+                        pbar.update(1)
+                
+                successful_facts = sum(1 for result in fact_results if result)
+                return successful_facts
+            return 0
+    
+    # Process all personas concurrently
+    task_desc = f"Processing personas for {task_name}" if task_name else "Processing personas"
+    
+    persona_tasks = [process_persona(kb_item) for kb_item in kb.items]
+    
+    if persona_tasks:
+        total_successful_facts = 0
+        with tqdm(total=len(persona_tasks), desc=task_desc, unit="persona") as pbar:
+            for coro in asyncio.as_completed(persona_tasks):
+                successful_facts = await coro
+                total_successful_facts += successful_facts
+                pbar.update(1)
+        
+        print(f"Completed {task_name}: {total_successful_facts} successful conversations generated")
