@@ -123,7 +123,12 @@ async def generate_conversation_for_persona(
     # Generate the conversation
     for turn in range(num_turns):
         agent_response = await agent.chat(persona_message)
-        persona_message = await persona_model.achat(agent_response.reply)
+        # Only continue the conversation if agent provided a reply
+        if agent_response.reply:
+            persona_message = await persona_model.achat(agent_response.reply)
+        else:
+            # If agent doesn't reply, break the conversation loop
+            return False
     
     # Validate the conversation results
     if not validation_func(facts_to_check, agent.memory_path):

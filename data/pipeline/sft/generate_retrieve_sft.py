@@ -102,8 +102,10 @@ async def generate_retrieve_conversation_for_persona(
         # Collect agent replies for validation
         if agent_response.reply:
             agent_replies.append(agent_response.reply)
-        
-        persona_message = await persona_model.achat(agent_response.reply)
+            persona_message = await persona_model.achat(agent_response.reply)
+        else:
+            # If agent doesn't reply, break the conversation loop
+            return False
     
     # Validate using custom retrieval validation
     if not retrieval_validation(facts_to_check, agent_replies):

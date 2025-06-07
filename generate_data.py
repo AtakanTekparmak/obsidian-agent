@@ -5,12 +5,10 @@ import asyncio
 import time
 
 async def main():
-    """
     scenario = "Groningen, Netherlands in 2025"
-    personas = generate_personas(4, scenario, save=True)
+    personas = generate_personas(8, scenario, save=True)
     kb = generate_kb(personas, save=True)
-    """
-    kb = load_kb_from_json()
+    #kb = load_kb_from_json()
     
     # Create tasks for all SFT generations to run concurrently
     tasks = [

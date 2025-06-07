@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Agent settings
-MAX_TOOL_TURNS = 4
+MAX_TOOL_TURNS = 5
 
 # OpenRouter
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
