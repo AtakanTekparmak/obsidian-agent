@@ -6,6 +6,7 @@ from abc import ABC
 
 from data.settings import OPENROUTER_BASE_URL, OPENROUTER_API_KEY
 from agent.model import get_model_response as get_agent_response
+from agent.async_agent import get_model_response as async_get_agent_response
 from agent.schemas import ChatMessage, Role
 
 # Initialize the client
@@ -75,6 +76,16 @@ class SFTModel(ABC):
             self._add_message(ChatMessage(role=Role.USER, content=message))
 
         response = get_agent_response(messages=self.messages)
+        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
+
+        return response
+
+    async def achat(self, message: Optional[str] = None) -> str:
+        """Async chat with the LLM assistant."""
+        if message:
+            self._add_message(ChatMessage(role=Role.USER, content=message))
+
+        response = await async_get_agent_response(messages=self.messages)
         self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
 
         return response

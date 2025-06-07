@@ -4,7 +4,7 @@ from tqdm import tqdm
 from data.schemas.kb import KnowledgeBase, Persona, Fact
 from data.schemas.sft import StaticMemory
 
-from agent.agent import Agent
+from agent.async_agent import AsyncAgent
 from agent.utils import delete_memory, create_memory_if_not_exists
 
 from training.reward import get_reward
@@ -67,11 +67,12 @@ def retrieval_validation(facts_to_check: List[Fact], agent_replies: List[str]) -
     return reward >= 0.99
 
 
-def generate_retrieve_conversation_for_persona(
+async def generate_retrieve_conversation_for_persona(
         persona_model: RetrieveModel,
-        agent: Agent,
+        agent: AsyncAgent,
         num_turns: int,
-        facts_to_check: List[Fact]
+        facts_to_check: List[Fact],
+        save_folder: str = None
     ) -> bool:
     """
     Generate a retrieval conversation between a persona model and an agent.
@@ -81,43 +82,46 @@ def generate_retrieve_conversation_for_persona(
         agent: The agent
         num_turns: Number of conversation turns
         facts_to_check: Facts to verify in agent replies
+        save_folder: Folder name to save conversations to
     
     Returns:
         bool: True if conversation was successful and validation passed
     """
     # Create the memory if it doesn't exist
-    create_memory_if_not_exists()
+    create_memory_if_not_exists(agent.memory_path)
     
     agent_replies = []
     
-    persona_message = persona_model.chat()
+    persona_message = await persona_model.achat()
     
     # Generate the conversation and collect agent replies
     for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
-        agent_response = agent.chat(persona_message)
+        agent_response = await agent.chat(persona_message)
         
         # Collect agent replies for validation
         if agent_response.reply:
             agent_replies.append(agent_response.reply)
         
-        persona_message = persona_model.chat(agent_response.reply)
+        persona_message = await persona_model.achat(agent_response.reply)
     
     # Validate using custom retrieval validation
     if not retrieval_validation(facts_to_check, agent_replies):
-        delete_memory()
+        delete_memory(agent.memory_path)
         return False
     
     # Save the conversation and delete the memory
-    agent.save_conversation()
-    delete_memory()
+    await agent.save_conversation(save_folder=save_folder)
+    delete_memory(agent.memory_path)
     return True
 
 
-def generate_convo_for_persona_and_retrieve(
+async def generate_convo_for_persona_and_retrieve(
         persona: Persona,
         fact: Fact,
         num_turns: int,
-        validation_func=None  # Added parameter to match expected signature
+        validation_func=None,  # Added parameter to match expected signature
+        memory_path: str = None,
+        save_folder: str = None
     ) -> bool:
     """
     Generate a retrieval conversation for a persona and a fact.
@@ -127,6 +131,8 @@ def generate_convo_for_persona_and_retrieve(
         fact: The fact to retrieve
         num_turns: The number of turns
         validation_func: Unused, kept for interface compatibility
+        memory_path: The memory path for the agent
+        save_folder: Folder name to save conversations to
 
     Returns:
         bool: True if the conversation was generated successfully, False otherwise
@@ -136,13 +142,14 @@ def generate_convo_for_persona_and_retrieve(
         fact=fact.fact_description, 
         num_turns=num_turns
     )
-    agent = Agent()
+    agent = AsyncAgent(memory_path=memory_path)
     
-    return generate_retrieve_conversation_for_persona(
+    return await generate_retrieve_conversation_for_persona(
         persona_model=retrieve_model,
         agent=agent,
         num_turns=num_turns,
-        facts_to_check=[fact]
+        facts_to_check=[fact],
+        save_folder=save_folder
     )
 
 
@@ -167,30 +174,35 @@ class RetrieveSFTCache:
         return self.static_memories[cache_key]
 
 
-def _setup_static_memory_with_cache(cache: RetrieveSFTCache, persona: Persona, fact: Fact, **kwargs):
+def _setup_static_memory_with_cache(cache: RetrieveSFTCache, persona: Persona, fact: Fact, memory_path: str, **kwargs):
     """Setup function that creates static memory for each retry attempt."""
     static_memory = cache.get_or_create_static_memory(persona, fact)
-    static_memory.instantiate()
+    static_memory.instantiate(memory_path)
 
 
-def _generate_retrieve_conversation_with_cache(
+async def _generate_retrieve_conversation_with_cache(
         cache: RetrieveSFTCache,
         persona: Persona,
         fact: Fact,
-        num_turns: int
+        num_turns: int,
+        memory_path: str,
+        save_folder: str = None
     ) -> bool:
     """Helper function to generate retrieve conversation with cache."""
-    return generate_convo_for_persona_and_retrieve(
-        persona=persona, 
-        fact=fact, 
-        num_turns=num_turns
+    return await generate_convo_for_persona_and_retrieve(
+        persona=persona,
+        fact=fact,
+        num_turns=num_turns,
+        memory_path=memory_path,
+        save_folder=save_folder
     )
 
 
-def generate_retrieve_sft(
+async def generate_retrieve_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
-        max_retries: int = 3
+        max_retries: int = 3,
+        save_folder: str = "retrieve"
     ) -> None:
     """
     Generate a SFT dataset for retrieval by having the agent 
@@ -200,6 +212,7 @@ def generate_retrieve_sft(
         kb: The knowledge base
         num_turns: The number of turns
         max_retries: The number of retries
+        save_folder: Folder name to save conversations to
 
     Returns:
         None
@@ -207,21 +220,23 @@ def generate_retrieve_sft(
     cache = RetrieveSFTCache()
     
     # Create wrapper functions that include the cache
-    def conversation_func_with_cache(persona, fact, num_turns, validation_func=None):
-        return _generate_retrieve_conversation_with_cache(cache, persona, fact, num_turns)
-    
-    def setup_func_with_cache(persona, fact, **kwargs):
-        return _setup_static_memory_with_cache(cache, persona, fact, **kwargs)
+    async def conversation_func_with_cache(persona, fact, num_turns, validation_func=None, memory_path=None, save_folder=None):
+        return await _generate_retrieve_conversation_with_cache(cache, persona, fact, num_turns, memory_path, save_folder)
+
+    async def setup_func_with_cache(persona, fact, memory_path=None, **kwargs):
+        return _setup_static_memory_with_cache(cache, persona, fact, memory_path, **kwargs)
     
     # Use a dummy validation function since retrieve has custom validation
     def dummy_validation(facts_to_check):
         return True  # Actual validation happens inside conversation generation
     
-    generate_sft_for_kb(
+    await generate_sft_for_kb(
         kb=kb,
         conversation_func=conversation_func_with_cache,
         setup_func=setup_func_with_cache,
         num_turns=num_turns,
         max_retries=max_retries,
-        validation_func=dummy_validation
-    ) 
+        validation_func=dummy_validation,
+        save_folder=save_folder,
+        task_name="retrieve"
+    )
