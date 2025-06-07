@@ -202,7 +202,7 @@ async def _generate_retrieve_conversation_with_cache(
 async def generate_retrieve_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
-        max_retries: int = 3,
+        max_retries: int = 4,
         save_folder: str = "retrieve",
         max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
         max_concurrent_facts: int = MAX_CONCURRENT_FACTS

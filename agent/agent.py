@@ -1,5 +1,5 @@
 from agent.engine import execute_sandboxed_code
-from agent.model import get_model_response
+from agent.model import get_model_response, create_openai_client, create_instructor_client
 from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
 from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS
 from agent.schemas import ChatMessage, Role, AgentResponse
@@ -17,6 +17,10 @@ class Agent:
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
         self.max_tool_turns = max_tool_turns
+        
+        # Each Agent instance gets its own clients to avoid bottlenecks
+        self._client = create_openai_client()
+        self._instructor_client = create_instructor_client(self._client)
         
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
         if memory_path is not None:
@@ -51,10 +55,12 @@ class Agent:
         # Add the user message to the conversation history
         self._add_message(ChatMessage(role=Role.USER, content=message))
 
-        # Get the response from the agent
+        # Get the response from the agent using this instance's clients
         response = get_model_response(
             messages=self.messages,
-            schema=AgentResponse
+            schema=AgentResponse,
+            client=self._client,
+            instructor_client=self._instructor_client
         )
 
         # Execute the code from the agent's response
@@ -75,7 +81,9 @@ class Agent:
             self._add_message(ChatMessage(role=Role.USER, content=format_results(result)))
             response = get_model_response(
                 messages=self.messages,
-                schema=AgentResponse
+                schema=AgentResponse,
+                client=self._client,
+                instructor_client=self._instructor_client
             )
             self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
             if response.python_block and not response.stop_acting:
@@ -112,7 +120,7 @@ class Agent:
 
         # Convert the execution result messages to tool role
         messages = [
-            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<result>") else ChatMessage(role=message.role, content=message.content)
+            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<r>") else ChatMessage(role=message.role, content=message.content)
             for message in self.messages 
         ]
         try:
