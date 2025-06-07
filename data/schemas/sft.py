@@ -14,6 +14,13 @@ class StaticMemory(BaseSchema):
         """
         Instantiate the static memory inside the memory path.
         """
+        # Ensure the path is always within a "memory/" folder structure
+        if not path.startswith("memory/") and not os.path.isabs(path):
+            path = os.path.join("memory", path)
+        
+        # Make path absolute for consistency
+        path = os.path.abspath(path)
+        
         create_memory_if_not_exists(path)
         try:
             guideline_path = os.path.join(path, "guideline.md")
