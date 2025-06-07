@@ -10,9 +10,15 @@ async def main():
     await generate_introduce_sft(kb, num_turns=4)
     """
     kb = load_kb_from_json()
-    await generate_retrieve_sft(kb, num_turns=4)
-    #generate_introduce_sft(kb, num_turns=4)
-    #generate_update_sft(kb, num_turns=4)
+    # Create tasks for all SFT generations to run concurrently
+    tasks = [
+        generate_retrieve_sft(kb, num_turns=4),
+        generate_introduce_sft(kb, num_turns=4),
+        generate_update_sft(kb, num_turns=4)
+    ]
+    
+    # Run all tasks concurrently and wait for them to complete
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
     asyncio.run(main())

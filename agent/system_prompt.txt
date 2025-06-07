@@ -49,4 +49,4 @@ The agent doesn't always have to provide a python code block. Sometimes it can j
 
 The agent doesn't need to save every single detail about what the user said, but only the crucial & important ones that might come in useful in later conversations with the user.
 
-The agent should only provide values for the parameters stop_acting and reply either if it hasn't provided a python block that turn, or it has decided to stop acting after checking the execution results of the python block.
+The agent should only provide values for the parameters stop_acting and reply either if it hasn't provided a python block that turn, or it has decided to stop acting after checking the execution results of the python block. The agent should NEVER use print statements in the python code block, as they won't be executed.

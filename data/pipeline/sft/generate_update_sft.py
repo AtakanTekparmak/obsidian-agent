@@ -142,7 +142,8 @@ async def generate_convo_for_persona_and_update(
         fact_update: FactUpdate,
         num_turns: int,
         validation_func=default_fact_validation,
-        memory_path: str = None
+        memory_path: str = None,
+        save_folder: str = None
     ) -> bool:
         """
         Generate a conversation for a persona and a fact update.
@@ -152,6 +153,8 @@ async def generate_convo_for_persona_and_update(
             fact_update: The fact update
             num_turns: The number of turns
             validation_func: Function to validate conversation results
+            memory_path: The memory path for the agent
+            save_folder: Folder name to save conversations to
 
         Returns:
             bool: True if the conversation was generated successfully, False otherwise
@@ -170,7 +173,8 @@ async def generate_convo_for_persona_and_update(
             agent=agent,
             num_turns=num_turns,
             facts_to_check=[updated_fact],
-            validation_func=validation_func
+            validation_func=validation_func,
+            save_folder=save_folder
         )
 
 class UpdateSFTCache:
@@ -218,7 +222,8 @@ async def _generate_update_conversation_with_cache(
         fact: Fact,
         num_turns: int,
         validation_func=default_fact_validation,
-        memory_path: str = None
+        memory_path: str = None,
+        save_folder: str = None
     ) -> bool:
     """Helper function to generate update conversation with cache."""
     fact_update = cache.get_or_create_fact_update(persona, fact)
@@ -230,14 +235,16 @@ async def _generate_update_conversation_with_cache(
         fact_update=fact_update,
         num_turns=num_turns,
         validation_func=validation_func,
-        memory_path=memory_path
+        memory_path=memory_path,
+        save_folder=save_folder
     )
 
 async def generate_update_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
         max_retries: int = 3,
-        validation_func=default_fact_validation
+        validation_func=default_fact_validation,
+        save_folder: str = "update"
     ) -> None:
         """
         Generate a SFT dataset by the agent interacting
@@ -248,6 +255,7 @@ async def generate_update_sft(
             num_turns: The number of turns
             max_retries: The number of retries
             validation_func: Function to validate conversation results
+            save_folder: Folder name to save conversations to
 
         Returns:
             None
@@ -255,8 +263,8 @@ async def generate_update_sft(
         cache = UpdateSFTCache()
         
         # Create wrapper functions that include the cache
-        async def conversation_func_with_cache(persona, fact, num_turns, validation_func=default_fact_validation, memory_path=None):
-            return await _generate_update_conversation_with_cache(cache, persona, fact, num_turns, validation_func, memory_path)
+        async def conversation_func_with_cache(persona, fact, num_turns, validation_func=default_fact_validation, memory_path=None, save_folder=None):
+            return await _generate_update_conversation_with_cache(cache, persona, fact, num_turns, validation_func, memory_path, save_folder)
 
         async def setup_func_with_cache(persona, fact, memory_path=None, **kwargs):
             return _setup_static_memory_with_cache(cache, persona, fact, memory_path, **kwargs)
@@ -267,5 +275,7 @@ async def generate_update_sft(
             setup_func=setup_func_with_cache,
             num_turns=num_turns,
             max_retries=max_retries,
-            validation_func=validation_func
+            validation_func=validation_func,
+            save_folder=save_folder,
+            task_name="update"
         )

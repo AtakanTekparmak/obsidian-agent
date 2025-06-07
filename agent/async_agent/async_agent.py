@@ -66,7 +66,7 @@ class AsyncAgent:
             result = await execute_sandboxed_code(
                 code=extract_python_code(response.python_block),
                 allowed_path=self.memory_path,
-                import_module="agent.async_agent.async_tools"
+                import_module="agent.tools"
             )
 
         # Add the agent's response to the conversation history
@@ -85,13 +85,17 @@ class AsyncAgent:
                 result = await execute_sandboxed_code(
                     code=extract_python_code(response.python_block),
                     allowed_path=self.memory_path,
-                    import_module="agent.async_agent.async_tools"
+                    import_module="agent.tools"
                 )
             remaining_tool_turns -= 1
 
         return response
 
-    async def save_conversation(self, log: bool = False):
+    async def save_conversation(
+            self, 
+            log: bool = False,
+            save_folder: str = None
+        ):
         """
         Save the conversation messages to a JSON file asynchronously.
         """
@@ -99,7 +103,13 @@ class AsyncAgent:
             os.makedirs(SAVE_CONVERSATION_PATH, exist_ok=True)
 
         unique_id = uuid.uuid4()
-        file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
+        if save_folder is None:
+            file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
+        else:
+            folder_path = os.path.join(SAVE_CONVERSATION_PATH, save_folder)
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            file_path = os.path.join(folder_path, f"convo_{unique_id}.json")
 
         # Convert the execution result messages to tool role
         messages = [

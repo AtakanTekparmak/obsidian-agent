@@ -71,7 +71,8 @@ async def generate_retrieve_conversation_for_persona(
         persona_model: RetrieveModel,
         agent: AsyncAgent,
         num_turns: int,
-        facts_to_check: List[Fact]
+        facts_to_check: List[Fact],
+        save_folder: str = None
     ) -> bool:
     """
     Generate a retrieval conversation between a persona model and an agent.
@@ -81,6 +82,7 @@ async def generate_retrieve_conversation_for_persona(
         agent: The agent
         num_turns: Number of conversation turns
         facts_to_check: Facts to verify in agent replies
+        save_folder: Folder name to save conversations to
     
     Returns:
         bool: True if conversation was successful and validation passed
@@ -108,7 +110,7 @@ async def generate_retrieve_conversation_for_persona(
         return False
     
     # Save the conversation and delete the memory
-    await agent.save_conversation()
+    await agent.save_conversation(save_folder=save_folder)
     delete_memory(agent.memory_path)
     return True
 
@@ -118,7 +120,8 @@ async def generate_convo_for_persona_and_retrieve(
         fact: Fact,
         num_turns: int,
         validation_func=None,  # Added parameter to match expected signature
-        memory_path: str = None
+        memory_path: str = None,
+        save_folder: str = None
     ) -> bool:
     """
     Generate a retrieval conversation for a persona and a fact.
@@ -128,6 +131,8 @@ async def generate_convo_for_persona_and_retrieve(
         fact: The fact to retrieve
         num_turns: The number of turns
         validation_func: Unused, kept for interface compatibility
+        memory_path: The memory path for the agent
+        save_folder: Folder name to save conversations to
 
     Returns:
         bool: True if the conversation was generated successfully, False otherwise
@@ -143,7 +148,8 @@ async def generate_convo_for_persona_and_retrieve(
         persona_model=retrieve_model,
         agent=agent,
         num_turns=num_turns,
-        facts_to_check=[fact]
+        facts_to_check=[fact],
+        save_folder=save_folder
     )
 
 
@@ -179,21 +185,24 @@ async def _generate_retrieve_conversation_with_cache(
         persona: Persona,
         fact: Fact,
         num_turns: int,
-        memory_path: str
+        memory_path: str,
+        save_folder: str = None
     ) -> bool:
     """Helper function to generate retrieve conversation with cache."""
     return await generate_convo_for_persona_and_retrieve(
         persona=persona,
         fact=fact,
         num_turns=num_turns,
-        memory_path=memory_path
+        memory_path=memory_path,
+        save_folder=save_folder
     )
 
 
 async def generate_retrieve_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
-        max_retries: int = 3
+        max_retries: int = 3,
+        save_folder: str = "retrieve"
     ) -> None:
     """
     Generate a SFT dataset for retrieval by having the agent 
@@ -203,6 +212,7 @@ async def generate_retrieve_sft(
         kb: The knowledge base
         num_turns: The number of turns
         max_retries: The number of retries
+        save_folder: Folder name to save conversations to
 
     Returns:
         None
@@ -210,8 +220,8 @@ async def generate_retrieve_sft(
     cache = RetrieveSFTCache()
     
     # Create wrapper functions that include the cache
-    async def conversation_func_with_cache(persona, fact, num_turns, validation_func=None, memory_path=None):
-        return await _generate_retrieve_conversation_with_cache(cache, persona, fact, num_turns, memory_path)
+    async def conversation_func_with_cache(persona, fact, num_turns, validation_func=None, memory_path=None, save_folder=None):
+        return await _generate_retrieve_conversation_with_cache(cache, persona, fact, num_turns, memory_path, save_folder)
 
     async def setup_func_with_cache(persona, fact, memory_path=None, **kwargs):
         return _setup_static_memory_with_cache(cache, persona, fact, memory_path, **kwargs)
@@ -226,5 +236,7 @@ async def generate_retrieve_sft(
         setup_func=setup_func_with_cache,
         num_turns=num_turns,
         max_retries=max_retries,
-        validation_func=dummy_validation
+        validation_func=dummy_validation,
+        save_folder=save_folder,
+        task_name="retrieve"
     )

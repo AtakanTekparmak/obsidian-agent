@@ -46,7 +46,8 @@ async def generate_convo_for_persona_and_fact(
         fact: Fact,
         num_turns: int,
         validation_func=default_fact_validation,
-        memory_path: str = None
+        memory_path: str = None,
+        save_folder: str = None
     ) -> bool:
     """
     Generate a conversation for a persona and a fact.
@@ -56,6 +57,8 @@ async def generate_convo_for_persona_and_fact(
         fact: The fact
         num_turns: The number of turns
         validation_func: Function to validate conversation results
+        memory_path: The memory path for the agent
+        save_folder: Folder name to save conversations to
 
     Returns:
         bool: True if the conversation was generated successfully, False otherwise
@@ -72,7 +75,8 @@ async def generate_convo_for_persona_and_fact(
         agent=agent,
         num_turns=num_turns,
         facts_to_check=[fact],
-        validation_func=validation_func
+        validation_func=validation_func,
+        save_folder=save_folder
     )
 
 
@@ -80,7 +84,8 @@ async def generate_introduce_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
         max_retries: int = 3,
-        validation_func=default_fact_validation
+        validation_func=default_fact_validation,
+        save_folder: str = "introduce"
     ) -> None:
     """
     Generate a SFT dataset by the agent interacting
@@ -91,6 +96,7 @@ async def generate_introduce_sft(
         num_turns: The number of turns
         max_retries: The number of retries
         validation_func: Function to validate conversation results
+        save_folder: Folder name to save conversations to
 
     Returns:
         None
@@ -100,6 +106,8 @@ async def generate_introduce_sft(
         conversation_func=generate_convo_for_persona_and_fact,
         num_turns=num_turns,
         max_retries=max_retries,
-        validation_func=validation_func
+        validation_func=validation_func,
+        save_folder=save_folder,
+        task_name="introduce"
     )
     

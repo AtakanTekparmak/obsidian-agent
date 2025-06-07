@@ -97,7 +97,8 @@ async def generate_conversation_for_persona(
         agent: AsyncAgent,
         num_turns: int,
         facts_to_check: list[Fact],
-        validation_func: Callable[[list[Fact], str], bool] = default_fact_validation
+        validation_func: Callable[[list[Fact], str], bool] = default_fact_validation,
+        save_folder: str = None
     ) -> bool:
     """
     Generate a conversation between a persona model and an agent.
@@ -108,6 +109,7 @@ async def generate_conversation_for_persona(
         num_turns: Number of conversation turns
         facts_to_check: Facts to verify after conversation
         validation_func: Function to validate the conversation results
+        save_folder: Folder name to save conversations to
     
     Returns:
         bool: True if conversation was successful and validation passed
@@ -128,7 +130,7 @@ async def generate_conversation_for_persona(
         return False
 
     # Save the conversation and delete the memory
-    await agent.save_conversation()
+    await agent.save_conversation(save_folder=save_folder)
     delete_memory(agent.memory_path)
     return True
 
@@ -140,6 +142,8 @@ async def generate_sft_for_kb(
         max_retries: int = 3,
         setup_func: Optional[Callable] = None,
         validation_func: Callable[[list[Fact], str], bool] = default_fact_validation,
+        save_folder: str = None,
+        task_name: str = "",
         **kwargs
     ) -> None:
     """
@@ -152,9 +156,13 @@ async def generate_sft_for_kb(
         max_retries: Maximum number of retries
         setup_func: Optional setup function to call before each attempt
         validation_func: Function to validate conversation results
+        save_folder: Folder name to save conversations to
+        task_name: Name of the task for progress bar description
         **kwargs: Additional arguments for the conversation function
     """
-    for kb_item in tqdm(kb.items, desc="Processing personas", unit="persona"):
+    task_desc = f"Processing personas for {task_name}" if task_name else "Processing personas"
+    
+    for kb_item in tqdm(kb.items, desc=task_desc, unit="persona"):
         persona = kb_item.persona
         facts = kb_item.facts
 
@@ -169,6 +177,7 @@ async def generate_sft_for_kb(
                 num_turns=num_turns,
                 validation_func=validation_func,
                 memory_path=memory_path,
+                save_folder=save_folder,
                 **kwargs
             )
             if not success:

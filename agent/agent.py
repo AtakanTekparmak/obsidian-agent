@@ -89,7 +89,11 @@ class Agent:
 
         return response
 
-    def save_conversation(self, log: bool = False):
+    def save_conversation(
+            self, 
+            log: bool = False,
+            save_folder: str = None
+        ):
         """
         Save the conversation messages to a JSON file in
         the output/conversations directory.
@@ -98,7 +102,13 @@ class Agent:
             os.makedirs(SAVE_CONVERSATION_PATH, exist_ok=True)
 
         unique_id = uuid.uuid4()
-        file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
+        if save_folder is None:
+            file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
+        else:
+            folder_path = os.path.join(SAVE_CONVERSATION_PATH, save_folder)
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            file_path = os.path.join(folder_path, f"convo_{unique_id}.json")
 
         # Convert the execution result messages to tool role
         messages = [
