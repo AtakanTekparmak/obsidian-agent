@@ -15,9 +15,9 @@ help:
 	@echo "Targets:"
 	@echo "  1. install           Install dependencies and set up the environment (should be run first)"
 	@echo "  2. copy-env          Copy the .env.example file to .env if it doesn't exist (should be run second)"
-	@echo "  3. run               Run the main.py script (should be run third)"
+	@echo "  3. run-agent         Run the agent"
 	@echo "  4. generate-data     Generate data using the pipeline"
-	@echo "  5. test              Run the tests"
+	@echo "  5. build-dataset     Build the HF dataset and upload it to the Hub"
 	@echo "  6. clean             Remove the virtual environment and its contents"
 
 # Install dependencies and set up the environment
@@ -35,11 +35,6 @@ copy-env:
 		echo ".env file already exists"; \
 	fi
 
-# Run the main.py script
-run:
-	. $(VENV_NAME)/bin/activate && \
-	$(PYTHON) main.py
-
 # Generate data using the pipeline
 generate-data:
 	. $(VENV_NAME)/bin/activate && \
@@ -50,10 +45,10 @@ run-agent:
 	. $(VENV_NAME)/bin/activate && \
 	$(PYTHON) run_agent.py
 
-# Run the tests
-test:
+# Build the HF dataset and upload it to the Hub
+build-dataset:
 	. $(VENV_NAME)/bin/activate && \
-	$(PYTHON) test_reward.py
+	$(PYTHON) build_hf_dataset.py --data_dir output/conversations
 
 # Clean the virtual environment
 clean:
