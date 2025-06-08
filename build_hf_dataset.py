@@ -40,7 +40,9 @@ def main():
     if repo_exists:
         # Load the current remote split and merge while de-duplicating on `id`
         remote_ds = load_dataset(args.repo_id, split="train", trust_remote_code=True)
-        merged = concatenate_datasets([remote_ds, local_ds]).unique("id")
+        concatenated = concatenate_datasets([remote_ds, local_ds])
+        merged = concatenated.to_pandas().drop_duplicates(subset=['id']).reset_index(drop=True)
+        merged = Dataset.from_pandas(merged)
     else:
         merged = local_ds
 
