@@ -68,12 +68,15 @@ def create_memory_if_not_exists(path: str = MEMORY_PATH):
     except Exception as e:
         print(f"Error creating memory directory at {path}: {e}")
 
-def delete_memory() -> None:
+def delete_memory(path: str = MEMORY_PATH) -> None:
     """
     Delete the memory.
+    
+    Args:
+        path: The path to delete. Defaults to MEMORY_PATH.
     """
-    if os.path.exists(MEMORY_PATH):
-        shutil.rmtree(MEMORY_PATH)
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 def extract_python_code(response: str) -> str:
     """

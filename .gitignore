@@ -180,7 +180,10 @@ cython_debug/
 
 # Memory directories
 memory_dir/
-mock_obsidian_vault/
+
+# Any folder with the word "memory" in it
+*memory*/
+
 
 # Output directories
 **/output/*

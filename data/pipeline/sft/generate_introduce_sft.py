@@ -1,15 +1,16 @@
 from typing import Optional
-from tqdm import tqdm
+import uuid
 
 from data.schemas.kb import KnowledgeBase, Persona, Fact
-from data.model import SFTModel
+from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
+from agent.async_agent import AsyncAgent
 
-from agent.agent import Agent
-from agent.utils import delete_memory, create_memory_if_not_exists
-from agent.schemas import ChatMessage, Role
-from agent.settings import MEMORY_PATH
-
-from training.reward import dump_folder, get_reward
+from .base import (
+    BaseSFTModel, 
+    generate_conversation_for_persona, 
+    generate_sft_for_kb,
+    default_fact_validation
+)
 
 PERSONA_PROMPT = """
 You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}. 
@@ -25,107 +26,95 @@ You will be conversing with an LLM assistant that has a self managed, Obsidian-l
 You should start the conversation now. Don't be verbose, don't forget the LLM assistant is an AI assistant. Don't say more than 2 sentences at a time, that number is absolute. The conversation HAS to be in English, no matter which persona you are.
 """
 
-class PersonaModel(SFTModel):
+class PersonaModel(BaseSFTModel):
     """
     Utility class for an LLM assuming the role of a persona.
     It is used to generate a conversation for a persona and a fact.
     """
     def __init__(self, persona: Persona, fact: str, num_turns: int):
-        super().__init__(num_turns)
-        self.messages: list[ChatMessage] = [
-            ChatMessage(
-                role=Role.SYSTEM, 
-                content=PERSONA_PROMPT.format(
-                    persona=persona, 
-                    fact=fact, 
-                    num_turns=num_turns
-                )
-            )
-        ]
-
-def generate_convo_for_persona_and_fact(
-        persona: Persona,
-        fact: Fact,
-        num_turns: int
-    ) -> bool:
-        """
-        Generate a conversation for a persona and a fact.
-
-        Args:
-            persona: The persona
-            fact: The fact
-            num_turns: The number of turns
-
-        Returns:
-            bool: True if the conversation was generated successfully, False otherwise
-        """
-        # Instantiate the persona model and the agent
-        persona_model = PersonaModel(
+        self.fact = fact
+        super().__init__(persona, num_turns)
+    
+    def _get_system_prompt(self, persona: Persona, num_turns: int) -> str:
+        return PERSONA_PROMPT.format(
             persona=persona, 
-            fact=fact.fact_description, 
+            fact=self.fact, 
             num_turns=num_turns
         )
-        agent = Agent()
 
-        # Create the memory if it doesn't exist
-        create_memory_if_not_exists()
+async def generate_convo_for_persona_and_fact(
+        persona: Persona,
+        fact: Fact,
+        num_turns: int,
+        validation_func=default_fact_validation,
+        memory_path: str = None,
+        save_folder: str = None
+    ) -> bool:
+    """
+    Generate a conversation for a persona and a fact.
 
-        persona_message = persona_model.chat()
+    Args:
+        persona: The persona
+        fact: The fact
+        num_turns: The number of turns
+        validation_func: Function to validate conversation results
+        memory_path: The memory path for the agent
+        save_folder: Folder name to save conversations to
 
-        # Generate the conversation
-        for turn in tqdm(range(num_turns), desc="Conversation turns", unit="turn", leave=False):
-            agent_response = agent.chat(persona_message)
-            persona_message = persona_model.chat(agent_response.reply)
+    Returns:
+        bool: True if the conversation was generated successfully, False otherwise
+    """
+    persona_model = PersonaModel(
+        persona=persona, 
+        fact=fact.fact_description, 
+        num_turns=num_turns
+    )
+    agent = AsyncAgent(memory_path=memory_path)
 
-        # Check if the fact is present in the memory
-        folder_dump_str = dump_folder(MEMORY_PATH)
-        reward = get_reward(folder_dump_str=folder_dump_str, facts_to_check=[fact])
-        if reward < 0.99:
-            delete_memory()
-            return False
-        
-        # Save the conversation and delete the memory
-        agent.save_conversation()
-        delete_memory()
-        return True
+    return await generate_conversation_for_persona(
+        persona_model=persona_model,
+        agent=agent,
+        num_turns=num_turns,
+        facts_to_check=[fact],
+        validation_func=validation_func,
+        save_folder=save_folder
+    )
 
 
-def generate_introduce_sft(
+async def generate_introduce_sft(
         kb: KnowledgeBase,
         num_turns: int = 4,
-        max_retries: int = 3
+        max_retries: int = 3,
+        validation_func=default_fact_validation,
+        save_folder: str = "introduce",
+        max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
+        max_concurrent_facts: int = MAX_CONCURRENT_FACTS
     ) -> None:
     """
     Generate a SFT dataset by the agent interacting
     with the user in a multiturn conversations  
 
     Args:
-        convos: The multiturn conversations
-        save: Whether to save the SFT dataset
+        kb: The knowledge base
+        num_turns: The number of turns
+        max_retries: The number of retries
+        validation_func: Function to validate conversation results
+        save_folder: Folder name to save conversations to
+        max_concurrent_personas: Maximum number of personas to process concurrently
+        max_concurrent_facts: Maximum number of facts per persona to process concurrently
 
     Returns:
         None
     """
-    for kb_item in tqdm(kb.items, desc="Processing personas", unit="persona"):
-
-        persona = kb_item.persona
-        facts = kb_item.facts
-
-        for fact in tqdm(facts, desc=f"Generating conversations for {persona.name_surname}", unit="fact", leave=False):
-            convo_success = generate_convo_for_persona_and_fact(
-                persona=persona, 
-                fact=fact, 
-                num_turns=num_turns
-            )
-            if not convo_success:
-                for _ in range(max_retries):
-                    convo_success = generate_convo_for_persona_and_fact(
-                        persona=persona, 
-                        fact=fact, 
-                        num_turns=num_turns
-                    )
-                    if convo_success:
-                        break
-                if not convo_success:
-                    continue
+    await generate_sft_for_kb(
+        kb=kb,
+        conversation_func=generate_convo_for_persona_and_fact,
+        num_turns=num_turns,
+        max_retries=max_retries,
+        validation_func=validation_func,
+        save_folder=save_folder,
+        task_name="introduce",
+        max_concurrent_personas=max_concurrent_personas,
+        max_concurrent_facts=max_concurrent_facts
+    )
     
