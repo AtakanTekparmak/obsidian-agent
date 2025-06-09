@@ -9,9 +9,13 @@ class ToolRubric(Rubric):
                  parser: Parser = XMLParser(fields=["reasoning", ("tool", "answer")]),
                  env_parser: Parser = XMLParser(fields=["result"]),
                  tools: List[Callable] = []):
+        super().__init__(parser=parser)
         self.parser = parser
         self.env_parser = env_parser
-        self.tools = {tool.__name__: tool for tool in tools}
+        self.tools = {
+            tool.__name__ if hasattr(tool, '__name__') else str(tool): tool
+            for tool in tools
+        }
         self.reward_funcs = [
             self.correct_answer_reward_func,
             self.tool_execution_reward_func,    

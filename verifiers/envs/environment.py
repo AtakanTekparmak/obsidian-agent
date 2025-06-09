@@ -4,9 +4,8 @@ from asyncio import Semaphore
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from typing import Any, Dict, List, Literal, Tuple, Optional, Union
+import concurrent.futures
 
-
-import torch
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase 
 
 from datasets import Dataset
@@ -30,7 +29,7 @@ class Environment(ABC):
                  parser: Parser = Parser(),
                  rubric: Rubric = Rubric(),
                  sampling_args: Dict[str, Any] = {},
-                 max_concurrent: int = 32,
+                 max_concurrent: int = 128,
                  message_type: Literal['chat', 'completion'] = 'chat',
                  **kwargs: Any):
         self.client = client
@@ -39,6 +38,16 @@ class Environment(ABC):
         self.system_prompt = system_prompt
         self.few_shot = few_shot
         self.max_concurrent = max_concurrent
+        
+        # Ensure asyncio.to_thread doesn't hit default 32 thread limit
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+        else:
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent)
+            loop.set_default_executor(executor)
+        
         if self.message_type == 'chat':
             if dataset is not None:
                 self.dataset = self.format_dataset(dataset, self.system_prompt, self.few_shot)
@@ -110,12 +119,12 @@ class Environment(ABC):
         if answer_key == "answer":
             return dataset.map(lambda x: {
                 "prompt": format_prompt_fn(x[question_key]),
-            }, num_proc=self.max_concurrent)
+            }, num_proc=min(self.max_concurrent, 32))
         else:
             return dataset.map(lambda x: {
                 "prompt": format_prompt_fn(x[question_key]),
                 "answer": x[answer_key]
-            }, num_proc=self.max_concurrent)
+            }, num_proc=min(self.max_concurrent, 32))
 
     def get_dataset(self, n: int = -1, seed: int = 0, **kwargs: Any) -> Dataset | None:
         if n > 0 and self.dataset is not None:
@@ -231,7 +240,7 @@ class Environment(ABC):
                        prompts: List[str | List[Dict[str, str]]],
                        answers: List[str],
                        sampling_args: Dict[str, Any] = {},
-                       max_concurrent: int = 32,
+                       max_concurrent: int = 128,
                        **kwargs: Any) -> List[Tuple[Union[str, List[Dict[str, Any]]], Dict[str, Any]]]:
         """
         Run rollouts for a given list of prompts and return the completions.
@@ -254,11 +263,16 @@ class Environment(ABC):
                      prompts: List[Union[str, List[Dict[str, Any]]]],
                      answers: List[str],
                      sampling_args: Dict[str, Any] = {},
-                     max_concurrent: int = 32,
+                     max_concurrent: int = 128,
                      **kwargs: Any) -> List[Tuple[Union[str, List[Dict[str, Any]]], Dict[str, Any]]]:
         """
         Run rollouts for a given list of prompts and return the completions.
         """
+        def setup_executor(loop):
+            if loop._default_executor is None:
+                executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent)
+                loop.set_default_executor(executor)
+        
         coro = self._run_all(
             client=client,
             model=model,
@@ -269,12 +283,21 @@ class Environment(ABC):
             **kwargs
         )
         try:
-            return asyncio.run(coro)
+            # Create new event loop with custom executor
+            loop = asyncio.new_event_loop()
+            setup_executor(loop)
+            asyncio.set_event_loop(loop)
+            try:
+                return loop.run_until_complete(coro)
+            finally:
+                loop.close()
+                asyncio.set_event_loop(None)
         except RuntimeError:
-            # Jupyter notebook
+            # Jupyter notebook or existing event loop
             import nest_asyncio
             nest_asyncio.apply()
             loop = asyncio.get_running_loop()
+            setup_executor(loop)
             return loop.run_until_complete(coro)
 
     def generate(self,
@@ -488,7 +511,7 @@ class Environment(ABC):
                  model: str | None = None,
                  sampling_args: Dict[str, Any] = {},
                  num_samples: int = -1,
-                 max_concurrent: int = 32,
+                 max_concurrent: int = 128,
                  **kwargs: Any
                 ) -> Dict[str, Any]:
         """
