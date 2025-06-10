@@ -10,11 +10,13 @@ from .parsers.xml_parser import XMLParser
 from .rubrics.rubric import Rubric
 from .rubrics.judge_rubric import JudgeRubric
 from .rubrics.rubric_group import RubricGroup
+from .rubrics.retrieval_rubric import get_retrieval_rubric
 
 from .envs.environment import Environment
 from .envs.multiturn_env import MultiTurnEnv
 from .envs.singleturn_env import SingleTurnEnv
 from .envs.tool_env import ToolEnv
+from .envs.retrieval_env import RetrievalEnv
 
 from .utils.logging_utils import setup_logging, print_prompt_completions_sample
 from .trainers.grpo_trainer import GRPOTrainer
@@ -34,10 +36,12 @@ __all__ = [
     "Rubric",
     "JudgeRubric",
     "RubricGroup",
+    "get_retrieval_rubric",
     "Environment",
     "MultiTurnEnv",
     "SingleTurnEnv",
     "ToolEnv",
+    "RetrievalEnv",
     "GRPOTrainer",
     "GRPOConfig",
     "get_model",
