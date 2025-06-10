@@ -40,32 +40,3 @@ pytest-asyncio
 
 # Code execution sandbox (RestrictedPython used in agent.engine)
 RestrictedPython
-
-# =====================================================================
-# VERIFIERS & TRAINING REQUIREMENTS (verifiers/, train_memory_agent.py)
-# =====================================================================
-
-# Core ML training frameworks
-setuptools
-deepspeed
-accelerate
-peft
-trl==0.16.0
-
-# Optimizations
-liger-kernel
-
-# Monitoring and logging
-wandb
-
-# High-performance inference
-vllm
-
-# Search capabilities
-duckduckgo-search
-brave-search
-
-# Math verification tools
-latex2sympy>=1.0.3
-math-verify[antlr4-13-2]>=0.1.0
-pylatexenc>=2.10

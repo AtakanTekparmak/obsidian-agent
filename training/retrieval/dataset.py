@@ -23,7 +23,16 @@ Generate a direct question you might ask an assistant so that it reveals this fa
 
 
 def generate_question_prompt(persona: Persona, fact: str) -> str:
-    """Generate a question to elicit the given fact."""
+    """
+    Generate a question to elicit the given fact.
+
+    Args:
+        persona: The persona
+        fact: The fact
+
+    Returns:
+        str: The question
+    """
     prompt = QUESTION_GEN_PROMPT.format(persona=persona, fact=fact)
     response = get_model_response(prompt=prompt, model=OPENROUTER_SONNET)
     if isinstance(response, str):
@@ -32,7 +41,15 @@ def generate_question_prompt(persona: Persona, fact: str) -> str:
 
 
 def build_verifiers_dataset(kb: KnowledgeBase) -> List[Dict]:
-    """Construct a verifiers dataset for retrieval."""
+    """
+    Construct a verifiers dataset for retrieval.
+
+    Args:
+        kb: The knowledge base
+
+    Returns:
+        List[Dict]: The verifiers dataset
+    """
     dataset: List[Dict] = []
     for item in kb.items:
         persona = item.persona
@@ -53,7 +70,13 @@ def build_verifiers_dataset(kb: KnowledgeBase) -> List[Dict]:
 
 
 def create_kb_with_personas(num_personas: int, scenario: str) -> KnowledgeBase:
-    """Utility to generate personas and KB in one go."""
+    """
+    Utility to generate personas and KB in one go.
+
+    Args:
+        num_personas: The number of personas to generate
+        scenario: The scenario to generate the personas for
+    """
     personas = generate_personas(num_personas, scenario, save=False)
     kb = generate_kb(personas, save=False)
     return kb

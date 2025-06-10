@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from verifiers.rubrics import Rubric
+from verifiers.verifiers.rubrics import Rubric
 
 from training.reward import get_reward
 from data.schemas.kb import Fact
@@ -10,6 +10,13 @@ from agent.schemas import AgentResponse
 
 
 def retrieval_reward(completion: List[dict] | str, answer: str, **kwargs) -> float:
+    """
+    Reward function for retrieval.
+
+    Args:
+        completion: The completion
+        answer: The answer
+    """
     if isinstance(completion, list):
         last_content = completion[-1]["content"] if completion else ""
     else:
