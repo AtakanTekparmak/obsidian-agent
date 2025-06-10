@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from training.retrieval import create_kb_with_personas
+from data.pipeline import generate_personas, generate_kb
 
 def main():
     """Generate knowledge base with personas for Groningen, Netherlands in 2025."""
@@ -8,7 +6,8 @@ def main():
     print(f"Generating knowledge base for scenario: {scenario}")
     
     # Create KB with personas and save to file
-    kb = create_kb_with_personas(num_personas=8, scenario=scenario, save=True)
+    personas = generate_personas(8, scenario, save=True)
+    kb = generate_kb(personas, save=True)
     
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
