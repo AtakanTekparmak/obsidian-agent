@@ -92,7 +92,8 @@ vf-training:
 # Generate knowledge base with personas for training
 vf-generate-kb:
 	@echo "Generating knowledge base..."
-	cd verifiers && uv run ../generate_kb.py
+	. $(VENV_NAME)/bin/activate && \
+	$(PYTHON) generate_kb.py
 
 # Clean the virtual environment
 clean:
