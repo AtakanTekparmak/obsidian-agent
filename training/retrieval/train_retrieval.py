@@ -1,10 +1,10 @@
 import verifiers as vf
 from training.retrieval import (
-    create_kb_with_personas,
     build_verifiers_dataset,
     get_retrieval_rubric,
     RetrievalEnv,
 )
+from data.utils import load_kb_from_json
 
 """
 inference:
@@ -16,9 +16,8 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file verifiers/configs/z
 
 
 def main():
-    # Generate a KB and dataset for retrieval
-    scenario = "Groningen, Netherlands in 2025"
-    kb = create_kb_with_personas(num_personas=8, scenario=scenario)
+    # Load KB from saved file and generate dataset for retrieval
+    kb = load_kb_from_json()
     dataset = build_verifiers_dataset(kb)
 
     rubric = get_retrieval_rubric()

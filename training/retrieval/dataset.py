@@ -69,7 +69,7 @@ def build_verifiers_dataset(kb: KnowledgeBase) -> List[Dict]:
     return dataset
 
 
-def create_kb_with_personas(num_personas: int, scenario: str) -> KnowledgeBase:
+def create_kb_with_personas(num_personas: int, scenario: str, save: bool = False) -> KnowledgeBase:
     """
     Utility to generate personas and KB in one go.
 
@@ -77,6 +77,6 @@ def create_kb_with_personas(num_personas: int, scenario: str) -> KnowledgeBase:
         num_personas: The number of personas to generate
         scenario: The scenario to generate the personas for
     """
-    personas = generate_personas(num_personas, scenario, save=False)
-    kb = generate_kb(personas, save=False)
+    personas = generate_personas(num_personas, scenario, save=save)
+    kb = generate_kb(personas, save=save)
     return kb

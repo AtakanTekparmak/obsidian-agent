@@ -29,7 +29,8 @@ help:
 	@echo "  6. vf-install        Install verifiers with uv and project dependencies"
 	@echo "  7. vf-inference      Start verifiers inference server"
 	@echo "  8. vf-training       Start verifiers training"
-	@echo "  9. clean             Remove the virtual environment and its contents"
+	@echo "  9. vf-generate-kb    Generate knowledge base with personas for training"
+	@echo "  10. clean            Remove the virtual environment and its contents"
 
 # Install dependencies and set up the environment
 install:
@@ -87,6 +88,11 @@ vf-inference:
 vf-training:
 	@echo "Starting verifiers training..."
 	CUDA_VISIBLE_DEVICES=$(VF_TRAINING_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
+
+# Generate knowledge base with personas for training
+vf-generate-kb:
+	@echo "Generating knowledge base..."
+	cd verifiers && uv run ../generate_kb.py
 
 # Clean the virtual environment
 clean:
