@@ -4,9 +4,9 @@ import uuid
 from typing import Any, Dict, List, Tuple, Union
 
 from datasets import Dataset
-from verifiers.verifiers.envs.environment import Environment
-from verifiers.verifiers.parsers import Parser
-from verifiers.verifiers.rubrics import Rubric
+from verifiers.envs.environment import Environment
+from verifiers.parsers import Parser
+from verifiers.rubrics import Rubric
 
 from agent.agent import Agent
 from agent.utils import delete_memory

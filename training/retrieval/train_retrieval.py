@@ -1,4 +1,4 @@
-import verifiers.verifiers as vf
+import verifiers as vf
 from training.retrieval import (
     create_kb_with_personas,
     build_verifiers_dataset,
