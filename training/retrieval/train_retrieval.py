@@ -17,6 +17,7 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file verifiers/configs/z
 
 def main():
     # Load KB from saved file and generate dataset for retrieval
+    print("Building dataset for training with verifiers...")
     kb = load_kb_from_json()
     dataset = build_verifiers_dataset(kb)
 
@@ -32,6 +33,7 @@ def main():
     args.gradient_accumulation_steps = 4
     args.num_generations = 8
 
+    print("Starting training with verifiers...")
     trainer = vf.GRPOTrainer(
         model=model,
         processing_class=tokenizer,
