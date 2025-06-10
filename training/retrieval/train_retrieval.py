@@ -2,6 +2,8 @@ import verifiers.verifiers as vf
 from training.retrieval import (
     create_kb_with_personas,
     build_verifiers_dataset,
+    get_retrieval_rubric,
+    RetrievalEnv,
 )
 
 """
@@ -19,8 +21,8 @@ def main():
     kb = create_kb_with_personas(num_personas=8, scenario=scenario)
     dataset = build_verifiers_dataset(kb)
 
-    rubric = vf.get_retrieval_rubric()
-    env = vf.RetrievalEnv(dataset=dataset, rubric=rubric)
+    rubric = get_retrieval_rubric()
+    env = RetrievalEnv(dataset=dataset, rubric=rubric)
 
     model_name = "Qwen/Qwen3-8B"
     model, tokenizer = vf.get_model_and_tokenizer(model_name)
