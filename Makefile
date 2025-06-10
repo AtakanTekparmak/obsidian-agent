@@ -86,7 +86,7 @@ vf-inference:
 # Start verifiers training
 vf-training:
 	@echo "Starting verifiers training..."
-	CUDA_VISIBLE_DEVICES=$(VF_TRAINING_GPUS) uv run accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
+	cd verifiers && CUDA_VISIBLE_DEVICES=$(VF_TRAINING_GPUS) uv run accelerate launch --config-file configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) ../training/retrieval/train_retrieval.py
 
 # Clean the virtual environment
 clean:
