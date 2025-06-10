@@ -63,6 +63,13 @@ build-dataset:
 
 # Install verifiers with uv and project dependencies
 vf-install:
+	@echo "Checking if uv is installed..."
+	@if ! command -v uv > /dev/null; then \
+		echo "uv not found. Installing uv..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	else \
+		echo "uv is already installed"; \
+	fi
 	@echo "Setting up uv environment for verifiers..."
 	cd verifiers && uv sync --extra all
 	@echo "Installing flash-attn..."
