@@ -13,8 +13,8 @@ openai
 google-genai
 
 # Data processing and validation
-pydantic  # Used via instructor for structured outputs
-instructor  # For structured LLM outputs
+pydantic
+instructor 
 requests>=2.32.3
 httpx
 
