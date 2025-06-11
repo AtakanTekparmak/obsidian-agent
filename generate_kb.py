@@ -26,7 +26,13 @@ You have the following relationships:
 This is a fact about you:
 {fact}
 
-Generate a direct question you might ask an assistant so that it reveals this fact about you. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself.
+Generate a direct question you might ask an assistant so that it reveals this fact about you. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself. Some example fact-question pairs:
+
+Fact: Age: 23
+Question: What is my age?
+
+Fact: birthplace: Groningen, Netherlands
+Question: Where was I born?
 """
 
 MEMORY_GEN_PROMPT = """
