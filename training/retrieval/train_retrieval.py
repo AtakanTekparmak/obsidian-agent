@@ -21,9 +21,11 @@ def main():
     kb = load_kb_from_json()
     dataset = build_verifiers_dataset(kb)
 
+    print("Instantiating rubric and environment...")
     rubric = get_retrieval_rubric()
     env = RetrievalEnv(dataset=dataset, rubric=rubric)
 
+    print("Instantiating model...")
     model_name = "Qwen/Qwen3-8B"
     model, tokenizer = vf.get_model_and_tokenizer(model_name)
 
