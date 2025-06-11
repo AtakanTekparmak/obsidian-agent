@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Dict
 import json
 import asyncio
+import os
 
 from data.pipeline.generate_personas import generate_personas
 from data.pipeline.generate_kb import generate_kb
