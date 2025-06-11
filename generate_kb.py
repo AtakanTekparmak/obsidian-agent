@@ -9,6 +9,7 @@ from data.pipeline.generate_personas import generate_personas
 from data.pipeline.generate_kb import generate_kb
 from data.settings import OPENROUTER_SONNET
 from data.model import get_model_response
+from data.utils import load_kb_from_json
 from data.schemas.kb import KnowledgeBase, Persona
 from data.schemas.sft import StaticMemory
 from agent.utils import load_system_prompt
@@ -158,8 +159,9 @@ def main():
     print(f"Generating knowledge base for scenario: {scenario}")
     
     # Create KB with personas and save to file
-    personas = generate_personas(8, scenario, save=True)
-    kb = generate_kb(personas, save=True)
+    # personas = generate_personas(8, scenario, save=True)
+    # kb = generate_kb(personas, save=True)
+    kb = load_kb_from_json()
     
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
