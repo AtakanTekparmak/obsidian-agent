@@ -10,7 +10,9 @@ from data.pipeline.sft.generate_update_sft import generate_static_memory
 from data.settings import OPENROUTER_SONNET
 from data.model import get_model_response
 from data.schemas.kb import KnowledgeBase, Persona
-from training.settings import VERIFIERS_DATASET_PATH
+
+# Define path directly to avoid importing from training.settings which triggers training.__init__.py
+VERIFIERS_DATASET_PATH = "output/datasets/verifiers_dataset.json"
 
 QUESTION_GEN_PROMPT = """
 You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}.

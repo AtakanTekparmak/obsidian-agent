@@ -13,9 +13,6 @@ from agent.utils import delete_memory, create_memory_if_not_exists
 from agent.schemas import ChatMessage, Role
 from agent.settings import MEMORY_PATH
 
-from training.reward import dump_folder, get_reward
-
-
 class BaseSFTModel(SFTModel, ABC):
     """
     Base class for SFT models that assume the role of a persona.
@@ -46,6 +43,7 @@ def default_fact_validation(facts_to_check: list[Fact], memory_path: str = MEMOR
     Returns:
         bool: True if validation passes, False otherwise
     """
+    from training.reward import dump_folder, get_reward
     folder_dump_str = dump_folder(memory_path)
     reward = get_reward(folder_dump_str=folder_dump_str, facts_to_check=facts_to_check)
     return reward >= 0.99

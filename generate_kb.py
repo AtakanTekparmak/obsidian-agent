@@ -1,5 +1,150 @@
-from data.pipeline import generate_personas, generate_kb
-from training.retrieval.dataset import build_verifiers_dataset
+from __future__ import annotations
+
+from typing import List, Dict
+import json
+import asyncio
+
+from data.pipeline.generate_personas import generate_personas
+from data.pipeline.generate_kb import generate_kb
+from data.settings import OPENROUTER_SONNET
+from data.model import get_model_response
+from data.schemas.kb import KnowledgeBase, Persona
+from data.schemas.sft import StaticMemory
+from agent.utils import load_system_prompt
+
+# Define path directly to avoid imports from training package
+VERIFIERS_DATASET_PATH = "output/datasets/verifiers_dataset.json"
+
+QUESTION_GEN_PROMPT = """
+You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}.
+
+You have the following relationships:
+{persona.relationships}
+
+This is a fact about you:
+{fact}
+
+Generate a direct question you might ask an assistant so that it reveals this fact about you. Keep it concise and natural. Respond with only the question.
+"""
+
+MEMORY_GEN_PROMPT = """
+Below is the system prompt of an LLM agent with a self managed, Obsidian-like memory system.
+
+<agent_prompt>
+{agent_prompt}
+</agent_prompt>
+
+Below is a persona.
+
+<persona>
+{persona}
+</persona>
+
+Below is a fact about the persona.
+
+<fact>
+{fact}
+</fact>
+
+Given how you expect the agent to operate, the persona & the fact, generate a static memory for the agent. This memory should contain the content of a guideline file (always found in guideline.md), the path to the user file (in a structure similar to user/user_name.md) and the content of the user file. Make sure to only have the given fact in the memory, nothing else related to the user. The guideline should explicitly state that the main & active user is the persona.
+"""
+
+
+def generate_static_memory(
+        persona: Persona,
+        fact: str
+    ) -> StaticMemory:
+        """
+        Generate a static memory for the agent.
+
+        Args:
+            persona: The persona
+            fact: The fact
+
+        Returns:
+            StaticMemory: The static memory
+        """
+        prompt = MEMORY_GEN_PROMPT.format(
+                agent_prompt=load_system_prompt(), 
+                persona=persona, 
+                fact=fact
+            )
+        response = get_model_response(
+                prompt=prompt, 
+                model=OPENROUTER_SONNET,
+                schema=StaticMemory
+            )
+        
+        return response
+
+
+def generate_question_prompt(persona: Persona, fact: str) -> str:
+    """
+    Generate a question to elicit the given fact.
+
+    Args:
+        persona: The persona
+        fact: The fact
+
+    Returns:
+        str: The question
+    """
+    prompt = QUESTION_GEN_PROMPT.format(persona=persona, fact=fact)
+    response = get_model_response(prompt=prompt, model=OPENROUTER_SONNET)
+    if isinstance(response, str):
+        return response.strip()
+    return str(response)
+
+
+def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
+    """
+    Construct a verifiers dataset for retrieval.
+
+    Args:
+        kb: The knowledge base
+
+    Returns:
+        List[Dict]: The verifiers dataset
+    """
+    dataset: List[Dict] = []
+    
+    # Create a coroutine to generate content for each fact
+    async def process_fact(persona, fact):
+        # Run these operations concurrently
+        static_memory_task = asyncio.create_task(
+            asyncio.to_thread(generate_static_memory, persona, fact.fact_description)
+        )
+        question_task = asyncio.create_task(
+            asyncio.to_thread(generate_question_prompt, persona, fact.fact_description)
+        )
+        
+        # Wait for both tasks to complete
+        static_memory, question = await asyncio.gather(static_memory_task, question_task)
+        
+        return {
+            "prompt": question,
+            "answer": fact.fact_description,
+            "task": "retrieval",
+            "static_memory": static_memory,
+            "persona": persona.name_surname,
+            "fact": fact.fact_description,
+        }
+    
+    # Create tasks for all facts in all personas
+    tasks = []
+    for item in kb.items:
+        persona = item.persona
+        for fact in item.facts:
+            tasks.append(process_fact(persona, fact))
+    
+    # Run all tasks concurrently and collect results
+    results = asyncio.run(asyncio.gather(*tasks))
+    dataset.extend(results)
+    if save:
+        with open(VERIFIERS_DATASET_PATH, "w") as f:
+            json.dump(dataset, f)
+    return dataset
+
 
 def main():
     """Generate knowledge base with personas for Groningen, Netherlands in 2025."""
