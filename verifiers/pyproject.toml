@@ -64,9 +64,12 @@ tests = [
 [project.scripts]
 vf-vllm = "verifiers.inference.vllm_server:cli_main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["verifiers*"]
+[tool.setuptools]
+packages = ["verifiers"]
+package-dir = {"verifiers" = "."}
+
+[tool.setuptools.package-data]
+verifiers = ["*"]
 
 [build-system]
 requires = ["setuptools>=68.0"]
