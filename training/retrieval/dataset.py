@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import List, Dict
+import json
+import asyncio
 
 from data.pipeline.generate_personas import generate_personas
 from data.pipeline.generate_kb import generate_kb
@@ -8,6 +10,7 @@ from data.pipeline.sft.generate_update_sft import generate_static_memory
 from data.settings import OPENROUTER_SONNET
 from data.model import get_model_response
 from data.schemas.kb import KnowledgeBase, Persona
+from training.settings import VERIFIERS_DATASET_PATH
 
 QUESTION_GEN_PROMPT = """
 You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}.
@@ -40,7 +43,7 @@ def generate_question_prompt(persona: Persona, fact: str) -> str:
     return str(response)
 
 
-def build_verifiers_dataset(kb: KnowledgeBase) -> List[Dict]:
+def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
     """
     Construct a verifiers dataset for retrieval.
 
@@ -51,22 +54,54 @@ def build_verifiers_dataset(kb: KnowledgeBase) -> List[Dict]:
         List[Dict]: The verifiers dataset
     """
     dataset: List[Dict] = []
+    
+    # Create a coroutine to generate content for each fact
+    async def process_fact(persona, fact):
+        # Run these operations concurrently
+        static_memory_task = asyncio.create_task(
+            asyncio.to_thread(generate_static_memory, persona, fact.fact_description)
+        )
+        question_task = asyncio.create_task(
+            asyncio.to_thread(generate_question_prompt, persona, fact.fact_description)
+        )
+        
+        # Wait for both tasks to complete
+        static_memory, question = await asyncio.gather(static_memory_task, question_task)
+        
+        return {
+            "prompt": question,
+            "answer": fact.fact_description,
+            "task": "retrieval",
+            "static_memory": static_memory,
+            "persona": persona.name_surname,
+            "fact": fact.fact_description,
+        }
+    
+    # Create tasks for all facts in all personas
+    tasks = []
     for item in kb.items:
         persona = item.persona
         for fact in item.facts:
-            static_memory = generate_static_memory(persona, fact.fact_description)
-            question = generate_question_prompt(persona, fact.fact_description)
-            dataset.append(
-                {
-                    "prompt": question,
-                    "answer": fact.fact_description,
-                    "task": "retrieval",
-                    "static_memory": static_memory,
-                    "persona": persona.name_surname,
-                    "fact": fact.fact_description,
-                }
-            )
+            tasks.append(process_fact(persona, fact))
+    
+    # Run all tasks concurrently and collect results
+    results = asyncio.run(asyncio.gather(*tasks))
+    dataset.extend(results)
+    if save:
+        with open(VERIFIERS_DATASET_PATH, "w") as f:
+            json.dump(dataset, f)
     return dataset
+
+def load_verifiers_dataset(path: str = VERIFIERS_DATASET_PATH) -> List[Dict]:
+    """
+    Load a verifiers dataset from a JSON file.
+    """
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"File not found: {path}")
+        return []
 
 
 def create_kb_with_personas(num_personas: int, scenario: str, save: bool = False) -> KnowledgeBase:

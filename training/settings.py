@@ -4,6 +4,7 @@ load_dotenv()
 
 # File paths
 JUDGE_PROMPT_PATH = "training/reward/judge_prompt.txt"
+VERIFIERS_DATASET_PATH = "output/datasets/verifiers_dataset.json"
 
 # Models
 GEMINI_PRO = "gemini-2.5-pro-exp-03-25"

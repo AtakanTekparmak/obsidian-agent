@@ -1,6 +1,6 @@
 import verifiers as vf
 from training.retrieval import (
-    build_verifiers_dataset,
+    load_verifiers_dataset,
     get_retrieval_rubric,
     RetrievalEnv,
 )
@@ -16,10 +16,8 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file verifiers/configs/z
 
 
 def main():
-    # Load KB from saved file and generate dataset for retrieval
-    print("Building dataset for training with verifiers...")
-    kb = load_kb_from_json()
-    dataset = build_verifiers_dataset(kb)
+    # Load verifiers dataset
+    dataset = load_verifiers_dataset()
 
     print("Instantiating rubric and environment...")
     rubric = get_retrieval_rubric()
