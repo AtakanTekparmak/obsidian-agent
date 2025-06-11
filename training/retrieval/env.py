@@ -22,6 +22,13 @@ class RetrievalEnv(Environment):
                          parser=parser, rubric=rubric, **kwargs)
         self.agent_cls = Agent
 
+    def format_dataset(self,
+                       dataset: Dataset,
+                       system_prompt: str | None = None,
+                       few_shot: List[Dict[str, Any]] | None = None) -> Dataset:
+        """Override to use 'prompt' as the question key instead of 'question'."""
+        return super().format_dataset(dataset, system_prompt, few_shot, question_key="prompt")
+
     def rollout(
         self,
         client,
