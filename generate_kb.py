@@ -126,7 +126,7 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
             "prompt": question,
             "answer": fact.fact_description,
             "task": "retrieval",
-            "static_memory": static_memory,
+            "static_memory": static_memory.model_dump_json(),
             "persona": persona.name_surname,
             "fact": fact.fact_description,
         }
