@@ -138,7 +138,10 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
             tasks.append(process_fact(persona, fact))
     
     # Run all tasks concurrently and collect results
-    results = asyncio.run(asyncio.gather(*tasks))
+    async def gather_all():
+        return await asyncio.gather(*tasks)
+    
+    results = asyncio.run(gather_all())
     dataset.extend(results)
     if save:
         with open(VERIFIERS_DATASET_PATH, "w") as f:
