@@ -144,6 +144,8 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
     results = asyncio.run(gather_all())
     dataset.extend(results)
     if save:
+        # Make the output/datasets folder if it doesn't exist
+        os.makedirs("output/datasets", exist_ok=True)
         with open(VERIFIERS_DATASET_PATH, "w") as f:
             json.dump(dataset, f)
     return dataset
