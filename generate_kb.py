@@ -25,7 +25,7 @@ You have the following relationships:
 This is a fact about you:
 {fact}
 
-Generate a direct question you might ask an assistant so that it reveals this fact about you. Keep it concise and natural. Respond with only the question.
+Generate a direct question you might ask an assistant so that it reveals this fact about you. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself.
 """
 
 MEMORY_GEN_PROMPT = """
