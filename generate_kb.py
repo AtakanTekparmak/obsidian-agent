@@ -1,5 +1,5 @@
 from data.pipeline import generate_personas, generate_kb
-from training.retrieval import build_verifiers_dataset
+from training.retrieval.dataset import build_verifiers_dataset
 
 def main():
     """Generate knowledge base with personas for Groningen, Netherlands in 2025."""
