@@ -98,7 +98,7 @@ vf-training-all-gpus:
 	@echo "Starting verifiers training with all GPUs visible..."
 	@echo "Make sure vf-inference is running in another terminal first!"
 	@echo "This method allows NCCL communication between inference (GPUs 0-3) and training (GPUs 4-7)"
-	CUDA_VISIBLE_DEVICES=$(VF_ALL_GPUS) CUDA_DEVICE_ORDER=PCI_BUS_ID ./verifiers/.venv/bin/accelerate launch \
+	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_ALL_GPUS) CUDA_DEVICE_ORDER=PCI_BUS_ID ./verifiers/.venv/bin/accelerate launch \
 		--config-file verifiers/configs/zero3.yaml \
 		--num-processes $(VF_NUM_PROCESSES) \
 		--gpu_ids 4,5,6,7 \
@@ -113,7 +113,7 @@ vf-inference-train-gpus:
 # Run training on same GPUs as inference (after inference is ready)
 vf-training-same-gpus:
 	@echo "Starting verifiers training on same GPUs as inference..."
-	CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
+	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
 
 # Sequential execution: inference then training on same GPUs
 vf-train-sequential:
@@ -123,7 +123,7 @@ vf-train-sequential:
 	@echo "Waiting for inference server to be ready..."
 	@sleep 180
 	@echo "Step 2: Starting training on same GPUs..."
-	CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
+	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
 	@echo "Training complete. Stopping inference server..."
 	@pkill -f "vf-vllm" || true
 
