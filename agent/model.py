@@ -14,11 +14,21 @@ def create_openai_client() -> OpenAI:
         base_url=OPENROUTER_BASE_URL,
     )
 
-def create_instructor_client(openai_client: OpenAI = None):
+def create_vllm_client(host: str = "0.0.0.0", port: int = 8000) -> OpenAI:
+    """Create a new vLLM client instance (OpenAI-compatible)."""
+    return OpenAI(
+        base_url=f"http://{host}:{port}/v1",
+        api_key="EMPTY",  # vLLM doesn't require a real API key
+    )
+
+def create_instructor_client(openai_client: OpenAI = None, use_vllm: bool = False):
     """Create a new instructor client instance."""
     if openai_client is None:
         openai_client = create_openai_client()
-    return instructor.from_openai(openai_client, mode=instructor.Mode.TOOLS)
+    
+    # For vLLM, we need to use JSON mode instead of tools mode
+    mode = instructor.Mode.JSON if use_vllm else instructor.Mode.TOOLS
+    return instructor.from_openai(openai_client, mode=mode)
 
 # Initialize OpenAI client and the instructor client
 CLIENT = create_openai_client()
@@ -44,9 +54,10 @@ def get_model_response(
         schema: Optional[BaseModel] = None,
         client: Optional[OpenAI] = None,
         instructor_client = None,
+        use_vllm: bool = False,
 ) -> Union[str, BaseModel]:
     """
-    Get a response from a model using OpenRouter, with optional schema for structured output.
+    Get a response from a model using OpenRouter or vLLM, with optional schema for structured output.
 
     Args:
         messages: A list of ChatMessage objects (optional).
@@ -56,6 +67,7 @@ def get_model_response(
         schema: A Pydantic BaseModel for structured output (optional).
         client: Optional OpenAI client to use. If None, uses the global client.
         instructor_client: Optional instructor client to use. If None, creates one from the OpenAI client.
+        use_vllm: Whether to use vLLM backend instead of OpenRouter.
 
     Returns:
         A string response from the model if schema is None, otherwise a BaseModel object.
@@ -67,7 +79,7 @@ def get_model_response(
     if client is None:
         client = CLIENT
     if instructor_client is None:
-        instructor_client = create_instructor_client(client)
+        instructor_client = create_instructor_client(client, use_vllm=use_vllm)
 
     # Build message history
     if messages is None:
@@ -85,10 +97,19 @@ def get_model_response(
         )
         return completion.choices[0].message.content
     else: 
-        completion = instructor_client.chat.completions.create(
-            model=model,
-            messages=messages,
-            extra_body={"provider": {"require_parameters": True}},
-            response_model=schema
-        )
+        if use_vllm:
+            # For vLLM, we don't use extra_body provider settings
+            completion = instructor_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                response_model=schema
+            )
+        else:
+            # For OpenRouter, use the provider settings
+            completion = instructor_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                extra_body={"provider": {"require_parameters": True}},
+                response_model=schema
+            )
         return completion

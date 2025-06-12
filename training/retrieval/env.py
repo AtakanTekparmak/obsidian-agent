@@ -42,7 +42,7 @@ class RetrievalEnv(Environment):
         memory_path = f"memory_{uuid.uuid4().hex}"
         if static_memory is not None:
             static_memory.instantiate(memory_path)
-        agent = self.agent_cls(memory_path=memory_path)
+        agent = self.agent_cls(memory_path=memory_path, use_vllm=True, model=model)
         agent.chat(prompt if isinstance(prompt, str) else prompt[-1]["content"])
         messages = [msg.model_dump() for msg in agent.messages]
         delete_memory(memory_path)
