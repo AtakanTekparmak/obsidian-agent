@@ -7,6 +7,8 @@ deepspeed_config:
   zero3_init_flag: true
   zero3_save_16bit_model: true
   zero_stage: 3
+  comms_config:
+    enabled: false
 distributed_type: DEEPSPEED
 downcast_bf16: 'no'
 machine_rank: 0
@@ -19,4 +21,4 @@ same_network: true
 tpu_env: []
 tpu_use_cluster: false
 tpu_use_sudo: false
-use_cpu: false
+use_cpu: false 

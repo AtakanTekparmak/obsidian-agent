@@ -29,8 +29,9 @@ help:
 	@echo "  6. vf-install        Install verifiers with uv and project dependencies"
 	@echo "  7. vf-inference      Start verifiers inference server"
 	@echo "  8. vf-training       Start verifiers training"
-	@echo "  9. vf-generate-kb    Generate knowledge base with personas for training"
-	@echo "  10. clean            Remove the virtual environment and its contents"
+	@echo "  9. vf-training-separate  Start verifiers training (for running alongside inference)"
+	@echo "  10. vf-generate-kb   Generate knowledge base with personas for training"
+	@echo "  11. clean            Remove the virtual environment and its contents"
 
 # Install dependencies and set up the environment
 install:
@@ -87,7 +88,12 @@ vf-inference:
 # Start verifiers training
 vf-training:
 	@echo "Starting verifiers training..."
-	CUDA_VISIBLE_DEVICES=$(VF_TRAINING_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
+	NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1 CUDA_VISIBLE_DEVICES=$(VF_TRAINING_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
+
+# Start verifiers training with separate config (for running alongside inference)
+vf-training-separate:
+	@echo "Starting verifiers training with separate config..."
+	NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1 NCCL_COMM_ID= CUDA_VISIBLE_DEVICES=$(VF_TRAINING_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3_separate.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
 
 # Generate knowledge base with personas for training
 vf-generate-kb:
