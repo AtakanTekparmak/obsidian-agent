@@ -1,6 +1,8 @@
 from openai import OpenAI
 from pydantic import BaseModel
 import instructor
+import json
+import re
 
 from typing import Optional, Union
 
@@ -27,6 +29,7 @@ def create_instructor_client(openai_client: OpenAI = None, use_vllm: bool = Fals
         openai_client = create_openai_client()
     
     # For vLLM, we need to use JSON mode instead of tools mode
+    # vLLM supports structured outputs via guided_json in extra_body
     mode = instructor.Mode.JSON if use_vllm else instructor.Mode.TOOLS
     return instructor.from_openai(openai_client, mode=mode)
 
@@ -98,12 +101,42 @@ def get_model_response(
         return completion.choices[0].message.content
     else: 
         if use_vllm:
-            # For vLLM, we don't use extra_body provider settings
-            completion = instructor_client.chat.completions.create(
-                model=model,
-                messages=messages,
-                response_model=schema
-            )
+            # For vLLM, try using native guided JSON first, fallback to instructor on error
+            try:
+                schema_dict = schema.model_json_schema()
+                completion = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    extra_body={
+                        "guided_json": schema_dict,
+                        "guided_decoding_backend": "outlines"
+                    }
+                )
+                # Parse the JSON response manually and create the schema object
+                response_content = completion.choices[0].message.content
+                response_json = clean_and_parse_json(response_content)
+                return schema(**response_json)
+            except Exception as e:
+                # Fallback to instructor with guided JSON
+                try:
+                    completion = instructor_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        response_model=schema,
+                        extra_body={
+                            "guided_json": schema_dict,
+                            "guided_decoding_backend": "outlines"
+                        }
+                    )
+                    return completion
+                except Exception as e2:
+                    # Final fallback to instructor without guided JSON
+                    completion = instructor_client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        response_model=schema
+                    )
+                    return completion
         else:
             # For OpenRouter, use the provider settings
             completion = instructor_client.chat.completions.create(
@@ -113,3 +146,48 @@ def get_model_response(
                 response_model=schema
             )
         return completion
+
+def clean_and_parse_json(json_string: str) -> dict:
+    """
+    Clean and parse potentially malformed JSON from vLLM responses.
+    Handles trailing characters and other common JSON formatting issues.
+    """
+    try:
+        # First try parsing as-is
+        return json.loads(json_string)
+    except json.JSONDecodeError:
+        # Try to clean up common issues
+        cleaned = json_string.strip()
+        
+        # Remove any trailing text after the JSON ends
+        # Look for the last complete JSON object
+        brace_count = 0
+        last_valid_pos = -1
+        
+        for i, char in enumerate(cleaned):
+            if char == '{':
+                brace_count += 1
+            elif char == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    last_valid_pos = i + 1
+                    break
+        
+        if last_valid_pos > 0:
+            cleaned = cleaned[:last_valid_pos]
+        
+        # Try parsing the cleaned version
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            # Last resort: try to extract JSON using regex
+            json_pattern = r'\{.*\}'
+            match = re.search(json_pattern, cleaned, re.DOTALL)
+            if match:
+                try:
+                    return json.loads(match.group())
+                except json.JSONDecodeError:
+                    pass
+            
+            # If all else fails, raise the original error with more context
+            raise ValueError(f"Could not parse JSON response: {cleaned[:200]}...") from e
