@@ -38,7 +38,7 @@ class Agent:
         # Each Agent instance gets its own clients to avoid bottlenecks
         if use_vllm:
             self._client = create_vllm_client(host=vllm_host, port=vllm_port)
-            self._instructor_client = create_instructor_client(self._client, use_vllm=True)
+            self._instructor_client = None  # vLLM uses native structured outputs, no Instructor needed
         else:
             self._client = create_openai_client()
             self._instructor_client = create_instructor_client(self._client, use_vllm=False)
