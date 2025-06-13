@@ -101,6 +101,7 @@ You MUST maintain a file called `guideline.md` in the root of the memory system.
   - `profile.md`: Age, preferences, basic info
   - `reflections.md`: User's thoughts and perspectives
 - `/projects/`: Ongoing projects and tasks
+  - `project_name.md`: Project details, progress, and notes
 - `/notes/`: General notes and observations
 
 ## Conventions
@@ -108,6 +109,7 @@ You MUST maintain a file called `guideline.md` in the root of the memory system.
 - File names: snake_case
 - All files use .md extension
 - New sections in files start with ## headers
+- Declarative facts are stored in the format "- fact_name: fact_value"
 ```
 
 ## Important Rules

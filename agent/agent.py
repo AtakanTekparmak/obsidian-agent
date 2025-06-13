@@ -1,8 +1,8 @@
-from xml_agent.engine import execute_sandboxed_code
-from xml_agent.model import get_model_response, create_openai_client, create_vllm_client
-from xml_agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results, extract_reply, extract_thoughts
-from xml_agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, OPENROUTER_STRONG_MODEL
-from xml_agent.schemas import ChatMessage, Role, AgentResponse
+from agent.engine import execute_sandboxed_code
+from agent.model import get_model_response, create_openai_client, create_vllm_client
+from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results, extract_reply, extract_thoughts
+from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, OPENROUTER_STRONG_MODEL
+from agent.schemas import ChatMessage, Role, AgentResponse
 
 from typing import Union, Tuple
 
@@ -107,7 +107,7 @@ class Agent:
             result = execute_sandboxed_code(
                 code=python_code,
                 allowed_path=self.memory_path,
-                import_module="xml_agent.tools"
+                import_module="agent.tools"
             )
 
         # Add the agent's response to the conversation history
@@ -132,7 +132,7 @@ class Agent:
                 result = execute_sandboxed_code(
                     code=python_code,
                     allowed_path=self.memory_path,
-                    import_module="xml_agent.tools"
+                    import_module="agent.tools"
                 )
             remaining_tool_turns -= 1
 

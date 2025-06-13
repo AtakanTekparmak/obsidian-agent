@@ -6,8 +6,8 @@ import re
 
 from typing import Optional, Union
 
-from xml_agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL
-from xml_agent.schemas import ChatMessage, Role
+from agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL
+from agent.schemas import ChatMessage, Role
 
 def create_openai_client() -> OpenAI:
     """Create a new OpenAI client instance."""

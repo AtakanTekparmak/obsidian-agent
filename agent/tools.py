@@ -1,7 +1,7 @@
 import os
 
-from xml_agent.settings import MEMORY_PATH
-from xml_agent.utils import check_size_limits, create_memory_if_not_exists
+from agent.settings import MEMORY_PATH
+from agent.utils import check_size_limits, create_memory_if_not_exists
 
 def get_size(file_or_dir_path: str) -> int:
     """

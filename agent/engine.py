@@ -10,7 +10,7 @@ import subprocess
 import multiprocessing
 import queue  # for exception handling with Queue
 
-from xml_agent.settings import SANDBOX_TIMEOUT
+from agent.settings import SANDBOX_TIMEOUT
 
 # Configure a logger for the sandbox (in real use, configure handlers/level as needed)
 logger = logging.getLogger(__name__)
