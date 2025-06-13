@@ -1,31 +1,42 @@
-torch==2.5.1
-setuptools
-deepspeed
-accelerate
-peft
-wandb
-rich
-duckduckgo-search
-trl==0.16.0
-liger-kernel
-vllm
-brave-search
-latex2sympy>=1.0.3
-math-verify[antlr4-13-2]>=0.1.0
-pylatexenc>=2.10
-requests>=2.32.3
+# =====================================================================
+# CORE PROJECT REQUIREMENTS (agent/, data/, training/ folders)
+# =====================================================================
+
+# Core ML frameworks
+torch>=2.6.0
 transformers
 datasets
+huggingface_hub
+
+# Language model providers and APIs
+openai
+google-genai
+
+# Data processing and validation
+pydantic
+instructor 
+requests>=2.32.3
+httpx
+
+# Environment and configuration
+python-dotenv
+
+# Progress and display
+tqdm
+rich
+
+# Async support
+asyncio
+aiofiles
+
+# Graph and visualization (used in data processing)
 networkx
 matplotlib
 scipy
-httpx
-python-dotenv
-openai
-google-genai
-RestrictedPython
-tqdm
+
+# Testing
 pytest
 pytest-asyncio
-asyncio
-aiofiles
+
+# Code execution sandbox (RestrictedPython used in agent.engine)
+RestrictedPython
