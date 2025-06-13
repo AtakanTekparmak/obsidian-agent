@@ -1,7 +1,7 @@
 from agent.engine import execute_sandboxed_code
-from agent.model import get_model_response, create_openai_client, create_instructor_client
+from agent.model import get_model_response, create_openai_client, create_instructor_client, create_vllm_client
 from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
-from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS
+from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, VLLM_MODEL
 from agent.schemas import ChatMessage, Role, AgentResponse
 
 from typing import Union
@@ -11,16 +11,37 @@ import os
 import uuid
 
 class Agent:
-    def __init__(self, max_tool_turns: int = MAX_TOOL_TURNS, memory_path: str = None):
+    def __init__(
+        self, 
+        max_tool_turns: int = MAX_TOOL_TURNS, 
+        memory_path: str = None,
+        use_vllm: bool = False,
+        model: str = None,
+        vllm_host: str = VLLM_HOST,
+        vllm_port: int = VLLM_PORT
+    ):
         self.system_prompt = load_system_prompt()
         self.messages: list[ChatMessage] = [
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
         self.max_tool_turns = max_tool_turns
+        self.use_vllm = use_vllm
+        
+        # Set model: use provided model, or fall back to vLLM default if using vLLM, otherwise None for OpenRouter default
+        if model is not None:
+            self.model = model
+        elif use_vllm:
+            self.model = VLLM_MODEL
+        else:
+            self.model = None  # Will use OpenRouter default
         
         # Each Agent instance gets its own clients to avoid bottlenecks
-        self._client = create_openai_client()
-        self._instructor_client = create_instructor_client(self._client)
+        if use_vllm:
+            self._client = create_vllm_client(host=vllm_host, port=vllm_port)
+            self._instructor_client = None  # vLLM uses native structured outputs, no Instructor needed
+        else:
+            self._client = create_openai_client()
+            self._instructor_client = create_instructor_client(self._client, use_vllm=False)
         
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
         if memory_path is not None:
@@ -59,8 +80,10 @@ class Agent:
         response = get_model_response(
             messages=self.messages,
             schema=AgentResponse,
+            model=self.model,  # Pass the model if specified
             client=self._client,
-            instructor_client=self._instructor_client
+            instructor_client=self._instructor_client,
+            use_vllm=self.use_vllm
         )
 
         # Execute the code from the agent's response
@@ -82,8 +105,10 @@ class Agent:
             response = get_model_response(
                 messages=self.messages,
                 schema=AgentResponse,
+                model=self.model,  # Pass the model if specified
                 client=self._client,
-                instructor_client=self._instructor_client
+                instructor_client=self._instructor_client,
+                use_vllm=self.use_vllm
             )
             self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
             if response.python_block and not response.stop_acting:

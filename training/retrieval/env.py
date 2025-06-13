@@ -4,9 +4,9 @@ import uuid
 from typing import Any, Dict, List, Tuple, Union
 
 from datasets import Dataset
-from verifiers.verifiers.envs.environment import Environment
-from verifiers.verifiers.parsers import Parser
-from verifiers.verifiers.rubrics import Rubric
+from verifiers.envs.environment import Environment
+from verifiers.parsers import Parser
+from verifiers.rubrics import Rubric
 
 from agent.agent import Agent
 from agent.utils import delete_memory
@@ -22,6 +22,13 @@ class RetrievalEnv(Environment):
                          parser=parser, rubric=rubric, **kwargs)
         self.agent_cls = Agent
 
+    def format_dataset(self,
+                       dataset: Dataset,
+                       system_prompt: str | None = None,
+                       few_shot: List[Dict[str, Any]] | None = None) -> Dataset:
+        """Override to use 'prompt' as the question key instead of 'question'."""
+        return super().format_dataset(dataset, system_prompt, few_shot, question_key="prompt")
+
     def rollout(
         self,
         client,
@@ -35,7 +42,7 @@ class RetrievalEnv(Environment):
         memory_path = f"memory_{uuid.uuid4().hex}"
         if static_memory is not None:
             static_memory.instantiate(memory_path)
-        agent = self.agent_cls(memory_path=memory_path)
+        agent = self.agent_cls(memory_path=memory_path, use_vllm=True, model=model)
         agent.chat(prompt if isinstance(prompt, str) else prompt[-1]["content"])
         messages = [msg.model_dump() for msg in agent.messages]
         delete_memory(memory_path)

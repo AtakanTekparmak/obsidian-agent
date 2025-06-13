@@ -1,10 +1,10 @@
-import verifiers.verifiers as vf
+import verifiers as vf
 from training.retrieval import (
-    create_kb_with_personas,
-    build_verifiers_dataset,
+    load_verifiers_dataset,
     get_retrieval_rubric,
     RetrievalEnv,
 )
+from data.utils import load_kb_from_json
 
 """
 inference:
@@ -16,14 +16,14 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file verifiers/configs/z
 
 
 def main():
-    # Generate a KB and dataset for retrieval
-    scenario = "Groningen, Netherlands in 2025"
-    kb = create_kb_with_personas(num_personas=8, scenario=scenario)
-    dataset = build_verifiers_dataset(kb)
+    # Load verifiers dataset
+    dataset = load_verifiers_dataset()
 
+    print("Instantiating rubric and environment...")
     rubric = get_retrieval_rubric()
     env = RetrievalEnv(dataset=dataset, rubric=rubric)
 
+    print("Instantiating model...")
     model_name = "Qwen/Qwen3-8B"
     model, tokenizer = vf.get_model_and_tokenizer(model_name)
 
@@ -33,6 +33,7 @@ def main():
     args.gradient_accumulation_steps = 4
     args.num_generations = 8
 
+    print("Starting training with verifiers...")
     trainer = vf.GRPOTrainer(
         model=model,
         processing_class=tokenizer,

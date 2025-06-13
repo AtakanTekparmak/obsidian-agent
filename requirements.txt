@@ -3,7 +3,7 @@
 # =====================================================================
 
 # Core ML frameworks
-torch==2.5.1
+torch>=2.6.0
 transformers
 datasets
 huggingface_hub
