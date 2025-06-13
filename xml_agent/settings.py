@@ -10,16 +10,12 @@ MAX_TOOL_TURNS = 5
 # OpenRouter
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_STRONG_MODEL = "google/gemini-2.5-pro-preview-03-25"
+OPENROUTER_STRONG_MODEL = "anthropic/claude-sonnet-4"
 
-# OpenAI
-GPT_4O = "gpt-4o-2024-11-20"
-O4_MINI = "o4-mini-2025-04-16"
 
 # vLLM
 VLLM_HOST = os.getenv("VLLM_HOST", "0.0.0.0")
 VLLM_PORT = int(os.getenv("VLLM_PORT", "8000"))
-VLLM_MODEL = os.getenv("VLLM_MODEL", "Qwen/Qwen3-8B")
 
 # Memory
 MEMORY_PATH = "memory_dir"
@@ -31,5 +27,5 @@ MEMORY_SIZE_LIMIT = 1024 * 1024 * 100 # 100MB
 SANDBOX_TIMEOUT = 20
 
 # Path settings
-SYSTEM_PROMPT_PATH = "agent/system_prompt.txt"
+SYSTEM_PROMPT_PATH = "xml_agent/system_prompt.txt"
 SAVE_CONVERSATION_PATH = "output/conversations/"

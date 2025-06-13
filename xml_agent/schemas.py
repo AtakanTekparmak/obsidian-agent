@@ -16,8 +16,7 @@ class ChatMessage(BaseModel):
 class AgentResponse(BaseModel):
     thoughts: str
     python_block: Optional[str] = None
-    stop_acting: bool = False
     reply: Optional[str] = None
 
     def __str__(self):
-        return f"Thoughts: {self.thoughts}\nPython block:\n {self.python_block}\nStop acting: {self.stop_acting}\nReply: {self.reply}"
+        return f"Thoughts: {self.thoughts}\nPython block:\n {self.python_block}\nReply: {self.reply}"

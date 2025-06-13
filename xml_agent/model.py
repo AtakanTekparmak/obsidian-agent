@@ -1,28 +1,28 @@
-from openai import AsyncOpenAI
+from openai import OpenAI
 from pydantic import BaseModel
 import instructor
+import json
+import re
 
 from typing import Optional, Union
 
-from agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL
-from agent.schemas import ChatMessage, Role
+from xml_agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL
+from xml_agent.schemas import ChatMessage, Role
 
-def create_async_openai_client() -> AsyncOpenAI:
-    """Create a new AsyncOpenAI client instance."""
-    return AsyncOpenAI(
+def create_openai_client() -> OpenAI:
+    """Create a new OpenAI client instance."""
+    return OpenAI(
         api_key=OPENROUTER_API_KEY,
         base_url=OPENROUTER_BASE_URL,
     )
 
-def create_async_instructor_client(async_openai_client: AsyncOpenAI = None):
-    """Create a new async instructor client instance."""
-    if async_openai_client is None:
-        async_openai_client = create_async_openai_client()
-    return instructor.from_openai(async_openai_client, mode=instructor.Mode.TOOLS)
+def create_vllm_client(host: str = "0.0.0.0", port: int = 8000) -> OpenAI:
+    """Create a new vLLM client instance (OpenAI-compatible)."""
+    return OpenAI(
+        base_url=f"http://{host}:{port}/v1",
+        api_key="EMPTY",  # vLLM doesn't require a real API key
+    )
 
-# Initialize Async OpenAI client and the instructor client
-ASYNC_CLIENT = create_async_openai_client()
-ASYNC_INSTRUCTOR_CLIENT = create_async_instructor_client(ASYNC_CLIENT)
 
 def _as_dict(msg: Union[ChatMessage, dict]) -> dict:
     """
@@ -36,17 +36,16 @@ def _as_dict(msg: Union[ChatMessage, dict]) -> dict:
     """
     return msg if isinstance(msg, dict) else msg.model_dump()
 
-async def get_model_response(
+def get_model_response(
         messages: Optional[list[ChatMessage]] = None,
         message: Optional[str] = None,
         system_prompt: Optional[str] = None,
         model: str = OPENROUTER_STRONG_MODEL,
-        schema: Optional[BaseModel] = None,
-        async_client: Optional[AsyncOpenAI] = None,
-        async_instructor_client = None,
+        client: Optional[OpenAI] = None,
+        use_vllm: bool = False,
 ) -> Union[str, BaseModel]:
     """
-    Get a response from a model using OpenRouter asynchronously, with optional schema for structured output.
+    Get a response from a model using OpenRouter or vLLM, with optional schema for structured output.
 
     Args:
         messages: A list of ChatMessage objects (optional).
@@ -54,8 +53,9 @@ async def get_model_response(
         system_prompt: A system prompt for the model (optional).
         model: The model to use.
         schema: A Pydantic BaseModel for structured output (optional).
-        async_client: Optional AsyncOpenAI client to use. If None, uses the global client.
-        async_instructor_client: Optional async instructor client to use. If None, creates one from the AsyncOpenAI client.
+        client: Optional OpenAI client to use. If None, uses the global client.
+        instructor_client: Optional instructor client to use. Ignored if use_vllm=True.
+        use_vllm: Whether to use vLLM backend instead of OpenRouter.
 
     Returns:
         A string response from the model if schema is None, otherwise a BaseModel object.
@@ -64,10 +64,11 @@ async def get_model_response(
         raise ValueError("Either 'messages' or 'message' must be provided.")
 
     # Use provided clients or fall back to global ones
-    if async_client is None:
-        async_client = ASYNC_CLIENT
-    if async_instructor_client is None:
-        async_instructor_client = create_async_instructor_client(async_client)
+    if client is None:
+        if use_vllm:
+            client = create_vllm_client()
+        else:
+            client = create_openai_client()
 
     # Build message history
     if messages is None:
@@ -78,17 +79,21 @@ async def get_model_response(
     else:
         messages = [_as_dict(m) for m in messages]
 
-    if schema is None:
-        completion = await async_client.chat.completions.create(
+    if use_vllm:
+        # For vLLM, use native guided JSON - no Instructor needed
+        completion = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            extra_body={
+                "guided_decoding_backend": "outlines"
+            }
+        )
+            
+        return completion.choices[0].message.content
+    else:
+        # For OpenRouter, use Instructor
+        completion = client.chat.completions.create(
             model=model,
             messages=messages,
         )
         return completion.choices[0].message.content
-    else: 
-        completion = await async_instructor_client.chat.completions.create(
-            model=model,
-            messages=messages,
-            extra_body={"provider": {"require_parameters": True}},
-            response_model=schema
-        )
-        return completion 

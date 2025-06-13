@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH
+from xml_agent.settings import SYSTEM_PROMPT_PATH, FILE_SIZE_LIMIT, DIR_SIZE_LIMIT, MEMORY_SIZE_LIMIT, MEMORY_PATH
 
 def load_system_prompt() -> str:
     """
@@ -88,11 +88,33 @@ def extract_python_code(response: str) -> str:
     Returns:
         The python code from the response.
     """
-    if "```python" in response:
-        return response.split("```python")[1].split("```")[0]
+    if "<python>" in response and "</python>" in response:
+        response = response.split("<python>")[1].split("</python>")[0]
+        if "```" in response:
+            return response.split("```")[1].split("```")[0]
+        else:
+            return response
     else:
-        return response
-
+        return ""
+    
+def extract_reply(response: str) -> str:
+    """
+    Extract the reply from the response.
+    """
+    if "<reply>" in response and "</reply>" in response:
+        return response.split("<reply>")[1].split("</reply>")[0]
+    else:
+        return ""
+    
+def extract_thoughts(response: str) -> str:
+    """
+    Extract the thoughts from the response.
+    """
+    if "<thoughts>" in response and "</thoughts>" in response:
+        return response.split("<thoughts>")[1].split("</thoughts>")[0]
+    else:
+        return ""
+    
 def format_results(results: dict) -> str:
     """
     Format the results into a string.

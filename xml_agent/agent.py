@@ -1,10 +1,10 @@
-from agent.engine import execute_sandboxed_code
-from agent.model import get_model_response, create_openai_client, create_instructor_client, create_vllm_client
-from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
-from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, VLLM_MODEL
-from agent.schemas import ChatMessage, Role, AgentResponse
+from xml_agent.engine import execute_sandboxed_code
+from xml_agent.model import get_model_response, create_openai_client, create_vllm_client
+from xml_agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results, extract_reply, extract_thoughts
+from xml_agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, OPENROUTER_STRONG_MODEL
+from xml_agent.schemas import ChatMessage, Role, AgentResponse
 
-from typing import Union
+from typing import Union, Tuple
 
 import json
 import os
@@ -16,32 +16,29 @@ class Agent:
         max_tool_turns: int = MAX_TOOL_TURNS, 
         memory_path: str = None,
         use_vllm: bool = False,
-        model: str = None,
-        vllm_host: str = VLLM_HOST,
-        vllm_port: int = VLLM_PORT
+        model: str = None
     ):
+        # Load the system prompt and add it to the conversation history
         self.system_prompt = load_system_prompt()
         self.messages: list[ChatMessage] = [
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
+
+        # Set the maximum number of tool turns and use_vllm flag
         self.max_tool_turns = max_tool_turns
         self.use_vllm = use_vllm
         
-        # Set model: use provided model, or fall back to vLLM default if using vLLM, otherwise None for OpenRouter default
-        if model is not None:
+        # Set model: use provided model, or fallback to OPENROUTER_STRONG_MODEL
+        if model:
             self.model = model
-        elif use_vllm:
-            self.model = VLLM_MODEL
         else:
-            self.model = None  # Will use OpenRouter default
-        
+            self.model = OPENROUTER_STRONG_MODEL
+            
         # Each Agent instance gets its own clients to avoid bottlenecks
         if use_vllm:
-            self._client = create_vllm_client(host=vllm_host, port=vllm_port)
-            self._instructor_client = None  # vLLM uses native structured outputs, no Instructor needed
+            self._client = create_vllm_client(host=VLLM_HOST, port=VLLM_PORT)
         else:
             self._client = create_openai_client()
-            self._instructor_client = create_instructor_client(self._client, use_vllm=False)
         
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
         if memory_path is not None:
@@ -62,6 +59,22 @@ class Agent:
             self.messages.append(message)
         else:
             raise ValueError("Invalid message type")
+        
+    def extract_response_parts(self, response: str) -> Tuple[str, str, str]:
+        """
+        Extract the thoughts, reply and python code from the response.
+
+        Args:
+            response: The response from the agent.
+
+        Returns:
+            A tuple of the thoughts, reply and python code.
+        """
+        thoughts = extract_thoughts(response)
+        reply = extract_reply(response)
+        python_code = extract_python_code(response)
+
+        return thoughts, reply, python_code
 
     def chat(self, message: str) -> AgentResponse:
         """
@@ -79,48 +92,55 @@ class Agent:
         # Get the response from the agent using this instance's clients
         response = get_model_response(
             messages=self.messages,
-            schema=AgentResponse,
             model=self.model,  # Pass the model if specified
             client=self._client,
-            instructor_client=self._instructor_client,
             use_vllm=self.use_vllm
         )
 
+        # Extract the thoughts, reply and python code from the response
+        thoughts, reply, python_code = self.extract_response_parts(response)
+
         # Execute the code from the agent's response
         result = ({}, "")
-        if response.python_block and not response.stop_acting:
+        if python_code:
             create_memory_if_not_exists(self.memory_path)
             result = execute_sandboxed_code(
-                code=extract_python_code(response.python_block),
+                code=python_code,
                 allowed_path=self.memory_path,
-                import_module="agent.tools"
+                import_module="xml_agent.tools"
             )
 
         # Add the agent's response to the conversation history
-        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
+        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
 
         remaining_tool_turns = self.max_tool_turns
-        while remaining_tool_turns > 0 and not response.stop_acting:
+        while remaining_tool_turns > 0 and not reply:
             self._add_message(ChatMessage(role=Role.USER, content=format_results(result)))
             response = get_model_response(
                 messages=self.messages,
-                schema=AgentResponse,
                 model=self.model,  # Pass the model if specified
                 client=self._client,
-                instructor_client=self._instructor_client,
                 use_vllm=self.use_vllm
             )
-            self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
-            if response.python_block and not response.stop_acting:
+
+            # Extract the thoughts, reply and python code from the response
+            thoughts, reply, python_code = self.extract_response_parts(response)
+
+            self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
+            if python_code:
                 create_memory_if_not_exists(self.memory_path)
                 result = execute_sandboxed_code(
-                    code=extract_python_code(response.python_block),
+                    code=python_code,
                     allowed_path=self.memory_path,
-                    import_module="agent.tools"
+                    import_module="xml_agent.tools"
                 )
             remaining_tool_turns -= 1
 
-        return response
+        return AgentResponse(
+            thoughts=thoughts,
+            reply=reply,
+            python_block=python_code
+        )
 
     def save_conversation(
             self, 
@@ -135,7 +155,7 @@ class Agent:
             os.makedirs(SAVE_CONVERSATION_PATH, exist_ok=True)
 
         unique_id = uuid.uuid4()
-        if save_folder is None:
+        if not save_folder:
             file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
         else:
             folder_path = os.path.join(SAVE_CONVERSATION_PATH, save_folder)
@@ -145,7 +165,7 @@ class Agent:
 
         # Convert the execution result messages to tool role
         messages = [
-            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<r>") else ChatMessage(role=message.role, content=message.content)
+            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<result>") else ChatMessage(role=message.role, content=message.content)
             for message in self.messages 
         ]
         try:
