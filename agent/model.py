@@ -83,10 +83,7 @@ def get_model_response(
         # For vLLM, use native guided JSON - no Instructor needed
         completion = client.chat.completions.create(
             model=model,
-            messages=messages,
-            extra_body={
-                "guided_decoding_backend": "outlines"
-            }
+            messages=messages
         )
             
         return completion.choices[0].message.content
@@ -94,6 +91,6 @@ def get_model_response(
         # For OpenRouter, use Instructor
         completion = client.chat.completions.create(
             model=model,
-            messages=messages,
+            messages=messages
         )
         return completion.choices[0].message.content
