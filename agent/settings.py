@@ -12,7 +12,6 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_STRONG_MODEL = "anthropic/claude-sonnet-4"
 
-
 # vLLM
 VLLM_HOST = os.getenv("VLLM_HOST", "0.0.0.0")
 VLLM_PORT = int(os.getenv("VLLM_PORT", "8000"))
