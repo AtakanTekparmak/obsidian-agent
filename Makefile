@@ -70,7 +70,7 @@ install-training: check-uv
 	@echo "Setting up training environment..."
 	cd training && uv sync
 	@echo "Installing flash-attn..."
-	cd training && uv add verifiers[all] && uv pip install flash-attn --no-build-isolation
+	cd training && uv add "verifiers[all]==0.1.0" && uv pip install flash-attn --no-build-isolation
 	@echo "Training environment setup complete!"
 
 # Copy the .env.example file to .env if it doesn't exist
