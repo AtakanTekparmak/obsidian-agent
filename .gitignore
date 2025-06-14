@@ -190,3 +190,6 @@ memory_dir/
 
 # .DS_Store
 .DS_Store
+
+# uv.lock
+**/uv.lock
