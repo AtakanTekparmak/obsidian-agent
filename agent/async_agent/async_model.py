@@ -1,6 +1,5 @@
 from openai import AsyncOpenAI
 from pydantic import BaseModel
-import instructor
 
 from typing import Optional, Union
 
@@ -75,7 +74,6 @@ async def get_model_response(
         messages = [_as_dict(m) for m in messages]
 
     if use_vllm:
-        # For vLLM, use native guided JSON - no Instructor needed
         completion = await client.chat.completions.create(
             model=model,
             messages=messages
@@ -83,7 +81,6 @@ async def get_model_response(
             
         return completion.choices[0].message.content
     else:
-        # For OpenRouter, use Instructor
         completion = await client.chat.completions.create(
             model=model,
             messages=messages

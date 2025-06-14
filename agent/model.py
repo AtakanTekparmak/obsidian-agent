@@ -1,8 +1,5 @@
 from openai import OpenAI
 from pydantic import BaseModel
-import instructor
-import json
-import re
 
 from typing import Optional, Union
 
@@ -54,7 +51,6 @@ def get_model_response(
         model: The model to use.
         schema: A Pydantic BaseModel for structured output (optional).
         client: Optional OpenAI client to use. If None, uses the global client.
-        instructor_client: Optional instructor client to use. Ignored if use_vllm=True.
         use_vllm: Whether to use vLLM backend instead of OpenRouter.
 
     Returns:
@@ -80,7 +76,6 @@ def get_model_response(
         messages = [_as_dict(m) for m in messages]
 
     if use_vllm:
-        # For vLLM, use native guided JSON - no Instructor needed
         completion = client.chat.completions.create(
             model=model,
             messages=messages
@@ -88,7 +83,6 @@ def get_model_response(
             
         return completion.choices[0].message.content
     else:
-        # For OpenRouter, use Instructor
         completion = client.chat.completions.create(
             model=model,
             messages=messages

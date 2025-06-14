@@ -1,6 +1,5 @@
 from openai import OpenAI, AsyncOpenAI
 from pydantic import BaseModel
-import instructor
 
 from typing import Optional, Union
 from abc import ABC
@@ -23,18 +22,6 @@ def create_async_openai_client() -> AsyncOpenAI:
         api_key=OPENROUTER_API_KEY,
         base_url=OPENROUTER_BASE_URL,
     )
-
-def create_instructor_client(openai_client: OpenAI = None):
-    """Create a new instructor client instance."""
-    if openai_client is None:
-        openai_client = create_openai_client()
-    return instructor.from_openai(openai_client, mode=instructor.Mode.TOOLS)
-
-def create_async_instructor_client(async_openai_client: AsyncOpenAI = None):
-    """Create a new async instructor client instance."""
-    if async_openai_client is None:
-        async_openai_client = create_async_openai_client()
-    return instructor.from_openai(async_openai_client, mode=instructor.Mode.TOOLS)
 
 # Initialize the client
 CLIENT = create_openai_client()
