@@ -91,7 +91,7 @@ vf-inference:
 vf-training:
 	@echo "Starting verifiers training..."
 	@echo "Make sure vf-inference is running in another terminal first!"
-	./scripts/run_verifiers_training.sh
+	./training/scripts/run_verifiers_training.sh
 
 # Alternative: Run training with all GPUs visible for NCCL communication
 vf-training-all-gpus:
@@ -104,28 +104,6 @@ vf-training-all-gpus:
 		--gpu_ids 4,5,6,7 \
 		--main_process_port 29501 \
 		training/retrieval/train_retrieval.py
-
-# Run inference on first 4 GPUs (for training compatibility)
-vf-inference-train-gpus:
-	@echo "Starting verifiers inference server on training GPUs..."
-	cd verifiers && CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) uv run vf-vllm --model $(VF_MODEL) --tensor-parallel-size $(VF_TENSOR_PARALLEL_SIZE) --max-batch-size $(VF_MAX_BATCH_SIZE)
-
-# Run training on same GPUs as inference (after inference is ready)
-vf-training-same-gpus:
-	@echo "Starting verifiers training on same GPUs as inference..."
-	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
-
-# Sequential execution: inference then training on same GPUs
-vf-train-sequential:
-	@echo "Starting sequential training process..."
-	@echo "Step 1: Starting inference server in background..."
-	@cd verifiers && CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) uv run vf-vllm --model $(VF_MODEL) --tensor-parallel-size $(VF_TENSOR_PARALLEL_SIZE) --max-batch-size $(VF_MAX_BATCH_SIZE) &
-	@echo "Waiting for inference server to be ready..."
-	@sleep 180
-	@echo "Step 2: Starting training on same GPUs..."
-	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) ./verifiers/.venv/bin/accelerate launch --config-file verifiers/configs/zero3.yaml --num-processes $(VF_NUM_PROCESSES) training/retrieval/train_retrieval.py
-	@echo "Training complete. Stopping inference server..."
-	@pkill -f "vf-vllm" || true
 
 # Generate knowledge base with personas for training
 vf-generate-kb:

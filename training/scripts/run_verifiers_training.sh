@@ -35,6 +35,6 @@ PYTHONPATH="$(pwd):$PYTHONPATH" ./verifiers/.venv/bin/deepspeed \
     --include localhost:4,5,6,7 \
     --master_port 29501 \
     training/retrieval/train_retrieval.py \
-    --deepspeed verifiers/configs/deepspeed_zero3.json
+    --deepspeed training/configs/rl/deepspeed_zero3.json
 
 echo "Training complete!" 
