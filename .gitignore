@@ -184,9 +184,8 @@ memory_dir/
 # Any folder with the word "memory" in it
 *memory*/
 
-
-# Output directories
-**/output/*
+# output/conversations/ 
+output/conversations/
 
 # .DS_Store
 .DS_Store
