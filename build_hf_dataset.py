@@ -20,7 +20,7 @@ def scan_data(root: Path) -> Dataset:
                 payload = json.load(f)                 # list[dict[…]]
             rows.append(
                 {
-                    "conversations": json.dumps(payload, ensure_ascii=False),
+                    "conversations": payload,
                     "task_type": sub,
                     "id": uid_match.group(1),
                 }
