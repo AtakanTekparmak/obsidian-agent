@@ -70,7 +70,9 @@ install-training: check-uv
 	@echo "Setting up training environment..."
 	cd training && uv sync
 	@echo "Installing flash-attn..."
-	cd training && uv add "verifiers[all]==0.1.0" && uv pip install flash-attn --no-build-isolation
+	cd training && uv add "verifiers[all]==0.1.0" && uv pip install \
+  https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/\
+flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp312-cp312-linux_x86_64.whl --no-build-isolation
 	@echo "Training environment setup complete!"
 
 # Copy the .env.example file to .env if it doesn't exist
@@ -97,13 +99,13 @@ build-dataset:
 # Start verifiers inference server
 vf-inference:
 	@echo "Starting verifiers inference server..."
-	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) uv run --project training vf-vllm --model $(VF_MODEL) --tensor-parallel-size $(VF_TENSOR_PARALLEL_SIZE) --max-batch-size $(VF_MAX_BATCH_SIZE)
+	UV_FROZEN=true PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) uv run --project training vf-vllm --model $(VF_MODEL) --tensor-parallel-size $(VF_TENSOR_PARALLEL_SIZE) --max-batch-size $(VF_MAX_BATCH_SIZE)
 
 # Start verifiers training
 vf-training:
 	@echo "Starting verifiers training..."
 	@echo "Make sure vf-inference is running in another terminal first!"
-	./training/scripts/run_verifiers_training.sh
+	UV_FROZEN=true./training/scripts/run_verifiers_training.sh
 
 # Alternative: Run training with all GPUs visible for NCCL communication
 vf-training-all-gpus:

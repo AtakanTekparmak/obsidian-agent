@@ -11,7 +11,7 @@ dependencies = [
     # Training dependencies
     "datasets",
     "transformers",
-    "torch",
+    "torch==2.6.0",
     "accelerate",
     "deepspeed",
     "setuptools",
