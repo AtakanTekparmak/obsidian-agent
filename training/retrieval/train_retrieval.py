@@ -32,6 +32,7 @@ def main():
     args.per_device_train_batch_size = 8
     args.gradient_accumulation_steps = 4
     args.num_generations = 8
+    args.async_generation_timeout = 600.0   # 10 minutes
 
     print("Starting training with verifiers...")
     trainer = vf.GRPOTrainer(
