@@ -118,6 +118,7 @@ You MUST maintain a file called `guideline.md` in the root of the memory system.
 2. **Be selective**: Only save crucial, reusable information
 3. **No print statements**: They won't execute in the Python environment
 4. **Valid Python only**: Ensure syntactically correct code
+5. **Try to not write too much code in one response**: There is a timeout of 5 seconds for the code to execute.
 
 ## Example Conversation Flow
 
