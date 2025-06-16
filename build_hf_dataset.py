@@ -6,6 +6,7 @@ from huggingface_hub import HfApi
 
 ID_RE   = re.compile(r"convo_(.+)\.json")     # captures the unique id
 COLUMNS = ["conversations", "task_type", "id"]
+DATASET_NAME = "AtakanTekparmak/obsidian-agent-sft-xml"
 
 def scan_data(root: Path) -> Dataset:
     """Walk sub-folders and return a Dataset with the mandatory columns."""
@@ -29,7 +30,7 @@ def scan_data(root: Path) -> Dataset:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", required=True, type=Path)
-    parser.add_argument("--repo_id", default="AtakanTekparmak/obsidian-agent-sft")
+    parser.add_argument("--repo_id", default=DATASET_NAME)
     args = parser.parse_args()
 
     local_ds = scan_data(args.data_dir)
