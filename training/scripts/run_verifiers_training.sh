@@ -34,7 +34,7 @@ export CUDA_DEVICE_ORDER=PCI_BUS_ID
 # Run the training with proper GPU mapping
 # The key is to use --include to specify which GPUs DeepSpeed should use
 # Need to set PYTHONPATH to include the current directory for imports
-PYTHONPATH="$(pwd):$PYTHONPATH" ./verifiers/.venv/bin/deepspeed \
+PYTHONPATH="$(pwd):$PYTHONPATH" uv run --project training deepspeed \
     --include localhost:4,5,6,7 \
     --master_port 29501 \
     training/retrieval/train_retrieval.py \
