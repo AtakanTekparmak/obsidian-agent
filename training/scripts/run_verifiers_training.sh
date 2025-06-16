@@ -14,6 +14,9 @@ fi
 
 echo "Inference server is running. Starting training..."
 
+# Set UV_FROZEN to true to avoid installing new packages
+export UV_FROZEN=true 
+
 # Set NCCL environment for cross-GPU communication
 export NCCL_DEBUG=WARN  # Set to INFO for debugging
 export NCCL_P2P_LEVEL=NVL  # Enable NVLink communication

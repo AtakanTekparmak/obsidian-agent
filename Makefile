@@ -105,7 +105,7 @@ vf-inference:
 vf-training:
 	@echo "Starting verifiers training..."
 	@echo "Make sure vf-inference is running in another terminal first!"
-	UV_FROZEN=true./training/scripts/run_verifiers_training.sh
+	./training/scripts/run_verifiers_training.sh
 
 # Alternative: Run training with all GPUs visible for NCCL communication
 vf-training-all-gpus:
