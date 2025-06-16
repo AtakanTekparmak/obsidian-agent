@@ -88,7 +88,11 @@ class RetrievalEnv(Environment):
         else:
             results = {k: list(v) for k, v in inputs.items()}
 
-        prompts = results["question"]
+        try:    
+            prompts = results["question"]
+        except KeyError:
+            prompts = results["prompt"]
+            
         answers = results["answer"]
         static_memories = results.get("static_memory", [None] * len(prompts))
 
