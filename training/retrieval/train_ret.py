@@ -22,7 +22,7 @@ def main():
 
     print("Instantiating model...")
     model_name = "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
-    model, tokenizer = vf.get_model_and_tokenizer(model_name)
+    model, tokenizer = vf.get_model_and_tokenizer(model_name, use_liger=False)
 
     args = vf.grpo_defaults(run_name="retrieval_rl")
     args.num_iterations = 2
