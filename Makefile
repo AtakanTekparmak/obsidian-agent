@@ -7,7 +7,7 @@
 PYTHON := python3
 
 # Verifiers variables
-VF_MODEL := Qwen/Qwen3-8B
+VF_MODEL := mistralai/Mistral-Small-3.1-24B-Instruct-2503
 VF_TENSOR_PARALLEL_SIZE := 4
 VF_MAX_BATCH_SIZE := 128
 VF_INFERENCE_GPUS := 0,1,2,3

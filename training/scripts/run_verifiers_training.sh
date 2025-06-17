@@ -37,7 +37,7 @@ export CUDA_DEVICE_ORDER=PCI_BUS_ID
 PYTHONPATH="$(pwd):$PYTHONPATH" uv run --project training deepspeed \
     --include localhost:4,5,6,7 \
     --master_port 29501 \
-    training/retrieval/train_retrieval.py \
+    training/retrieval/train_ret2.py \
     --deepspeed training/configs/rl/deepspeed_zero3.json
 
 echo "Training complete!" 
