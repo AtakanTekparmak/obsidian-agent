@@ -18,8 +18,7 @@ def main():
     dataset = load_verifiers_dataset()
 
     print("Instantiating rubric and environment...")
-    rubric = MemoryRubric()
-    env = MemoryEnv(dataset=dataset, rubric=rubric)
+    env = MemoryEnv(dataset=dataset)
 
     print("Instantiating model...")
     model_name = "mistralai/Mistral-Small-3.1-24B-Instruct-2503"

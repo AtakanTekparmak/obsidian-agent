@@ -1,8 +1,9 @@
 import json
 import os
 import tempfile
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
+from datasets import Dataset
 from verifiers.envs.multiturn_env import MultiTurnEnv
 from verifiers.parsers import XMLParser
 
@@ -16,6 +17,7 @@ class MemoryEnv(MultiTurnEnv):
 
     def __init__(
             self,
+            dataset: Dataset | List[Dict] | None = None,
             system_prompt: str = load_system_prompt(),
             max_turns: int = MAX_TOOL_TURNS,
             **kwargs: Any
@@ -23,7 +25,15 @@ class MemoryEnv(MultiTurnEnv):
         parser = XMLParser(["think", "python", "reply"], answer_field="reply")
         self.env_parser = XMLParser(["result"])
         rubric = MemoryRubric(parser=parser, env_parser=self.env_parser)
+        
+        # Handle dataset parameter - convert to Dataset if needed
+        if dataset is not None:
+            processed_dataset = Dataset.from_list(dataset) if not isinstance(dataset, Dataset) else dataset
+        else:
+            processed_dataset = None
+            
         super().__init__(
+            dataset=processed_dataset,
             system_prompt=system_prompt,
             parser=parser,
             rubric=rubric,
