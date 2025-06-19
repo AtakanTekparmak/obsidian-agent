@@ -16,7 +16,8 @@ class Agent:
         max_tool_turns: int = MAX_TOOL_TURNS, 
         memory_path: str = None,
         use_vllm: bool = False,
-        model: str = None
+        model: str = None,
+        predetermined_memory_path: bool = False
     ):
         # Load the system prompt and add it to the conversation history
         self.system_prompt = load_system_prompt()
@@ -43,7 +44,10 @@ class Agent:
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
         if memory_path is not None:
             # Always place custom memory paths inside a "memory/" folder
-            self.memory_path = os.path.join("memory", memory_path)
+            if predetermined_memory_path:
+                self.memory_path = os.path.join("memory", memory_path)
+            else:
+                self.memory_path = memory_path
         else:
             # Use default MEMORY_PATH but also place it inside "memory/" folder
             self.memory_path = os.path.join("memory", MEMORY_PATH)
