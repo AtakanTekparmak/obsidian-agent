@@ -73,7 +73,7 @@ class MemoryEnv(MultiTurnEnv):
             code,
             timeout=SANDBOX_TIMEOUT,
             allowed_path=memory_dir,
-            available_functions="agent.tools",
+            import_module="agent.tools",
         )
         if error:
             return error

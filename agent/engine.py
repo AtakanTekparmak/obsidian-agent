@@ -7,8 +7,7 @@ import traceback
 import types
 import pickle
 import subprocess
-import multiprocessing
-import queue  # for exception handling with Queue
+import base64
 
 from agent.settings import SANDBOX_TIMEOUT
 
@@ -16,11 +15,10 @@ from agent.settings import SANDBOX_TIMEOUT
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # or DEBUG for more verbosity
 
-def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, result_queue: multiprocessing.Queue, log: bool = False) -> None:
+def _run_user_code(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, log: bool = False) -> tuple[dict, str]:
     """
-    Worker function to run in a separate process. It executes the given code string
-    under sandboxed conditions (limited file access, optional installs, blacklisting).
-    Results (locals and error) are put into result_queue.
+    Execute code under sandboxed conditions (limited file access, optional installs,
+    and blacklisting) and return the resulting locals and an error message.
     """
     try:
         # Optional: apply working directory and file access restriction
@@ -135,7 +133,7 @@ def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklis
         # Clean up any blacklisted or internal entries in locals
         exec_locals.pop('__builtins__', None)
         
-        # Send the result back via queue
+        # Collect only picklable locals for returning
         safe_locals = {}
         for var, val in exec_locals.items():
             try:
@@ -144,19 +142,16 @@ def _sandbox_worker(code: str, allow_installs: bool, allowed_path: str, blacklis
             except Exception:
                 safe_locals[var] = repr(val)  # fallback: use string representation
 
-        result_queue.put((safe_locals, error_msg))
-        
         if log:
-            logger.info("Sandbox worker successfully put results in queue")
+            logger.info("Sandbox execution finished")
+
+        return safe_locals, error_msg
         
     except Exception as e:
         # Catch any unhandled exceptions in the worker process
         if log:
             logger.error("Unhandled exception in sandbox worker: %s", traceback.format_exc())
-        try:
-            result_queue.put((None, f"Sandbox worker error: {str(e)}"))
-        except Exception as queue_err:
-            logger.error("Failed to put error in queue: %s", queue_err)
+        return None, f"Sandbox worker error: {str(e)}"
 
 def execute_sandboxed_code(
         code: str,
@@ -205,71 +200,81 @@ def execute_sandboxed_code(
             return None, f"Requirements file not found: {requirements_path}"
     
     # If a module name is provided, import it and add its functions to available_functions
+    if isinstance(available_functions, str) and not import_module:
+        import_module = available_functions
+        available_functions = None
+
     if import_module:
         try:
             module = importlib.import_module(import_module)
-            # If available_functions is None, initialize it
             if available_functions is None:
                 available_functions = {}
-            
-            # Add all callable attributes from the module
             for name in dir(module):
-                # Skip private attributes (starting with _)
                 if not name.startswith('_'):
                     attr = getattr(module, name)
-                    # Only add callable attributes (functions)
                     if callable(attr):
                         available_functions[name] = attr
-            
             logger.info(f"Imported module {import_module} with {len(available_functions)} functions")
         except ImportError as e:
             logger.error(f"Failed to import module {import_module}: {e}")
             return None, f"Failed to import module {import_module}: {e}"
         
-    # Step 2: Launch the sandbox subprocess to execute the code
-    result_queue = multiprocessing.Queue()
-    proc = multiprocessing.Process(target=_sandbox_worker, args=(code, allow_installs, allowed_path, blacklist or [], available_functions or {}, result_queue))
-    logger.info("Starting sandboxed process for code execution (timeout=%ds)...", timeout)
-    proc.start()
+    # Step 2: Execute the code in a separate Python subprocess
+    params = {
+        "code": code,
+        "allow_installs": allow_installs,
+        "allowed_path": allowed_path,
+        "blacklist": blacklist or [],
+        "available_functions": available_functions or {},
+        "log": log,
+    }
 
-    # Step 3: Wait for the process to finish or kill it after the timeout
-    proc.join(timeout)
-    if proc.is_alive():
+    env = os.environ.copy()
+    env["SANDBOX_PARAMS"] = base64.b64encode(pickle.dumps(params)).decode()
+
+    logger.info("Starting sandboxed subprocess for code execution (timeout=%ds)...", timeout)
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "agent.engine"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            env=env,
+        )
+    except subprocess.TimeoutExpired:
         logger.error("Sandboxed code exceeded time limit of %d seconds; terminating.", timeout)
-        proc.terminate()
-        proc.join(1)  # give it a second to terminate
-        if proc.is_alive():
-            proc.kill()  # force kill if not terminated
-            proc.join()  # ensure process is ended
         return None, f"TimeoutError: Code execution exceeded {timeout} seconds."
 
-    # Step 4: Retrieve results from the queue
-    local_vars = None
-    error_msg = None
-    
-    try:
-        # Wait up to 2 seconds for the queue to deliver results
-        # Sometimes there's a slight delay between process end and queue availability
-        local_vars, error_msg = result_queue.get(block=True, timeout=2)
-        logger.info("Successfully received results from sandboxed process")
-    except queue.Empty:
-        # This would be unusual (process ended but no result); handle gracefully
-        logger.error("Sandboxed process ended but did not return any result.")
-        error_msg = "Sandboxed process ended without returning results."
-    except Exception as e:
-        logger.error(f"Error retrieving results from queue: {e}")
-        error_msg = f"Error retrieving results: {str(e)}"
-    
-    # Ensure the subprocess resources are cleaned up
-    try:
-        result_queue.close()
-        result_queue.join_thread()
-    except Exception as e:
-        logger.warning(f"Error cleaning up queue resources: {e}")
+    if result.returncode != 0:
+        return None, result.stderr.decode().strip()
 
-    # TODO: Remove modules from local_vars
+    try:
+        local_vars, error_msg = pickle.loads(result.stdout)
+    except Exception as e:
+        return None, f"Failed to decode sandbox output: {e}"
 
     if error_msg is None:
         error_msg = ""
 
     return local_vars, error_msg
+
+
+def _subprocess_entry() -> None:
+    """Entry point for sandbox subprocess."""
+    params_b64 = os.environ.get("SANDBOX_PARAMS")
+    if not params_b64:
+        sys.exit(1)
+    params = pickle.loads(base64.b64decode(params_b64))
+    locals_dict, error = _run_user_code(
+        params["code"],
+        params.get("allow_installs", False),
+        params.get("allowed_path"),
+        params.get("blacklist", []),
+        params.get("available_functions", {}),
+        params.get("log", False),
+    )
+    sys.stdout.buffer.write(pickle.dumps((locals_dict, error)))
+
+
+if __name__ == "__main__":
+    _subprocess_entry()
