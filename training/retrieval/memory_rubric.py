@@ -20,4 +20,4 @@ class MemoryRubric(Rubric):
     def answer_in_reply_reward_func(self, completion, answer, **kwargs) -> float:
         response = str(self.parser.parse_answer(completion)).lower()
         fact = Fact(fact_description=answer)
-        return get_reward(folder_dump_str=response, facts=[fact])
+        return get_reward(folder_dump_str=response, facts_to_check=[fact])
