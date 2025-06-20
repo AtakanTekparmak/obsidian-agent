@@ -8,7 +8,7 @@ from verifiers.envs.multiturn_env import MultiTurnEnv
 from verifiers.parsers import XMLParser
 
 from training.retrieval.memory_rubric import MemoryRubric
-from agent.engine import execute_sandboxed_code
+import subprocess
 from agent.utils import load_system_prompt
 from agent.settings import MAX_TOOL_TURNS, SANDBOX_TIMEOUT
 
@@ -73,7 +73,7 @@ class MemoryEnv(MultiTurnEnv):
             code,
             timeout=SANDBOX_TIMEOUT,
             allowed_path=memory_dir,
-            available_functions="agent.tools",
+            import_module="agent.tools",
         )
         if error:
             return error

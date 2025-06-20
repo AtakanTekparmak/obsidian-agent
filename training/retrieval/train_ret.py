@@ -25,6 +25,11 @@ def main():
     model, tokenizer = vf.get_model_and_tokenizer(model_name, use_liger=False)
 
     args = vf.grpo_defaults(run_name="retrieval_rl")
+    # Increase the prompt length limit so the dataset doesn't get
+    # filtered out by GRPOTrainer. The generated questions are short but
+    # each example includes a long `static_memory` section which often
+    # exceeds the default 1024 token limit.
+    args.max_prompt_length = 4096
     args.num_iterations = 2
     args.per_device_train_batch_size = 8
     args.gradient_accumulation_steps = 4
