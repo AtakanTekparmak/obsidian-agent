@@ -23,7 +23,11 @@ DIR_SIZE_LIMIT = 1024 * 1024 * 10 # 10MB
 MEMORY_SIZE_LIMIT = 1024 * 1024 * 100 # 100MB
 
 # Engine
-SANDBOX_TIMEOUT = 5
+# Increase the timeout for code executed inside the sandbox. Some
+# training datasets run short pieces of Python that occasionally take
+# longer than five seconds, which caused premature timeouts during
+# verifiers training.
+SANDBOX_TIMEOUT = 20
 
 # Path settings
 SYSTEM_PROMPT_PATH = "agent/system_prompt.txt"
