@@ -110,8 +110,8 @@ def extract_thoughts(response: str) -> str:
     """
     Extract the thoughts from the response.
     """
-    if "<thoughts>" in response and "</thoughts>" in response:
-        return response.split("<thoughts>")[1].split("</thoughts>")[0]
+    if "<think>" in response and "</think>" in response:
+        return response.split("<think>")[1].split("</think>")[0]
     else:
         return ""
     

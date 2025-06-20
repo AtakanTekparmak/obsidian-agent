@@ -21,7 +21,7 @@ def main():
     env = MemoryEnv(dataset=dataset)
 
     print("Instantiating model...")
-    model_name = "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+    model_name = "Qwen/Qwen3-8B"
     model, tokenizer = vf.get_model_and_tokenizer(model_name, use_liger=False)
 
     args = vf.grpo_defaults(run_name="retrieval_rl")
@@ -29,8 +29,8 @@ def main():
     args.per_device_train_batch_size = 8
     args.gradient_accumulation_steps = 4
     args.num_generations = 8
-    args.async_generation_timeout = 1200.0   
     args.max_prompt_length = 8092
+    args.async_generation_timeout = 1200.0   # 20 minutes
 
     print("Starting training with verifiers...")
     trainer = vf.GRPOTrainer(

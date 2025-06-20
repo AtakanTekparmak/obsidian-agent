@@ -7,7 +7,7 @@
 PYTHON := python3
 
 # Verifiers variables
-VF_MODEL := mistralai/Mistral-Small-3.1-24B-Instruct-2503
+VF_MODEL := Qwen/Qwen3-8B
 VF_TENSOR_PARALLEL_SIZE := 4
 VF_MAX_BATCH_SIZE := 128
 VF_INFERENCE_GPUS := 0,1,2,3
@@ -70,7 +70,7 @@ install-training: check-uv
 	@echo "Setting up training environment..."
 	cd training && uv sync
 	@echo "Installing flash-attn..."
-	cd training && uv add "verifiers[all]==0.1.1" && uv pip install \
+	cd training && uv add "verifiers[all]==0.1.0" && uv pip install \
   https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/\
 flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp312-cp312-linux_x86_64.whl --no-build-isolation
 	@echo "Training environment setup complete!"
