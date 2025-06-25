@@ -8,8 +8,6 @@ import types
 import pickle
 import subprocess
 import base64
-import io
-import contextlib
 
 from agent.settings import SANDBOX_TIMEOUT
 
@@ -17,18 +15,11 @@ from agent.settings import SANDBOX_TIMEOUT
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # or DEBUG for more verbosity
 
-# Unique delimiter for separating user output from serialized data
-SANDBOX_DELIMITER = b"<<<SANDBOX_RESULT_BOUNDARY_7f3a2b1c>>>"
-
-def _run_user_code(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, log: bool = False) -> tuple[dict, str, str, str]:
+def _run_user_code(code: str, allow_installs: bool, allowed_path: str, blacklist: list, available_functions: dict, log: bool = False) -> tuple[dict, str]:
     """
     Execute code under sandboxed conditions (limited file access, optional installs,
-    and blacklisting) and return the resulting locals, error message, stdout, and stderr.
+    and blacklisting) and return the resulting locals and an error message.
     """
-    # Capture stdout and stderr from user code
-    user_stdout = io.StringIO()
-    user_stderr = io.StringIO()
-    
     try:
         # Optional: apply working directory and file access restriction
         if allowed_path:
@@ -123,9 +114,7 @@ def _run_user_code(code: str, allow_installs: bool, allowed_path: str, blacklist
 
         error_msg = None
         try:
-            # Redirect stdout and stderr during code execution
-            with contextlib.redirect_stdout(user_stdout), contextlib.redirect_stderr(user_stderr):
-                exec(code, exec_globals, exec_locals)  # Execute the user's code
+            exec(code, exec_globals, exec_locals)  # Execute the user's code
         except Exception as e:
             # Catch any exception and format it
             tb = traceback.format_exc()
@@ -156,13 +145,13 @@ def _run_user_code(code: str, allow_installs: bool, allowed_path: str, blacklist
         if log:
             logger.info("Sandbox execution finished")
 
-        return safe_locals, error_msg, user_stdout.getvalue(), user_stderr.getvalue()
+        return safe_locals, error_msg
         
     except Exception as e:
         # Catch any unhandled exceptions in the worker process
         if log:
             logger.error("Unhandled exception in sandbox worker: %s", traceback.format_exc())
-        return None, f"Sandbox worker error: {str(e)}", user_stdout.getvalue(), user_stderr.getvalue()
+        return None, f"Sandbox worker error: {str(e)}"
 
 def execute_sandboxed_code(
         code: str,
@@ -257,51 +246,15 @@ def execute_sandboxed_code(
         return None, f"TimeoutError: Code execution exceeded {timeout} seconds."
 
     if result.returncode != 0:
-        # Check if we have partial output before the error
-        error_details = result.stderr.decode().strip()
-        try:
-            # Try to extract any partial results
-            if result.stdout and SANDBOX_DELIMITER in result.stdout:
-                data_part = result.stdout.split(SANDBOX_DELIMITER)[0]
-                local_vars, error_msg, user_stdout, user_stderr = pickle.loads(data_part)
-                # Combine the execution error with subprocess error
-                combined_error = f"{error_msg}\nSubprocess error: {error_details}" if error_msg else error_details
-                return local_vars, combined_error
-        except:
-            pass
-        return None, error_details
+        return None, result.stderr.decode().strip()
 
     try:
-        # Split the output by delimiter to separate user output from our data
-        output_parts = result.stdout.split(SANDBOX_DELIMITER)
-        if len(output_parts) >= 2:
-            # User output is in the first part, our data is in the second
-            serialized_data = output_parts[1]
-            local_vars, error_msg, user_stdout, user_stderr = pickle.loads(serialized_data)
-        else:
-            # Fallback: try to decode the entire output
-            local_vars, error_msg, user_stdout, user_stderr = pickle.loads(result.stdout)
-    except pickle.UnpicklingError as e:
-        # Provide more context about the error
-        logger.error("Pickle decoding failed: %s", e)
-        logger.debug("Raw stdout length: %d bytes", len(result.stdout))
-        return None, f"Failed to decode sandbox output (pickle error): {e}"
+        local_vars, error_msg = pickle.loads(result.stdout)
     except Exception as e:
-        logger.error("Unexpected error decoding sandbox output: %s", e)
         return None, f"Failed to decode sandbox output: {e}"
 
-    # Include user stdout/stderr in error message if present
     if error_msg is None:
         error_msg = ""
-    
-    # Optionally append user output to error message for debugging
-    if user_stdout and log:
-        logger.info("User code stdout: %s", user_stdout)
-    if user_stderr:
-        if error_msg:
-            error_msg += f"\nUser stderr: {user_stderr}"
-        else:
-            error_msg = f"User stderr: {user_stderr}"
 
     return local_vars, error_msg
 
@@ -311,14 +264,8 @@ def _subprocess_entry() -> None:
     params_b64 = os.environ.get("SANDBOX_PARAMS")
     if not params_b64:
         sys.exit(1)
-    
-    try:
-        params = pickle.loads(base64.b64decode(params_b64))
-    except Exception as e:
-        sys.stderr.write(f"Failed to decode parameters: {e}\n")
-        sys.exit(1)
-    
-    locals_dict, error, user_stdout, user_stderr = _run_user_code(
+    params = pickle.loads(base64.b64decode(params_b64))
+    locals_dict, error = _run_user_code(
         params["code"],
         params.get("allow_installs", False),
         params.get("allowed_path"),
@@ -326,25 +273,7 @@ def _subprocess_entry() -> None:
         params.get("available_functions", {}),
         params.get("log", False),
     )
-    
-    # First, write any user output that was captured
-    if user_stdout:
-        sys.stdout.write(user_stdout)
-        sys.stdout.flush()
-    
-    # Write delimiter to separate user output from our serialized data
-    sys.stdout.buffer.write(SANDBOX_DELIMITER)
-    sys.stdout.buffer.flush()
-    
-    # Then write our pickled data
-    try:
-        serialized_data = pickle.dumps((locals_dict, error, user_stdout, user_stderr))
-        sys.stdout.buffer.write(serialized_data)
-        sys.stdout.buffer.flush()
-    except Exception as e:
-        # If pickling fails, write an error marker
-        sys.stderr.write(f"Failed to serialize results: {e}\n")
-        sys.exit(1)
+    sys.stdout.buffer.write(pickle.dumps((locals_dict, error)))
 
 
 if __name__ == "__main__":
