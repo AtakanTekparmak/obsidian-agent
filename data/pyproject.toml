@@ -1,0 +1,23 @@
+[project]
+name = "obsidian-data"
+version = "0.1.0"
+description = "Data processing module for obsidian-agent project"
+dependencies = [
+    # Agent dependencies
+    "openai",
+    "pydantic",
+    "python-dotenv",
+    "aiofiles",
+    # Data processing dependencies
+    "tqdm",
+    "datasets",
+    "huggingface-hub",
+    "transformers",
+]
+requires-python = ">=3.8"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "pytest-asyncio",
+] 

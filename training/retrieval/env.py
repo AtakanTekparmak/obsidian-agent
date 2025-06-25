@@ -15,19 +15,38 @@ from data.schemas.sft import StaticMemory
 class RetrievalEnv(Environment):
     """Environment that runs the Obsidian agent to answer retrieval questions."""
 
-    def __init__(self, dataset: Dataset | List[Dict], rubric: Rubric, parser: Parser | None = None, **kwargs):
+    def __init__(
+            self, 
+            dataset: Dataset | List[Dict], 
+            rubric: Rubric, 
+            parser: Parser | None = None, 
+            **kwargs
+        ):
+        """Initialize the environment."""
         if parser is None:
             parser = Parser()
-        super().__init__(dataset=Dataset.from_list(dataset) if not isinstance(dataset, Dataset) else dataset,
-                         parser=parser, rubric=rubric, **kwargs)
+        super().__init__(
+            dataset=Dataset.from_list(dataset) if not isinstance(dataset, Dataset) else dataset,
+            parser=parser, 
+            rubric=rubric, 
+            **kwargs
+        )
         self.agent_cls = Agent
 
-    def format_dataset(self,
-                       dataset: Dataset,
-                       system_prompt: str | None = None,
-                       few_shot: List[Dict[str, Any]] | None = None) -> Dataset:
-        """Override to use 'prompt' as the question key instead of 'question'."""
-        return super().format_dataset(dataset, system_prompt, few_shot, question_key="prompt")
+    def format_dataset(
+            self,
+            dataset: Dataset,
+            system_prompt: str | None = None,
+            few_shot: List[Dict[str, Any]] | None = None
+        ) -> Dataset:
+        """Format the dataset."""
+        return super().format_dataset(
+            dataset, 
+            system_prompt, 
+            few_shot, 
+            question_key="question",
+            answer_key="answer"
+        )
 
     def rollout(
         self,
@@ -39,9 +58,13 @@ class RetrievalEnv(Environment):
         static_memory: StaticMemory | None = None,
         **kwargs: Any,
     ) -> Tuple[List[Dict[str, str]], Dict[str, Any]]:
+        """Rollout the agent."""
+        # Create a new memory path for the agent and instantiate the memory
         memory_path = f"memory_{uuid.uuid4().hex}"
+
         if static_memory is not None:
             static_memory.instantiate(memory_path)
+
         agent = self.agent_cls(memory_path=memory_path, use_vllm=True, model=model)
         agent.chat(prompt if isinstance(prompt, str) else prompt[-1]["content"])
         messages = [msg.model_dump() for msg in agent.messages]
@@ -58,21 +81,35 @@ class RetrievalEnv(Environment):
         score_rollouts: bool = True,
         **kwargs: Any,
     ) -> Dict[str, Any]:
+        """Generate completions."""
+        # Extract the prompts, answers and static memories from the inputs
         if isinstance(inputs, Dataset):
             results = {col: list(inputs[col]) for col in inputs.column_names}
         else:
             results = {k: list(v) for k, v in inputs.items()}
-        prompts = results["prompt"]
+
+        try:    
+            prompts = results["question"]
+        except KeyError:
+            prompts = results["prompt"]
+            
         answers = results["answer"]
         static_memories = results.get("static_memory", [None] * len(prompts))
+
+        # Rollout the agent for each prompt, answer and static memory
         completions = []
         states = []
+
         for prompt, answer, memory in zip(prompts, answers, static_memories):
             comp, state = self.rollout(client, model, prompt, answer, static_memory=memory)
             completions.append(comp)
             states.append(state)
+
+        # Update the results with the completions and states
         results["completion"] = completions
         results["state"] = states
+
+        # Score the rollouts if requested
         tasks = results.get("task", ["default"] * len(prompts))
         if score_rollouts:
             reward_dict = self.rubric.score_rollouts(

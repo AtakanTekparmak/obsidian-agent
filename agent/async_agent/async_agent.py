@@ -1,10 +1,10 @@
 from agent.async_agent.async_engine import execute_sandboxed_code
-from agent.async_agent.async_model import get_model_response, create_async_openai_client, create_async_instructor_client
-from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results
-from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS
+from agent.async_agent.async_model import get_model_response, create_async_openai_client, create_async_vllm_client
+from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results, extract_reply, extract_thoughts
+from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, OPENROUTER_STRONG_MODEL
 from agent.schemas import ChatMessage, Role, AgentResponse
 
-from typing import Union
+from typing import Union, Tuple
 import asyncio
 import json
 import os
@@ -13,16 +13,34 @@ import uuid
 class AsyncAgent:
     """Async version of the Agent class supporting concurrent operations."""
     
-    def __init__(self, max_tool_turns: int = MAX_TOOL_TURNS, memory_path: str = None):
+    def __init__(
+        self, 
+        max_tool_turns: int = MAX_TOOL_TURNS, 
+        memory_path: str = None,
+        use_vllm: bool = False,
+        model: str = None
+    ):
+        # Load the system prompt and add it to the conversation history
         self.system_prompt = load_system_prompt()
         self.messages: list[ChatMessage] = [
             ChatMessage(role=Role.SYSTEM, content=self.system_prompt)
         ]
+
+        # Set the maximum number of tool turns and use_vllm flag
         self.max_tool_turns = max_tool_turns
+        self.use_vllm = use_vllm
         
+        # Set model: use provided model, or fallback to OPENROUTER_STRONG_MODEL
+        if model:
+            self.model = model
+        else:
+            self.model = OPENROUTER_STRONG_MODEL
+            
         # Each AsyncAgent instance gets its own clients to avoid bottlenecks
-        self._async_client = create_async_openai_client()
-        self._async_instructor_client = create_async_instructor_client(self._async_client)
+        if use_vllm:
+            self._client = create_async_vllm_client(host=VLLM_HOST, port=VLLM_PORT)
+        else:
+            self._client = create_async_openai_client()
         
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
         if memory_path is not None:
@@ -43,6 +61,22 @@ class AsyncAgent:
             self.messages.append(message)
         else:
             raise ValueError("Invalid message type")
+        
+    def extract_response_parts(self, response: str) -> Tuple[str, str, str]:
+        """
+        Extract the thoughts, reply and python code from the response.
+
+        Args:
+            response: The response from the agent.
+
+        Returns:
+            A tuple of the thoughts, reply and python code.
+        """
+        thoughts = extract_thoughts(response)
+        reply = extract_reply(response)
+        python_code = extract_python_code(response)
+
+        return thoughts, reply, python_code
 
     async def chat(self, message: str) -> AgentResponse:
         """
@@ -60,44 +94,55 @@ class AsyncAgent:
         # Get the response from the agent using this instance's clients
         response = await get_model_response(
             messages=self.messages,
-            schema=AgentResponse,
-            async_client=self._async_client,
-            async_instructor_client=self._async_instructor_client
+            model=self.model,  # Pass the model if specified
+            client=self._client,
+            use_vllm=self.use_vllm
         )
+
+        # Extract the thoughts, reply and python code from the response
+        thoughts, reply, python_code = self.extract_response_parts(response)
 
         # Execute the code from the agent's response
         result = ({}, "")
-        if response.python_block and not response.stop_acting:
+        if python_code:
             create_memory_if_not_exists(self.memory_path)
             result = await execute_sandboxed_code(
-                code=extract_python_code(response.python_block),
+                code=python_code,
                 allowed_path=self.memory_path,
                 import_module="agent.tools"
             )
 
         # Add the agent's response to the conversation history
-        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
+        self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
 
         remaining_tool_turns = self.max_tool_turns
-        while remaining_tool_turns > 0 and not response.stop_acting:
+        while remaining_tool_turns > 0 and not reply:
             self._add_message(ChatMessage(role=Role.USER, content=format_results(result)))
             response = await get_model_response(
                 messages=self.messages,
-                schema=AgentResponse,
-                async_client=self._async_client,
-                async_instructor_client=self._async_instructor_client
+                model=self.model,  # Pass the model if specified
+                client=self._client,
+                use_vllm=self.use_vllm
             )
-            self._add_message(ChatMessage(role=Role.ASSISTANT, content=response.model_dump_json()))
-            if response.python_block and not response.stop_acting:
+
+            # Extract the thoughts, reply and python code from the response
+            thoughts, reply, python_code = self.extract_response_parts(response)
+
+            self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
+            if python_code:
                 create_memory_if_not_exists(self.memory_path)
                 result = await execute_sandboxed_code(
-                    code=extract_python_code(response.python_block),
+                    code=python_code,
                     allowed_path=self.memory_path,
                     import_module="agent.tools"
                 )
             remaining_tool_turns -= 1
 
-        return response
+        return AgentResponse(
+            thoughts=thoughts,
+            reply=reply,
+            python_block=python_code
+        )
 
     async def save_conversation(
             self, 
@@ -105,13 +150,14 @@ class AsyncAgent:
             save_folder: str = None
         ):
         """
-        Save the conversation messages to a JSON file asynchronously.
+        Save the conversation messages to a JSON file asynchronously in
+        the output/conversations directory.
         """
         if not os.path.exists(SAVE_CONVERSATION_PATH):
             os.makedirs(SAVE_CONVERSATION_PATH, exist_ok=True)
 
         unique_id = uuid.uuid4()
-        if save_folder is None:
+        if not save_folder:
             file_path = os.path.join(SAVE_CONVERSATION_PATH, f"convo_{unique_id}.json")
         else:
             folder_path = os.path.join(SAVE_CONVERSATION_PATH, save_folder)
@@ -121,7 +167,7 @@ class AsyncAgent:
 
         # Convert the execution result messages to tool role
         messages = [
-            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<r>") else ChatMessage(role=message.role, content=message.content)
+            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<result>") else ChatMessage(role=message.role, content=message.content)
             for message in self.messages 
         ]
         
@@ -132,11 +178,11 @@ class AsyncAgent:
                 None,
                 lambda: json.dump([message.model_dump() for message in messages], open(file_path, "w"), indent=4)
             )
-            if log:
-                print(f"Conversation saved to {file_path}")
         except Exception as e:
             if log:
                 print(f"Error saving conversation: {e}")
+        if log:
+            print(f"Conversation saved to {file_path}")
 
 
 # Helper function for concurrent agent operations

@@ -1,0 +1,45 @@
+# ---------- model ----------
+base_model: Qwen/Qwen3-8B           # Model name
+trust_remote_code: true
+bf16: true
+tf32: true
+flash_attention: true                # FA-2 kernels
+chat_template: qwen3                # Template for the chat messages
+
+# ---------- data ----------
+datasets:
+  - path: AtakanTekparmak/obsidian-agent-sft-v2 # Dataset name
+    type: chat_template
+    field_messages: conversations
+    message_property_mappings:
+      role: role
+      content: content
+    roles:
+      system:
+        - system
+      user:
+        - user
+      assistant:
+        - assistant
+
+sequence_len: 8096                    # Sequence length
+sample_packing: true
+
+# ---------- optimisation ----------
+micro_batch_size: 2                 
+gradient_accumulation_steps: 16       # eff-batch 256
+learning_rate: 2e-5
+num_epochs: 1
+lr_scheduler_type: cosine
+warmup_steps: 100
+weight_decay: 0.1
+gradient_checkpointing: true
+
+# ---------- parallelism ----------
+deepspeed: zero3_bf16.json            # DeepSpeed config file
+
+# ---------- logging / output ----------
+output_dir: ./qwen3-8b-obsidian-8k-e1  # Output directory
+save_strategy: epoch
+wandb_project: qwen3-obsidian-8k        # WandB project name 
+hub_model_id: AtakanTekparmak/qwen3-8b-obsidian-8k-e1 # Where to push the model to Hugging Face

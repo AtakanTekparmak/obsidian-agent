@@ -1,9 +1,7 @@
 import verifiers as vf
-from training.retrieval import (
-    load_verifiers_dataset,
-    get_retrieval_rubric,
-    RetrievalEnv,
-)
+from training.retrieval.memory_env import MemoryEnv
+from training.retrieval.memory_rubric import MemoryRubric
+from training.retrieval.dataset import load_verifiers_dataset
 from data.utils import load_kb_from_json
 
 """
@@ -20,18 +18,18 @@ def main():
     dataset = load_verifiers_dataset()
 
     print("Instantiating rubric and environment...")
-    rubric = get_retrieval_rubric()
-    env = RetrievalEnv(dataset=dataset, rubric=rubric)
+    env = MemoryEnv(dataset=dataset)
 
     print("Instantiating model...")
     model_name = "Qwen/Qwen3-8B"
-    model, tokenizer = vf.get_model_and_tokenizer(model_name)
+    model, tokenizer = vf.get_model_and_tokenizer(model_name, use_liger=False)
 
     args = vf.grpo_defaults(run_name="retrieval_rl")
     args.num_iterations = 2
     args.per_device_train_batch_size = 8
     args.gradient_accumulation_steps = 4
     args.num_generations = 8
+    args.max_prompt_length = 8092
     args.async_generation_timeout = 1200.0   # 20 minutes
 
     print("Starting training with verifiers...")

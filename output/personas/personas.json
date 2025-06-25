@@ -1,0 +1,168 @@
+{
+  "personas": [
+    {
+      "name_surname": "Emma van der Berg",
+      "age": 32,
+      "gender": "female",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Sustainability Consultant at University of Groningen",
+      "detailed_backstory": "Emma was born and raised in Groningen, witnessing the city's transformation into a leading sustainable urban center. After completing her PhD in Environmental Sciences at the University of Groningen in 2018, she joined the university as a sustainability consultant, helping implement the campus-wide carbon neutrality initiative that was completed in 2024. She lives in a renovated canal house in the Hortusbuurt with her partner Lars and their 3-year-old daughter. Emma is passionate about cycling infrastructure and served on the city council committee that designed Groningen's revolutionary bike-sharing system with solar charging stations.",
+      "relationships": [
+        {
+          "name_surname": "Lars Janssen",
+          "relationship": "romantic partner"
+        },
+        {
+          "name_surname": "Fatima Al-Hassan",
+          "relationship": "close friend and colleague"
+        }
+      ]
+    },
+    {
+      "name_surname": "Lars Janssen",
+      "age": 35,
+      "gender": "male",
+      "birthplace": {
+        "city": "Amsterdam",
+        "country": "Netherlands"
+      },
+      "occupation": "Senior Software Developer at Gasunie Digital",
+      "detailed_backstory": "Lars moved to Groningen in 2019 when Gasunie established their digital innovation hub focused on green hydrogen technology. Originally from Amsterdam, he was drawn to Groningen's tech scene and lower cost of living. He specializes in IoT systems for smart energy grids and has been instrumental in developing the city's integrated renewable energy management system. Lars met Emma through a local cycling club and they've been together for four years. He's an avid photographer who documents Groningen's urban development and maintains a popular Instagram account showcasing the city's green transformation.",
+      "relationships": [
+        {
+          "name_surname": "Emma van der Berg",
+          "relationship": "romantic partner"
+        },
+        {
+          "name_surname": "Ahmed Kone",
+          "relationship": "work colleague and friend"
+        }
+      ]
+    },
+    {
+      "name_surname": "Fatima Al-Hassan",
+      "age": 29,
+      "gender": "female",
+      "birthplace": {
+        "city": "Damascus",
+        "country": "Syria"
+      },
+      "occupation": "PhD Researcher in Renewable Energy Engineering",
+      "detailed_backstory": "Fatima arrived in Groningen in 2019 as a refugee, having fled Syria in 2017. After spending two years in Germany learning Dutch and completing preparatory courses, she earned a scholarship to pursue her PhD at the University of Groningen focusing on wind energy optimization. Her research on offshore wind farm efficiency has gained international recognition. She lives in student housing in Paddepoel and serves as a mentor for other refugee students through the university's integration program. Fatima has become deeply involved in Groningen's multicultural community center and organizes Arabic language classes for local families.",
+      "relationships": [
+        {
+          "name_surname": "Emma van der Berg",
+          "relationship": "close friend and colleague"
+        },
+        {
+          "name_surname": "Pieter Dijkstra",
+          "relationship": "PhD supervisor"
+        }
+      ]
+    },
+    {
+      "name_surname": "Pieter Dijkstra",
+      "age": 58,
+      "gender": "male",
+      "birthplace": {
+        "city": "Leeuwarden",
+        "country": "Netherlands"
+      },
+      "occupation": "Professor of Renewable Energy Engineering at University of Groningen",
+      "detailed_backstory": "Professor Dijkstra has been at the University of Groningen for over 25 years, becoming a leading voice in Northern Netherlands' transition to renewable energy. Born in nearby Leeuwarden, he has deep roots in Frisian culture and often incorporates traditional Frisian problem-solving approaches into his engineering methodology. He leads the university's partnership with local wind energy companies and has supervised over 50 PhD students. Pieter lives in a sustainable home in Haren that serves as a living laboratory for his research. He's married with two adult children who have moved to other Dutch cities, and he's known for his traditional Friday afternoon borrels with his research team.",
+      "relationships": [
+        {
+          "name_surname": "Fatima Al-Hassan",
+          "relationship": "PhD student"
+        },
+        {
+          "name_surname": "Inge Bakker",
+          "relationship": "departmental colleague"
+        }
+      ]
+    },
+    {
+      "name_surname": "Ahmed Kone",
+      "age": 27,
+      "gender": "male",
+      "birthplace": {
+        "city": "Bamako",
+        "country": "Mali"
+      },
+      "occupation": "Junior Data Analyst at Gasunie Digital",
+      "detailed_backstory": "Ahmed came to Groningen in 2020 after completing his master's degree in Data Science at the University of Twente. Originally from Mali, he was recruited by Gasunie Digital for their diversity initiative and his expertise in machine learning applications for energy systems. He works closely with Lars on predictive maintenance algorithms for gas infrastructure transitioning to hydrogen. Ahmed lives in a shared apartment in Selwerd and is active in the African Student Association. He's passionate about football and plays for a local amateur team that represents Groningen's international community in regional tournaments.",
+      "relationships": [
+        {
+          "name_surname": "Lars Janssen",
+          "relationship": "work colleague and friend"
+        },
+        {
+          "name_surname": "Sophie Hendriks",
+          "relationship": "romantic interest"
+        }
+      ]
+    },
+    {
+      "name_surname": "Sophie Hendriks",
+      "age": 25,
+      "gender": "female",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Marketing Coordinator at Groningen Tourism Board",
+      "detailed_backstory": "Sophie is a Groningen native who returned to her hometown after studying International Business in Rotterdam. She joined the tourism board in 2023, specializing in promoting Groningen as a sustainable travel destination. Her work involves developing digital campaigns showcasing the city's green initiatives, from its car-free city center to its innovative urban farming projects. Sophie lives in a modern apartment in the Europapark district and is passionate about local food culture, often collaborating with sustainable restaurants for tourism promotions. She met Ahmed through the international expat social scene and they've been dating for six months.",
+      "relationships": [
+        {
+          "name_surname": "Ahmed Kone",
+          "relationship": "romantic interest"
+        },
+        {
+          "name_surname": "Inge Bakker",
+          "relationship": "former university classmate"
+        }
+      ]
+    },
+    {
+      "name_surname": "Inge Bakker",
+      "age": 42,
+      "gender": "female",
+      "birthplace": {
+        "city": "Assen",
+        "country": "Netherlands"
+      },
+      "occupation": "Associate Professor of Urban Planning at University of Groningen",
+      "detailed_backstory": "Inge joined the University of Groningen in 2021 after working for the municipality of Amsterdam on smart city initiatives. Born in nearby Assen, she was excited to return to the northern region and contribute to Groningen's reputation as a model sustainable city. Her research focuses on the integration of green spaces with urban density, and she was a key advisor for Groningen's 2024 'Park Connector' project that linked all major green spaces with dedicated cycling and walking paths. Inge is divorced with a 12-year-old son who lives with her part-time. She's known for her practical approach to urban challenges and frequently appears in local media discussing city development.",
+      "relationships": [
+        {
+          "name_surname": "Pieter Dijkstra",
+          "relationship": "departmental colleague"
+        },
+        {
+          "name_surname": "Sophie Hendriks",
+          "relationship": "former university classmate"
+        }
+      ]
+    },
+    {
+      "name_surname": "Marco Visser",
+      "age": 39,
+      "gender": "male",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Owner of Visser Sustainable Construction",
+      "detailed_backstory": "Marco took over his family's construction business in 2018 and pivoted it entirely toward sustainable building practices. His company specializes in renovating historic Groningen buildings with modern energy-efficient systems while preserving their cultural heritage. Born and raised in Groningen, Marco has seen the city evolve and takes pride in contributing to its sustainable transformation. His projects include the renovation of several canal houses and the construction of the city's first carbon-positive residential complex completed in 2024. Marco is recently divorced and shares custody of his two teenage children. He's passionate about preserving Groningen's architectural heritage while meeting climate goals.",
+      "relationships": [
+        {
+          "name_surname": "Emma van der Berg",
+          "relationship": "professional acquaintance through sustainability network"
+        }
+      ]
+    }
+  ]
+}

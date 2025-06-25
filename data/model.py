@@ -1,6 +1,5 @@
 from openai import OpenAI, AsyncOpenAI
 from pydantic import BaseModel
-import instructor
 
 from typing import Optional, Union
 from abc import ABC
@@ -23,18 +22,6 @@ def create_async_openai_client() -> AsyncOpenAI:
         api_key=OPENROUTER_API_KEY,
         base_url=OPENROUTER_BASE_URL,
     )
-
-def create_instructor_client(openai_client: OpenAI = None):
-    """Create a new instructor client instance."""
-    if openai_client is None:
-        openai_client = create_openai_client()
-    return instructor.from_openai(openai_client, mode=instructor.Mode.TOOLS)
-
-def create_async_instructor_client(async_openai_client: AsyncOpenAI = None):
-    """Create a new async instructor client instance."""
-    if async_openai_client is None:
-        async_openai_client = create_async_openai_client()
-    return instructor.from_openai(async_openai_client, mode=instructor.Mode.TOOLS)
 
 # Initialize the client
 CLIENT = create_openai_client()
@@ -93,9 +80,7 @@ class SFTModel(ABC):
         self.messages: list[ChatMessage] = []
         # Each SFTModel instance gets its own clients to avoid bottlenecks
         self._client = create_openai_client()
-        self._instructor_client = create_instructor_client(self._client)
         self._async_client = create_async_openai_client()
-        self._async_instructor_client = create_async_instructor_client(self._async_client)
         
     def _add_message(self, message: Union[ChatMessage, dict]):
         """ Add a message to the conversation history. """
@@ -112,7 +97,7 @@ class SFTModel(ABC):
         response = get_agent_response(
             messages=self.messages,
             client=self._client,
-            instructor_client=self._instructor_client
+            use_vllm=False  # Data generation never uses vLLM, only OpenRouter
         )
         self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
 
@@ -125,8 +110,8 @@ class SFTModel(ABC):
 
         response = await async_get_agent_response(
             messages=self.messages,
-            async_client=self._async_client,
-            async_instructor_client=self._async_instructor_client
+            client=self._async_client,
+            use_vllm=False  # Data generation never uses vLLM, only OpenRouter
         )
         self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
 

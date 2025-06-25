@@ -71,12 +71,11 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
         static_memory, question = await asyncio.gather(static_memory_task, question_task)
         
         return {
-            "prompt": question,
+            "question": question,
             "answer": fact.fact_description,
             "task": "retrieval",
             "static_memory": static_memory,
-            "persona": persona.name_surname,
-            "fact": fact.fact_description,
+            "persona": persona.name_surname
         }
     
     # Create tasks for all facts in all personas
@@ -97,6 +96,12 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
 def load_verifiers_dataset(path: str = VERIFIERS_DATASET_PATH) -> List[Dict]:
     """
     Load a verifiers dataset from a JSON file.
+
+    Args:
+        path: The path to the verifiers dataset
+
+    Returns:
+        List[Dict]: The verifiers dataset
     """
     try:
         with open(path, "r") as f:

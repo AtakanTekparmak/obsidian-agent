@@ -130,7 +130,7 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
         static_memory, question = await asyncio.gather(static_memory_task, question_task)
         
         return {
-            "prompt": question,
+            "question": question,
             "answer": fact.fact_description,
             "task": "retrieval",
             "static_memory": static_memory.model_dump_json(),

@@ -1,6 +1,3 @@
-from typing import Optional
-import uuid
-
 from data.schemas.kb import KnowledgeBase, Persona, Fact
 from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
 from agent.async_agent import AsyncAgent

@@ -1,0 +1,26 @@
+[project]
+name = "obsidian-training"
+version = "0.1.0"
+description = "Training module for obsidian-agent project"
+dependencies = [
+    # Agent dependencies
+    "openai",
+    "pydantic",
+    "python-dotenv",
+    "aiofiles",
+    # Training dependencies
+    "datasets",
+    "transformers",
+    "huggingface-hub",
+    "torch==2.6.0",
+    "accelerate",
+    "deepspeed",
+    "setuptools",
+]
+requires-python = ">=3.11,<3.13"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "pytest-asyncio",
+]
