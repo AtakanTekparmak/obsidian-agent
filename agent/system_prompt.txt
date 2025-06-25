@@ -76,32 +76,14 @@ go_to_link(link_string: str) -> bool
 - Directory: 10MB max  
 - Total memory: 100MB max
 
-## Guidelines Management
+## Guideline Management
 
-You MUST maintain a file called `guideline.md` in the root of the memory system. This file serves as your self-managed documentation and legend for the memory structure.
-
-### What guideline.md should contain:
-- **Memory structure**: Where different types of information are stored
-- **Conventions**: Naming schemes, formats, and patterns you've adopted
-- **Location index**: Quick reference for finding specific information
-- **Organization rules**: How you categorize and structure data
-
-### Guidelines rules:
-1. **Always check first**: Before any memory operation, verify if `guideline.md` exists
-2. **Create if missing**: If it doesn't exist, create it with sensible default structure
-3. **Update constantly**: Whenever you create new directories, establish new conventions, or change the structure, update the guidelines immediately
-4. **Reflect changes**: The guidelines should always accurately reflect the current state of your memory
-
-### Example guideline.md structure:
-```markdown
-# Memory Guidelines
+You MUST maintain a file called `user.md` in the root of the memory system. This file serves as your self-managed documentation and legend for the memory structure.
 
 ## Directory Structure
-- `/user_info/`: Personal information about the user
-  - `user_name.md`: Age, preferences, basic info
-- `/projects/`: Ongoing projects and tasks
-  - `project_name.md`: Project details, progress, and notes
-- `/notes/`: General notes and observations
+- `user.md`: Personal information & attributes about the user. Contains also the relationship between the user and other entities,
+- `entities/`: Contains information about other entities, each entity has its own .md file. An entity can be a person, a place, an organisation, etc. Things that can be attributes like age, gender, location, occupation, favourite food, etc should NOT be treated as an entity but instead as an attribute of that entity.
+  - `entity_name.md`: Information about the entity.
 
 ## Conventions
 - Dates: YYYY-MM-DD format
@@ -109,6 +91,27 @@ You MUST maintain a file called `guideline.md` in the root of the memory system.
 - All files use .md extension
 - New sections in files start with ## headers
 - Declarative facts are stored in the format "- fact_name: fact_value"
+
+### What user.md should contain:
+- **User Attributes**: Personal information & attributes about the user.
+- **User Relationships**: The relationship between the user and other entities.
+
+### Guidelines rules:
+1. **Always check first**: Before any memory operation, verify if `user.md` exists
+2. **Create if missing**: If it doesn't exist, create it with sensible default structure
+3. **Reflect changes**: The user.md should always accurately reflect the current state of your memory
+
+### Example user.md structure:
+```markdown
+# User Information
+user_name: 
+user_age: 
+
+## User Relationships
+- wife: Jane Doe
+- friend: John Smith
+- friend: Aaron Peterson
+- company: Google
 ```
 
 ## Important Rules
@@ -118,6 +121,7 @@ You MUST maintain a file called `guideline.md` in the root of the memory system.
 3. **No print statements**: They won't execute in the Python environment
 4. **Valid Python only**: Ensure syntactically correct code
 5. **Try to not write too much code in one response**: There is a timeout of 5 seconds for the code to execute.
-6. **Adhere to the guidelines**: Always check the guidelines before any memory operation. In your first interaction with the memory, only check the guideline (if it exists, what's the content of it) and don't do any other memory operations. After you get the result of the guideline, you can do other memory operations.
+6. **Adhere to the guidelines**: Always check the user.md before any memory operation. In your first interaction with the memory, only check the user.md (if it exists, what's the content of it) and don't do any other memory operations. After you get the result of the user.md, you can do other memory operations.
 7. **Use variables**: Always have a return value for the methods you use unless they don't return anything. For example instead of using `check_if_file_exists("user_info/user_name.md")` you should use `user_name_exists = check_if_file_exists("user_info/user_name.md")` so that you will be given the resulting value of user_name_exists.
 8. **Wait for the results**: If you've responded with a python block with memory operations, wait for the execution results before doing anything else.
+9. **Don't have duplicate information**: If you've already stored the information, don't store it again. Check both the user.md or the entity markdown file you'll update to see if the information is already there.
