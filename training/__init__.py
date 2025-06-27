@@ -10,6 +10,8 @@ try:
         get_retrieval_rubric,
         RetrievalEnv,
     )
+    # Import the registration module to register the environment
+    from .retrieval import register_env
 except Exception as _:
     can_import_retrieval = False
     

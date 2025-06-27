@@ -1,15 +1,15 @@
-
 import ray
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+import sys
 
 from skyrl_train.utils import initialize_ray
-from skyrl_train.entrypoints.main_base import BasePPOExp, config_dir, validate_cfg
+from skyrl_train.entrypoints.main_base import BasePPOExp, validate_cfg
 from skyrl_gym.envs import register
 
 @ray.remote(num_cpus=1)
 def skyrl_entrypoint(cfg: DictConfig):
-   # Register the multiply environment
+   # Register the obsidian-retrieval environment
    # this needs to be done inside the entrypoint task
    register(
       id="obsidian-retrieval",  # <-- The name of the environment.
@@ -20,8 +20,16 @@ def skyrl_entrypoint(cfg: DictConfig):
    exp = BasePPOExp(cfg)
    exp.run()
 
-@hydra.main(config_path=config_dir, config_name="ppo_base_config", version_base=None)
-def main(cfg: DictConfig) -> None:
+def main():
+   # Parse command line arguments as Hydra overrides
+   overrides = sys.argv[1:]
+   
+   # Create a base configuration
+   base_cfg = OmegaConf.create({})
+   
+   # Apply the overrides to create final config
+   cfg = OmegaConf.merge(base_cfg, OmegaConf.from_dotlist(overrides))
+   
    # validate the arguments
    validate_cfg(cfg)
 

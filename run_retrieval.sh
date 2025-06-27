@@ -18,7 +18,7 @@ if [ ! -f "$TRAIN_DATA" ] || [ ! -f "$VAL_DATA" ]; then
 fi
 
 # Model configuration
-MODEL_PATH="Qwen/Qwen3-4B"
+MODEL_PATH="Qwen/Qwen2.5-3B-Instruct"
 
 # Training configuration
 EXPERIMENT_NAME="obsidian-retrieval-qwen3-4b"
@@ -32,6 +32,10 @@ echo "Model: $MODEL_PATH"
 echo "Data: $DATA_DIR"
 echo "Output: $OUTPUT_DIR"
 
+# Ensure environment is registered
+echo "Registering obsidian-retrieval environment..."
+PYTHONPATH="$(pwd):$PYTHONPATH" uv run --project training python -c "import training; print('Environment registration complete')"
+
 # Run training with SkyRL
 # Use array to build command arguments
 CMD_ARGS=(
@@ -41,7 +45,7 @@ CMD_ARGS=(
     "trainer.policy.model.path=$MODEL_PATH"
     "trainer.policy.model.trust_remote_code=true"
     "trainer.placement.colocate_all=true"
-    "trainer.placement.policy_num_gpus_per_node=4"
+    #"trainer.placement.policy_num_gpus_per_node=8"
     "generator.num_inference_engines=2"
     "generator.inference_engine_tensor_parallel_size=2"
     "trainer.algorithm.advantage_estimator=grpo"
