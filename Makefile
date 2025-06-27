@@ -31,10 +31,11 @@ help:
 	@echo "  9. build-dataset     Build the HF dataset and upload it to the Hub"
 	@echo "  10. generate-kb      Generate knowledge base with personas for training"
 	@echo "  11. run-retrieval   Run the retrieval training"
-	@echo "  12. clean-all        Remove all virtual environments"
+	@echo "  12. clean-all        Remove all virtual environments and SkyRL repository"
 	@echo "  13. clean-agent      Remove agent virtual environment"
 	@echo "  14. clean-data       Remove data virtual environment"
 	@echo "  15. clean-training   Remove training virtual environment"
+	@echo "  16. clean-skyrl      Remove SkyRL repository"
 
 # Check if uv is installed and install if needed
 check-uv:
@@ -67,8 +68,24 @@ install-data: check-uv
 install-training: check-uv
 	@echo "Setting up training environment..."
 	cd training && uv sync
-	@echo "Installing flash-attn..."
-	uv pip install skyrl-gym;
+	@echo "Installing SkyRL packages..."
+	@if [ ! -d "SkyRL" ]; then \
+		echo "Cloning SkyRL repository..."; \
+		git clone https://github.com/NovaSky-AI/SkyRL.git; \
+	else \
+		echo "SkyRL repository already exists, pulling latest changes..."; \
+		cd SkyRL && git pull; \
+	fi
+	@echo "Installing skyrl-train and skyrl-gym in training environment..."
+	cd training && uv add skyrl-gym
+	@echo "Installing skyrl-train (trying without vllm extra first)..."
+	@cd training && ( \
+		uv add ../SkyRL/skyrl-train || \
+		(echo "Trying with prerelease flag..." && uv add ../SkyRL/skyrl-train --prerelease=allow) || \
+		(echo "Installing without vllm extra..." && uv add ../SkyRL/skyrl-train --frozen) \
+	)
+	@echo "Installing vllm separately if needed..."
+	@cd training && (uv add vllm || echo "Warning: Could not install vllm, training may still work")
 	@echo "Training environment setup complete!"
 
 # Copy the .env.example file to .env if it doesn't exist
@@ -103,7 +120,7 @@ generate-kb:
 	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project data generate_kb.py
 
 # Clean all virtual environments
-clean-all: clean-agent clean-data clean-training
+clean-all: clean-agent clean-data clean-training clean-skyrl
 
 # Clean agent virtual environment
 clean-agent:
@@ -116,3 +133,7 @@ clean-data:
 # Clean training virtual environment
 clean-training:
 	cd training && rm -rf .venv
+
+# Clean SkyRL repository
+clean-skyrl:
+	rm -rf SkyRL
