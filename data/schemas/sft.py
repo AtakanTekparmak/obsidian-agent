@@ -2,38 +2,29 @@ import os
 
 from data.schemas.base import BaseSchema
 
-from agent.settings import MEMORY_PATH
 from agent.utils import create_memory_if_not_exists
 
-class StaticMemory(BaseSchema):
-    guideline: str
-    user_file_path: str
-    user_file_content: str
+class EntityFile(BaseSchema):
+    entity_name: str
+    entity_file_path: str
+    entity_file_content: str
 
-    def instantiate(self, path: str = MEMORY_PATH):
+class StaticMemory(BaseSchema):
+    user_md: str
+    entities: list[EntityFile]
+
+    def instantiate(self, path: str):
         """
         Instantiate the static memory inside the memory path.
         """
-        # Ensure the path is always within a "memory/" folder structure
-        if not path.startswith("memory/") and not os.path.isabs(path):
-            path = os.path.join("memory", path)
-        
-        # Make path absolute for consistency
-        path = os.path.abspath(path)
-        
         create_memory_if_not_exists(path)
-        try:
-            guideline_path = os.path.join(path, "guideline.md")
-            with open(guideline_path, "w") as f:
-                f.write(self.guideline)
-            user_file_path = os.path.join(path, self.user_file_path)
-            user_dir = os.path.dirname(user_file_path)
-            os.makedirs(user_dir, exist_ok=True)
-            with open(user_file_path, "w") as f:
-                f.write(self.user_file_content)
-        except Exception as e:
-            print(f"Error instantiating static memory: {e}")
-            raise e
+        user_md_path = os.path.join(path, "user.md")
+        with open(user_md_path, "w") as f:
+            f.write(self.user_md)
+        for entity in self.entities:
+            entity_file_path = os.path.join(path, entity.entity_file_path)
+            with open(entity_file_path, "w") as f:
+                f.write(entity.entity_file_content)
     
     def to_json(self):
         """

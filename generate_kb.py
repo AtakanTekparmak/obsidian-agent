@@ -15,7 +15,7 @@ from data.schemas.sft import StaticMemory
 from agent.utils import load_system_prompt
 
 # Define path directly to avoid imports from training package
-VERIFIERS_DATASET_PATH = "output/datasets/verifiers_dataset.json"
+SKRL_DATASET_PATH = "output/datasets/skrl_dataset.json"
 
 QUESTION_GEN_PROMPT = """
 You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}.
@@ -54,7 +54,7 @@ Below is a fact about the persona.
 {fact}
 </fact>
 
-Given how you expect the agent to operate, the persona & the fact, generate a static memory for the agent. This memory should contain the content of a guideline file (always found in guideline.md), the path to the user file (in a structure similar to user/user_name.md) and the content of the user file. Make sure to only have the given fact in the memory, nothing else related to the user. The guideline should explicitly state that the main & active user is the persona.
+Given how you expect the agent to operate, the persona & the fact, generate a static memory for the agent. This memory should contain the content of user.md and the entity files found in entities/ directory. The user.md should contain the attributes of the persona and the entity files should be for the relationships of the persona.
 """
 
 
@@ -104,15 +104,15 @@ def generate_question_prompt(persona: Persona, fact: str) -> str:
     return str(response)
 
 
-def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
+def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
     """
-    Construct a verifiers dataset for retrieval.
+    Construct a SkyRL dataset for retrieval.
 
     Args:
         kb: The knowledge base
 
     Returns:
-        List[Dict]: The verifiers dataset
+        List[Dict]: The SkyRL dataset
     """
     dataset: List[Dict] = []
     
@@ -128,14 +128,23 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
         
         # Wait for both tasks to complete
         static_memory, question = await asyncio.gather(static_memory_task, question_task)
-        
+
         return {
-            "question": question,
-            "answer": fact.fact_description,
-            "task": "retrieval",
-            "static_memory": static_memory.model_dump_json(),
-            "persona": persona.name_surname,
-            "fact": fact.fact_description,
+             "data_source": "obsidian-retrieval",
+            "prompt": [
+                {
+                    "role": "user",
+                    "content": question,
+                }
+            ],
+            "env_class": "obsidian-retrieval",
+            "reward_spec": {
+                "method": "rule",
+                "ground_truth": fact.fact_description
+            },
+            "extra_info": {
+                "static_memory": static_memory.model_dump_json()
+            }
         }
     
     # Create tasks for all facts in all personas
@@ -154,7 +163,7 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
     if save:
         # Make the output/datasets folder if it doesn't exist
         os.makedirs("output/datasets", exist_ok=True)
-        with open(VERIFIERS_DATASET_PATH, "w") as f:
+        with open(SKRL_DATASET_PATH, "w") as f:
             json.dump(dataset, f)
     return dataset
 
@@ -171,9 +180,9 @@ def main():
     
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
-    print("Building verifiers dataset...")
-    dataset = build_verifiers_dataset(kb, save=True)
-    print(f"Verifiers dataset built successfully with {len(dataset)} items.")
+    print("Building SkyRL dataset...")
+    dataset = build_skyrl_dataset(kb, save=True)
+    print(f"SkyRL dataset built successfully with {len(dataset)} items.")
 
 if __name__ == "__main__":
     main() 

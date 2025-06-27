@@ -13,28 +13,7 @@ from agent.tools import create_memory_if_not_exists
 from training.reward import get_reward
 
 from data.schemas.kb import Fact
-
-class EntityFile(BaseModel):
-    entity_name: str
-    entity_file_path: str
-    entity_file_content: str
-
-class StaticMemory(BaseModel):
-    user_md: str
-    entities: list[EntityFile]
-
-    def instantiate(self, path: str):
-        """
-        Instantiate the static memory inside the memory path.
-        """
-        create_memory_if_not_exists(path)
-        user_md_path = os.path.join(path, "user.md")
-        with open(user_md_path, "w") as f:
-            f.write(self.user_md)
-        for entity in self.entities:
-            entity_file_path = os.path.join(path, entity.entity_file_path)
-            with open(entity_file_path, "w") as f:
-                f.write(entity.entity_file_content)
+from data.schemas.sft import StaticMemory
 
 class RetrievalEnv(BaseTextEnv):
 
