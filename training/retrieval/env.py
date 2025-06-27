@@ -1,6 +1,7 @@
 from typing import Any
 import uuid
 import os
+import json
 
 from skyrl_gym.envs.base_text_env import BaseTextEnv, BaseTextEnvStepOutput
 from pydantic import BaseModel
@@ -34,7 +35,7 @@ class RetrievalEnv(BaseTextEnv):
         # Load the static memory
         if "extra_info" in extras and "static_memory" in extras["extra_info"]:
             static_memory_data = extras["extra_info"]["static_memory"]
-            static_memory = StaticMemory(**static_memory_data)
+            static_memory = StaticMemory(**json.loads(static_memory_data))
             static_memory.instantiate(self.memory_path)
         
 
