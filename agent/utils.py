@@ -115,8 +115,8 @@ def extract_thoughts(response: str) -> str:
     else:
         return ""
     
-def format_results(results: dict) -> str:
+def format_results(results: dict, error_msg: str = "") -> str:
     """
     Format the results into a string.
     """
-    return "<result>\n" + str(results) + "\n</result>"
+    return "<result>\n(" + str(results) + ", {" + error_msg + "})\n</result>" if error_msg else "<result>\n" + str(results) + "\n</result>"
