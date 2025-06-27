@@ -14,6 +14,8 @@ from data.schemas.kb import KnowledgeBase, Persona
 from data.schemas.sft import StaticMemory
 from agent.utils import load_system_prompt
 
+from training.retrieval.format_dataset import main as format_dataset
+
 # Define path directly to avoid imports from training package
 SKRL_DATASET_PATH = "output/datasets/skrl_dataset.json"
 
@@ -183,6 +185,10 @@ def main():
     print("Building SkyRL dataset...")
     dataset = build_skyrl_dataset(kb, save=True)
     print(f"SkyRL dataset built successfully with {len(dataset)} items.")
+
+    print("Formatting dataset...")
+    format_dataset()
+    print("Dataset formatted successfully.")
 
 if __name__ == "__main__":
     main() 
