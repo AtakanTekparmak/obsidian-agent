@@ -1,14 +1,40 @@
 from typing import Any
+import uuid
+import os
 
 from skyrl_gym.envs.base_text_env import BaseTextEnv, BaseTextEnvStepOutput
+from pydantic import BaseModel
 
 from agent.utils import extract_reply, extract_python_code, format_results
 from agent.engine import execute_sandboxed_code
 from agent.settings import MAX_TOOL_TURNS
+from agent.tools import create_memory_if_not_exists
 
 from training.reward import get_reward
 
 from data.schemas.kb import Fact
+
+class EntityFile(BaseModel):
+    entity_name: str
+    entity_file_path: str
+    entity_file_content: str
+
+class StaticMemory(BaseModel):
+    user_md: str
+    entities: list[EntityFile]
+
+    def instantiate(self, path: str):
+        """
+        Instantiate the static memory inside the memory path.
+        """
+        create_memory_if_not_exists(path)
+        user_md_path = os.path.join(path, "user.md")
+        with open(user_md_path, "w") as f:
+            f.write(self.user_md)
+        for entity in self.entities:
+            entity_file_path = os.path.join(path, entity.entity_file_path)
+            with open(entity_file_path, "w") as f:
+                f.write(entity.entity_file_content)
 
 class RetrievalEnv(BaseTextEnv):
 
@@ -24,6 +50,14 @@ class RetrievalEnv(BaseTextEnv):
         self.ground_truth = extras["reward_spec"]["ground_truth"]
 
         self.max_turns = extras["max_turns"] if "max_turns" in extras else MAX_TOOL_TURNS    
+        self.memory_path = f"memory/memory_{uuid.uuid4()}"
+        
+        # Load the static memory
+        if "extra_info" in extras and "static_memory" in extras["extra_info"]:
+            static_memory_data = extras["extra_info"]["static_memory"]
+            static_memory = StaticMemory(**static_memory_data)
+            static_memory.instantiate(self.memory_path)
+        
 
     def parse_response(self, action: str) -> tuple[str, str]:
         reply = extract_reply(action)
@@ -39,7 +73,11 @@ class RetrievalEnv(BaseTextEnv):
 
         # Execute the python code
         if python_code:
-            local_vars, error_msg = execute_sandboxed_code(python_code)
+            local_vars, error_msg = execute_sandboxed_code(
+                code=python_code,
+                allowed_path=self.memory_path,
+                import_module="agent.tools"
+            )
 
         if self.is_done(action):
             # Get the ground truth
