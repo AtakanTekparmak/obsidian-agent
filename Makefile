@@ -94,8 +94,8 @@ build-dataset:
 
 # Run the retrieval training
 run-retrieval:
-	chmod +x run_retrieval.sh;
-	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project training run_retrieval.sh
+	chmod +x run_retrieval.sh
+	./run_retrieval.sh
 
 # Generate knowledge base with personas for training
 generate-kb:
