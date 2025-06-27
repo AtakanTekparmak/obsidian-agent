@@ -30,10 +30,11 @@ help:
 	@echo "  8. generate-data     Generate data using the pipeline"
 	@echo "  9. build-dataset     Build the HF dataset and upload it to the Hub"
 	@echo "  10. generate-kb      Generate knowledge base with personas for training"
-	@echo "  11. clean-all        Remove all virtual environments"
-	@echo "  12. clean-agent      Remove agent virtual environment"
-	@echo "  13. clean-data       Remove data virtual environment"
-	@echo "  14. clean-training   Remove training virtual environment"
+	@echo "  11. run-retrieval   Run the retrieval training"
+	@echo "  12. clean-all        Remove all virtual environments"
+	@echo "  13. clean-agent      Remove agent virtual environment"
+	@echo "  14. clean-data       Remove data virtual environment"
+	@echo "  15. clean-training   Remove training virtual environment"
 
 # Check if uv is installed and install if needed
 check-uv:
@@ -90,6 +91,11 @@ run-agent:
 # Build the HF dataset and upload it to the Hub
 build-dataset:
 	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project data build_hf_dataset.py --data_dir output/conversations
+
+# Run the retrieval training
+run-retrieval:
+	chmod +x run_retrieval.sh;
+	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project training run_retrieval.sh
 
 # Generate knowledge base with personas for training
 generate-kb:
