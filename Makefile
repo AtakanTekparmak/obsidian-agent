@@ -29,14 +29,11 @@ help:
 	@echo "  7. run-agent         Run the agent"
 	@echo "  8. generate-data     Generate data using the pipeline"
 	@echo "  9. build-dataset     Build the HF dataset and upload it to the Hub"
-	@echo "  10. vf-inference     Start verifiers inference server"
-	@echo "  11. vf-training      Start verifiers training (uses DeepSpeed directly)"
-	@echo "  12. vf-training-all-gpus  Start verifiers training with all GPUs visible"
-	@echo "  13. vf-generate-kb   Generate knowledge base with personas for training"
-	@echo "  14. clean-all        Remove all virtual environments"
-	@echo "  15. clean-agent      Remove agent virtual environment"
-	@echo "  16. clean-data       Remove data virtual environment"
-	@echo "  17. clean-training   Remove training virtual environment"
+	@echo "  10. generate-kb      Generate knowledge base with personas for training"
+	@echo "  11. clean-all        Remove all virtual environments"
+	@echo "  12. clean-agent      Remove agent virtual environment"
+	@echo "  13. clean-data       Remove data virtual environment"
+	@echo "  14. clean-training   Remove training virtual environment"
 
 # Check if uv is installed and install if needed
 check-uv:
@@ -70,9 +67,7 @@ install-training: check-uv
 	@echo "Setting up training environment..."
 	cd training && uv sync
 	@echo "Installing flash-attn..."
-	cd training && uv add "verifiers[all]==0.1.0" && uv pip install \
-  https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/\
-flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp312-cp312-linux_x86_64.whl --no-build-isolation
+	uv pip install skyrl-gym;
 	@echo "Training environment setup complete!"
 
 # Copy the .env.example file to .env if it doesn't exist
@@ -96,31 +91,8 @@ run-agent:
 build-dataset:
 	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project data build_hf_dataset.py --data_dir output/conversations
 
-# Start verifiers inference server
-vf-inference:
-	@echo "Starting verifiers inference server..."
-	UV_FROZEN=true PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_INFERENCE_GPUS) uv run --project training vf-vllm --model $(VF_MODEL) --tensor-parallel-size $(VF_TENSOR_PARALLEL_SIZE) --max-batch-size $(VF_MAX_BATCH_SIZE)
-
-# Start verifiers training
-vf-training:
-	@echo "Starting verifiers training..."
-	@echo "Make sure vf-inference is running in another terminal first!"
-	./training/scripts/run_verifiers_training.sh
-
-# Alternative: Run training with all GPUs visible for NCCL communication
-vf-training-all-gpus:
-	@echo "Starting verifiers training with all GPUs visible..."
-	@echo "Make sure vf-inference is running in another terminal first!"
-	@echo "This method allows NCCL communication between inference (GPUs 0-3) and training (GPUs 4-7)"
-	PYTHONPATH="$(PWD):$$PYTHONPATH" CUDA_VISIBLE_DEVICES=$(VF_ALL_GPUS) CUDA_DEVICE_ORDER=PCI_BUS_ID uv run --project training accelerate launch \
-		--config-file verifiers/configs/zero3.yaml \
-		--num-processes $(VF_NUM_PROCESSES) \
-		--gpu_ids 4,5,6,7 \
-		--main_process_port 29501 \
-		training/retrieval/train_retrieval.py
-
 # Generate knowledge base with personas for training
-vf-generate-kb:
+generate-kb:
 	@echo "Generating knowledge base..."
 	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project data generate_kb.py
 
