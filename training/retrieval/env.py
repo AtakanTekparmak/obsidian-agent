@@ -5,7 +5,7 @@ import os
 from skyrl_gym.envs.base_text_env import BaseTextEnv, BaseTextEnvStepOutput
 from pydantic import BaseModel
 
-from agent.utils import extract_reply, extract_python_code, format_results
+from agent.utils import extract_reply, extract_python_code, format_results, delete_memory
 from agent.engine import execute_sandboxed_code
 from agent.settings import MAX_TOOL_TURNS
 from agent.tools import create_memory_if_not_exists
@@ -82,6 +82,10 @@ class RetrievalEnv(BaseTextEnv):
         if self.is_done(action):
             # Get the ground truth
             ground_truth = str(self.ground_truth).strip()
+
+            # Delete the memory
+            delete_memory(self.memory_path)
+
             return BaseTextEnvStepOutput(
                 observations=[],
                 done=True,
