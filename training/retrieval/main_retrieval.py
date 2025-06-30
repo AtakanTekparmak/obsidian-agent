@@ -111,8 +111,14 @@ def main():
     skyrl_base_cfg_path = os.path.join(cwd, "SkyRL", "skyrl-train", "skyrl_train", "config", "ppo_base_config.yaml")
     skyrl_base_cfg = OmegaConf.load(skyrl_base_cfg_path)
 
+    # Load the deepspeed config
+    deepspeed_cfg_path = os.path.join(cwd, "training", "configs", "rl", "deepspeed_zero3.json")
+    deepspeed_cfg = OmegaConf.load(deepspeed_cfg_path)
+
     # Create OmegaConf config from our base and merge with SkyRL defaults
     cfg = OmegaConf.merge(skyrl_base_cfg, OmegaConf.create(base_config))
+    cfg.deepspeed_config = {"train": deepspeed_cfg, "eval": deepspeed_cfg}
+    OmegaConf.resolve(cfg)
     
     # Apply command line overrides
     if overrides:
