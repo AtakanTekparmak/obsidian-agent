@@ -44,6 +44,10 @@ def main():
     # Parse command line arguments as key=value pairs
     overrides = sys.argv[1:]
     
+    # Calculate obsidian_root path early so we can use it in base_config
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    obsidian_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    
     # Create base configuration with sensible defaults
     base_config = {
         # Environment settings
@@ -117,8 +121,6 @@ def main():
     # Load SkyRL's default PPO configuration. This ensures that all
     # required fields expected by ``skyrl_train`` are present.
     cwd = os.getcwd()
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    obsidian_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
     
     # When running from SkyRL/skyrl-train directory, the config is in the current directory
     if "SkyRL/skyrl-train" in cwd:
