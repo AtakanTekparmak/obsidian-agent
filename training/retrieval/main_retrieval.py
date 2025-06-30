@@ -69,7 +69,7 @@ def main():
         "trainer": {
             "policy": {
                 "model": {
-                    "path": "Qwen/Qwen3-4B",
+                    "path": "google/gemma-3-12b-it",
                     "trust_remote_code": True
                 },
                 "optimizer_config": {
@@ -101,7 +101,9 @@ def main():
             "export_path": "./output/training/obsidian-retrieval-qwen3-4b/export",
             "save_strategy": "epoch",
             "save_total_limit": 4,
-            "disable_fast_tokenizer": False
+            "disable_fast_tokenizer": False,
+            "num_policy_gpus": 4,
+            "num_rollout_gpus": 4
         },
         
         # Generator settings

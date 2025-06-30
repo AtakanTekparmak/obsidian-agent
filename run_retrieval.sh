@@ -21,7 +21,7 @@ fi
 MODEL_PATH="Qwen/Qwen3-4B"
 
 # Training configuration
-EXPERIMENT_NAME="obsidian-retrieval-qwen3-4b"
+EXPERIMENT_NAME="obsidian-retrieval-gemma-3-12b-it"
 OUTPUT_DIR="./output/training/${EXPERIMENT_NAME}"
 
 # Create output directory
