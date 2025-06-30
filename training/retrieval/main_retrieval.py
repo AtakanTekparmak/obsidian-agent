@@ -85,6 +85,7 @@ def main():
         
         # Generator settings
         "generator": {
+            "backend": "vllm",
             "num_inference_engines": 2,
             "inference_engine_tensor_parallel_size": 2,
             "n_samples_per_prompt": 4,
