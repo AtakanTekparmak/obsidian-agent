@@ -76,7 +76,7 @@ def main():
             "eval_before_train": True,
             "eval_interval": 1,
             "max_prompt_length": 8192,
-            "logger": "wandb",
+            "logger": "console",
             "project_name": "obsidian-retrieval-skyrl",
             "run_name": "obsidian-retrieval-qwen3-4b",
             "output_dir": "./output/training/obsidian-retrieval-qwen3-4b",
