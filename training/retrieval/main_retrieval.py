@@ -9,6 +9,15 @@ from omegaconf import DictConfig, OmegaConf
 import sys
 import os
 
+# Add obsidian-agent root directory to Python path if running from SkyRL directory
+current_dir = os.getcwd()
+script_dir = os.path.dirname(os.path.abspath(__file__))
+obsidian_root = os.path.join(script_dir, "..", "..")
+obsidian_root = os.path.abspath(obsidian_root)
+
+if obsidian_root not in sys.path:
+    sys.path.insert(0, obsidian_root)
+
 from skyrl_train.utils import initialize_ray
 from skyrl_train.entrypoints.main_base import BasePPOExp
 from skyrl_gym.envs import register
@@ -108,11 +117,22 @@ def main():
     # Load SkyRL's default PPO configuration. This ensures that all
     # required fields expected by ``skyrl_train`` are present.
     cwd = os.getcwd()
-    skyrl_base_cfg_path = os.path.join(cwd, "SkyRL", "skyrl-train", "skyrl_train", "config", "ppo_base_config.yaml")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    obsidian_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    
+    # When running from SkyRL/skyrl-train directory, the config is in the current directory
+    if "SkyRL/skyrl-train" in cwd:
+        skyrl_base_cfg_path = os.path.join("skyrl_train", "config", "ppo_base_config.yaml")
+        # Use absolute path to deepspeed config
+        deepspeed_cfg_path = os.path.join(obsidian_root, "training", "configs", "rl", "deepspeed_zero3.json")
+    else:
+        # Fallback to original paths for when running from obsidian-agent root
+        skyrl_base_cfg_path = os.path.join(obsidian_root, "SkyRL", "skyrl-train", "skyrl_train", "config", "ppo_base_config.yaml")
+        deepspeed_cfg_path = os.path.join(obsidian_root, "training", "configs", "rl", "deepspeed_zero3.json")
+    
     skyrl_base_cfg = OmegaConf.load(skyrl_base_cfg_path)
 
     # Load the deepspeed config
-    deepspeed_cfg_path = os.path.join(cwd, "training", "configs", "rl", "deepspeed_zero3.json")
     deepspeed_cfg = OmegaConf.load(deepspeed_cfg_path)
 
     # Create OmegaConf config from our base and merge with SkyRL defaults
