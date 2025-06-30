@@ -21,16 +21,22 @@ if obsidian_root not in sys.path:
 from skyrl_train.utils import initialize_ray
 from skyrl_train.entrypoints.main_base import BasePPOExp
 from skyrl_gym.envs import register
+import skyrl_gym.error
+
+# Register the environment at module level (only once)
+try:
+    register(
+        id="obsidian-retrieval",
+        entry_point="training.retrieval.env:RetrievalEnv",
+    )
+    print("Successfully registered obsidian-retrieval environment")
+except skyrl_gym.error.RegistrationError:
+    print("obsidian-retrieval environment already registered, skipping registration")
 
 class RetrievalPPOExp(BasePPOExp):
     """Custom experiment class for retrieval training."""
     
     def __init__(self, cfg: DictConfig):
-        # Register the obsidian-retrieval environment
-        register(
-            id="obsidian-retrieval",
-            entry_point="training.retrieval.env:RetrievalEnv",
-        )
         super().__init__(cfg)
 
 @ray.remote(num_cpus=1)
