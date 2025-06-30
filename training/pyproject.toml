@@ -16,7 +16,6 @@ dependencies = [
     "accelerate",
     "deepspeed",
     "setuptools",
-    "vllm>=0.8.3",
 ]
 requires-python = ">=3.12,<3.13"
 
