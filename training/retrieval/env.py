@@ -16,6 +16,8 @@ from training.reward import get_reward
 from data.schemas.kb import Fact
 from data.schemas.sft import StaticMemory
 
+DEBUG_MODE = True
+
 class RetrievalEnv(BaseTextEnv):
 
     def __init__(
@@ -33,7 +35,11 @@ class RetrievalEnv(BaseTextEnv):
         assert "ground_truth" in extras["reward_spec"], "ground_truth is required in reward_spec field"
         self.ground_truth = extras["reward_spec"]["ground_truth"]
 
-        self.max_turns = extras["max_turns"] if "max_turns" in extras else MAX_TOOL_TURNS    
+        self.max_turns = extras["max_turns"] if "max_turns" in extras else MAX_TOOL_TURNS
+        
+        # Debug mode to preserve memory folders and add logging
+        self.debug_mode = DEBUG_MODE
+        
         self.memory_path = None  # Will be set in reset()
         self.static_memory_data = None
         self.step_count = 0  # Track number of steps taken
@@ -49,10 +55,14 @@ class RetrievalEnv(BaseTextEnv):
         """Reset the environment for a new episode."""
         # Clean up any previous memory
         if self.memory_path and os.path.exists(self.memory_path):
-            delete_memory(self.memory_path)
+            if not self.debug_mode:
+                delete_memory(self.memory_path)
         
         # Create a new memory path with absolute path
-        memory_dir = os.path.abspath("memory")
+        # Use the obsidian-agent root directory to ensure consistency
+        obsidian_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        memory_dir = os.path.join(obsidian_root, "memory")
+        
         if not os.path.exists(memory_dir):
             os.makedirs(memory_dir, exist_ok=True)
         
@@ -125,8 +135,9 @@ class RetrievalEnv(BaseTextEnv):
                 # No reply after max turns, assign 0 reward
                 reward = 0.0
 
-            # Delete the memory
-            delete_memory(self.memory_path)
+            # Delete the memory unless in debug mode
+            if not self.debug_mode:
+                delete_memory(self.memory_path)
 
             return BaseTextEnvStepOutput(
                 observations=[],

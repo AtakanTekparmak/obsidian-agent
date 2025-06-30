@@ -1,6 +1,13 @@
 from .dataset import create_kb_with_personas, generate_question_prompt, build_verifiers_dataset
-from .env import RetrievalEnv
-from . import register_env
+
+# Only import env-related stuff if skyrl_gym is available
+try:
+    import skyrl_gym
+    from .env import RetrievalEnv
+    from . import register_env
+    _SKYRL_AVAILABLE = True
+except ImportError:
+    _SKYRL_AVAILABLE = False
 
 def get_retrieval_rubric():
     """Get the retrieval rubric for evaluation."""
@@ -12,6 +19,9 @@ __all__ = [
     "create_kb_with_personas",
     "generate_question_prompt",
     "build_verifiers_dataset",
-    "RetrievalEnv",
     "get_retrieval_rubric",
 ]
+
+# Only add env-related exports if skyrl_gym is available
+if _SKYRL_AVAILABLE:
+    __all__.append("RetrievalEnv")

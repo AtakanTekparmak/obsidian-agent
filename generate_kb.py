@@ -118,6 +118,9 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
     """
     dataset: List[Dict] = []
     
+    # Load the system prompt once for all dataset entries
+    system_prompt = load_system_prompt()
+    
     # Create a coroutine to generate content for each fact
     async def process_fact(persona, fact):
         # Run these operations concurrently
@@ -134,6 +137,10 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         return {
              "data_source": "obsidian-retrieval",
             "prompt": [
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                },
                 {
                     "role": "user",
                     "content": question,
