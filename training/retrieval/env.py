@@ -26,6 +26,9 @@ class ChatMessage(BaseModel):
     role: Role
     content: str
 
+class Conversation(BaseModel):
+    messages: list[ChatMessage]
+
 DEBUG_MODE = True
 
 class RetrievalEnv(BaseTextEnv):
@@ -122,9 +125,9 @@ class RetrievalEnv(BaseTextEnv):
         return bool(extract_reply(action)) or self.step_count >= self.max_turns
     
     def save_conversation(self):
+        conversation = Conversation(messages=self.messages)
         try:
-            with open(self.conversation_path, "w") as f:
-                json.dump(self.messages, f)
+            conversation.model_dump_json(self.conversation_path)
         except Exception as e:
             print(f"Error saving conversation to {self.conversation_path}: {e}")
             raise
