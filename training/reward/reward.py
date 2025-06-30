@@ -33,6 +33,9 @@ def get_reward(
     ) -> float:
     """
     Get the reward for the given agent reply and ground truth.
+    
+    Returns:
+        float: 1.0 if ground truth is present in reply, 0.0 otherwise
     """
     judge_prompt = construct_reply_judge_prompt(agent_reply, ground_truth)
     judge_response = get_model_response(
@@ -40,4 +43,5 @@ def get_reward(
         prompt=judge_prompt,
         model=GPT_O3
     )
-    return judge_response.ground_truth_in_reply
+    # Convert boolean to float (1.0 for True, 0.0 for False)
+    return 1.0 if judge_response.ground_truth_in_reply else 0.0
