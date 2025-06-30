@@ -78,7 +78,7 @@ def main():
             },
             "placement": {
                 "colocate_all": True,
-                "policy_num_gpus_per_node": 2
+                "policy_num_gpus_per_node": 4
             },
             "algorithm": {
                 "advantage_estimator": "grpo",
