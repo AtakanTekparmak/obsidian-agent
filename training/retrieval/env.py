@@ -79,6 +79,9 @@ class RetrievalEnv(BaseTextEnv):
         if not os.path.exists(memory_dir):
             os.makedirs(memory_dir, exist_ok=True)
 
+        if not os.path.exists(conversation_dir):
+            os.makedirs(conversation_dir, exist_ok=True)
+
         agent_uuid = str(uuid.uuid4())
         
         self.memory_path = os.path.join(memory_dir, f"memory_{agent_uuid}")
