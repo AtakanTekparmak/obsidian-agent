@@ -113,8 +113,7 @@ build-dataset:
 
 # Run the retrieval training
 run-retrieval:
-	chmod +x run_retrieval.sh
-	./run_retrieval.sh
+	cd SkyRL/skyrl-train && uv run --isolated --extra vllm python /lambda/nfs/skyrl/obsidian-agent/training/retrieval/main_retrieval.py
 
 # Generate knowledge base with personas for training
 generate-kb:
