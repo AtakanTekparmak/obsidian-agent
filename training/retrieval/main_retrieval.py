@@ -51,10 +51,10 @@ def main():
             "env_class": "obsidian-retrieval"
         },
         
-        # Data settings  
+        # Data settings - use relative paths from script directory
         "data": {
-            "train_data": [],
-            "val_data": []
+            "train_data": [os.path.join(obsidian_root, "output", "datasets", "skyrl_formatted", "train.parquet")],
+            "val_data": [os.path.join(obsidian_root, "output", "datasets", "skyrl_formatted", "validation.parquet")]
         },
         
         # Trainer settings
