@@ -97,7 +97,7 @@ def main():
         "trainer": {
             "policy": {
                 "model": {
-                    "path": "Qwen/Qwen3-4B",
+                    "path": "Qwen/Qwen3-8B",
                     "trust_remote_code": True
                 },
                 "optimizer_config": {
@@ -123,10 +123,10 @@ def main():
             "max_prompt_length": 8192,
             "logger": "console",
             "project_name": "obsidian-retrieval-skyrl",
-            "run_name": "obsidian-retrieval-qwen3-4b",
-            "output_dir": "./output/training/obsidian-retrieval-qwen3-4b",
-            "ckpt_path": "./output/training/obsidian-retrieval-qwen3-4b/ckpt",
-            "export_path": "./output/training/obsidian-retrieval-qwen3-4b/export",
+            "run_name": "obsidian-retrieval-qwen3-8b",
+            "output_dir": "./output/training/obsidian-retrieval-qwen3-8b",
+            "ckpt_path": "./output/training/obsidian-retrieval-qwen3-8b/ckpt",
+            "export_path": "./output/training/obsidian-retrieval-qwen3-8b/export",
             "save_strategy": "epoch",
             "save_total_limit": 4,
             "disable_fast_tokenizer": False,
