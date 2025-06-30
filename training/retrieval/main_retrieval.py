@@ -80,7 +80,8 @@ def main():
             "wandb_run_name": "obsidian-retrieval-qwen3-4b",
             "output_dir": "./output/training/obsidian-retrieval-qwen3-4b",
             "save_strategy": "epoch",
-            "save_total_limit": 4
+            "save_total_limit": 4,
+            "disable_fast_tokenizer": False
         },
         
         # Generator settings
