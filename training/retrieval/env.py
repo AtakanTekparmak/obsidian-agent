@@ -2,6 +2,7 @@ from typing import Any
 import uuid
 import os
 import json
+from enum import Enum
 
 from skyrl_gym.envs.base_text_env import BaseTextEnv, BaseTextEnvStepOutput
 from pydantic import BaseModel
@@ -15,6 +16,15 @@ from training.reward import get_reward
 
 from data.schemas.kb import Fact
 from data.schemas.sft import StaticMemory
+
+class Role(Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+class ChatMessage(BaseModel):
+    role: Role
+    content: str
 
 DEBUG_MODE = True
 
@@ -50,6 +60,8 @@ class RetrievalEnv(BaseTextEnv):
         
         # Perform initial reset
         self.reset()
+
+        self.messages = []
         
     def reset(self):
         """Reset the environment for a new episode."""
@@ -62,14 +74,21 @@ class RetrievalEnv(BaseTextEnv):
         # Use the obsidian-agent root directory to ensure consistency
         obsidian_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
         memory_dir = os.path.join(obsidian_root, "memory")
+        conversation_dir = os.path.join(obsidian_root, "conversation")
         
         if not os.path.exists(memory_dir):
             os.makedirs(memory_dir, exist_ok=True)
+
+        agent_uuid = str(uuid.uuid4())
         
-        self.memory_path = os.path.join(memory_dir, f"memory_{uuid.uuid4()}")
+        self.memory_path = os.path.join(memory_dir, f"memory_{agent_uuid}")
+        self.conversation_path = os.path.join(conversation_dir, f"conversation_{agent_uuid}.json")
         
         # Reset step counter
         self.step_count = 0
+
+        # Reset messages
+        self.messages = []
         
         # Create memory directory
         try:
@@ -99,7 +118,16 @@ class RetrievalEnv(BaseTextEnv):
         # Episode is done if agent provides a reply OR max turns reached
         return bool(extract_reply(action)) or self.step_count >= self.max_turns
     
+    def save_conversation(self):
+        try:
+            with open(self.conversation_path, "w") as f:
+                json.dump(self.messages, f)
+        except Exception as e:
+            print(f"Error saving conversation to {self.conversation_path}: {e}")
+            raise
+    
     def step(self, action: str) -> BaseTextEnvStepOutput:
+        self.messages.append(ChatMessage(role=Role.USER, content=action))
         # Increment step counter
         self.step_count += 1
         
@@ -139,6 +167,7 @@ class RetrievalEnv(BaseTextEnv):
             if not self.debug_mode:
                 delete_memory(self.memory_path)
 
+            self.save_conversation()
             return BaseTextEnvStepOutput(
                 observations=[],
                 done=True,
@@ -147,8 +176,9 @@ class RetrievalEnv(BaseTextEnv):
             )
         else:
             env_response = format_results(local_vars, error_msg)
+            self.messages.append(ChatMessage(role=Role.USER, content=env_response))
             return BaseTextEnvStepOutput(
-                observations=[{"role": "tool", "content": env_response}],
+                observations=[{"role": "user", "content": env_response}],
                 done=False,
                 reward=0,
                 metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
