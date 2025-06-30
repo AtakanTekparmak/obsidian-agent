@@ -7,7 +7,7 @@ Based on SkyRL examples but adapted for our retrieval environment.
 import ray
 from omegaconf import DictConfig, OmegaConf
 import sys
-from importlib.resources import files
+import os
 
 from skyrl_train.utils import initialize_ray
 from skyrl_train.entrypoints.main_base import BasePPOExp
@@ -107,7 +107,8 @@ def main():
     
     # Load SkyRL's default PPO configuration. This ensures that all
     # required fields expected by ``skyrl_train`` are present.
-    skyrl_base_cfg_path = files("skyrl_train").joinpath("config/ppo_base_config.yaml")
+    cwd = os.getcwd()
+    skyrl_base_cfg_path = os.path.join(cwd, "SkyRL", "skyrl-train", "config", "ppo_base_config.yaml")
     skyrl_base_cfg = OmegaConf.load(skyrl_base_cfg_path)
 
     # Create OmegaConf config from our base and merge with SkyRL defaults
