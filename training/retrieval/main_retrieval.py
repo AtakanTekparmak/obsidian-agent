@@ -69,7 +69,7 @@ def main():
         "trainer": {
             "policy": {
                 "model": {
-                    "path": "google/gemma-3-12b-it",
+                    "path": "Qwen/Qwen3-4B",
                     "trust_remote_code": True
                 },
                 "optimizer_config": {
