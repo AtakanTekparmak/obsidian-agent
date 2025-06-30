@@ -120,7 +120,7 @@ def main():
             "eval_batch_size": 32,
             "eval_before_train": True,
             "eval_interval": 1,
-            "max_prompt_length": 8192,
+            "max_prompt_length": 16384,
             "logger": "console",
             "project_name": "obsidian-retrieval-skyrl",
             "run_name": "obsidian-retrieval-qwen3-8b",
@@ -145,7 +145,7 @@ def main():
                 "top_p": 0.9,
                 "max_generate_length": 2048
             },
-            "max_input_length": 8192,
+            "max_input_length": 16384,
             "async_engine": False,
             "batched": True,
             "max_turns": 8
