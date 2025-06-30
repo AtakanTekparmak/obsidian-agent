@@ -41,8 +41,8 @@ PYTHONPATH="$(pwd):$PYTHONPATH" uv run --project training python -c "import trai
 CMD_ARGS=(
     "data.train_data=['$TRAIN_DATA']"
     "data.val_data=['$VAL_DATA']"
-    "trainer.policy.model.path=$MODEL_PATH"
-    "trainer.wandb_run_name=$EXPERIMENT_NAME"
+    "trainer.policy.model.path=$MODEL_PATH"    
+    "trainer.run_name=$EXPERIMENT_NAME"
     "trainer.output_dir=$OUTPUT_DIR"
 )
 

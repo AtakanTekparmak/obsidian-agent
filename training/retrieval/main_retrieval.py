@@ -7,6 +7,7 @@ Based on SkyRL examples but adapted for our retrieval environment.
 import ray
 from omegaconf import DictConfig, OmegaConf
 import sys
+from importlib.resources import files
 
 from skyrl_train.utils import initialize_ray
 from skyrl_train.entrypoints.main_base import BasePPOExp
@@ -76,9 +77,11 @@ def main():
             "eval_interval": 1,
             "max_prompt_length": 8192,
             "logger": "wandb",
-            "wandb_project": "obsidian-retrieval-skyrl",
-            "wandb_run_name": "obsidian-retrieval-qwen3-4b",
+            "project_name": "obsidian-retrieval-skyrl",
+            "run_name": "obsidian-retrieval-qwen3-4b",
             "output_dir": "./output/training/obsidian-retrieval-qwen3-4b",
+            "ckpt_path": "./output/training/obsidian-retrieval-qwen3-4b/ckpt",
+            "export_path": "./output/training/obsidian-retrieval-qwen3-4b/export",
             "save_strategy": "epoch",
             "save_total_limit": 4,
             "disable_fast_tokenizer": False
@@ -102,8 +105,12 @@ def main():
         }
     }
     
-    # Create OmegaConf config from base
-    cfg = OmegaConf.create(base_config)
+    # Load SkyRL's default PPO configuration to ensure all required fields exist
+    skyrl_base_cfg_path = files("skyrl_train").joinpath("config/ppo_base_config.yaml")
+    skyrl_base_cfg = OmegaConf.load(skyrl_base_cfg_path)
+
+    # Create OmegaConf config from our base and merge with SkyRL defaults
+    cfg = OmegaConf.merge(skyrl_base_cfg, OmegaConf.create(base_config))
     
     # Apply command line overrides
     if overrides:
