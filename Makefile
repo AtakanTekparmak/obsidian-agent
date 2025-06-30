@@ -85,7 +85,7 @@ install-training: check-uv
 		(echo "Installing without vllm extra..." && uv add ../SkyRL/skyrl-train --frozen) \
 	)
 	@echo "Installing vllm separately if needed..."
-	@cd training && (uv add 'vllm>=0.8.3' || echo "Warning: Could not install vllm, training may still work")
+	@cd training && (uv add 'vllm>=0.8.3' --frozen || echo "Warning: Could not install vllm, training may still work")
 	@echo "Training environment setup complete!"
 
 # Copy the .env.example file to .env if it doesn't exist
