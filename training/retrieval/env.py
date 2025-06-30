@@ -128,7 +128,7 @@ class RetrievalEnv(BaseTextEnv):
         conversation = Conversation(messages=self.messages)
         try:
             with open(self.conversation_path, "w") as f:
-                json.dump(conversation.model_dump(), f, indent=2)
+                json.dump(conversation.model_dump(mode='json'), f, indent=2)
         except Exception as e:
             print(f"Error saving conversation to {self.conversation_path}: {e}")
             raise
