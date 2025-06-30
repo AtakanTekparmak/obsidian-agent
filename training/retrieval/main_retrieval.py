@@ -97,7 +97,7 @@ def main():
         "trainer": {
             "policy": {
                 "model": {
-                    "path": "Qwen/Qwen3-8B",
+                    "path": "Qwen/Qwen3-14B",
                     "trust_remote_code": True
                 },
                 "optimizer_config": {
