@@ -214,7 +214,6 @@ def execute_sandboxed_code(
                     attr = getattr(module, name)
                     if callable(attr):
                         available_functions[name] = attr
-            logger.info(f"Imported module {import_module} with {len(available_functions)} functions")
         except ImportError as e:
             logger.error(f"Failed to import module {import_module}: {e}")
             return None, f"Failed to import module {import_module}: {e}"
@@ -232,7 +231,6 @@ def execute_sandboxed_code(
     env = os.environ.copy()
     env["SANDBOX_PARAMS"] = base64.b64encode(pickle.dumps(params)).decode()
 
-    logger.info("Starting sandboxed subprocess for code execution (timeout=%ds)...", timeout)
     try:
         result = subprocess.run(
             [sys.executable, "-m", "agent.engine"],
