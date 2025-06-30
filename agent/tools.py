@@ -1,7 +1,8 @@
 import os
 import tempfile
 import uuid
-from typing import Union
+import subprocess
+from pathlib import Path
 
 from agent.settings import MEMORY_PATH
 from agent.utils import check_size_limits, create_memory_if_not_exists
@@ -66,40 +67,54 @@ def create_dir(dir_path: str) -> bool:
         return True
     except Exception:
         return False
-    
-def write_to_file(file_path: str, content: str) -> bool:
-    """
-    Write to a file in the memory. First create a temporary file with 
-    original file content + new content. Check if the size limits are respected,
-    if so, move the temporary file to the final destination.
 
-    Args:
-        file_path: The path to the file.
-        content: The content to write to the file.
-
-    Returns:
-        True if the content was written successfully, False otherwise.
+def write_to_file(file_path: str, diff: str) -> bool:
     """
+    Try to apply a unified git-style diff to `file_path`.
+
+    Parameters
+    ----------
+    file_path : str
+        Absolute or relative path to the file being patched.
+    diff : str
+        Text in standard unified-diff format (what you get from `git diff`).
+
+    Returns
+    -------
+    bool
+        True  – diff applied cleanly.
+        False – any problem (syntax errors, context mismatch, no git in PATH …).
+    """
+    # Guarantee we run in the directory that contains the target file.
+    workdir = Path(file_path).expanduser().resolve().parent
+
+    # Stash the diff text in a temp file; Git only reads from disk.
+    with tempfile.NamedTemporaryFile("w+", delete=False) as tmp:
+        tmp.write(diff)
+        patch_file = tmp.name
+
     try:
-        original_content = ""
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
-                original_content = f.read()
-        
-        # Create a unique temporary file name to avoid conflicts
-        temp_file_path = f"temp_{uuid.uuid4().hex[:8]}.txt"
-        
-        with open(temp_file_path, "w") as f:
-            f.write(original_content + "\n" + content)
-        
-        if check_size_limits(temp_file_path):
-            os.rename(temp_file_path, file_path)
-            return True
-        else:
-            os.remove(temp_file_path)
+        # 1. Dry-run check ─ will fail (non-zero return-code) on any conflict.
+        check = subprocess.run(
+            ["git", "apply", "--check", "--unsafe-paths", patch_file],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+        )
+        if check.returncode != 0:
+            # Optional: log or surface check.stderr for callers.
             return False
-    except Exception:
-        return False
+
+        # 2. Real apply (no --check).
+        apply = subprocess.run(
+            ["git", "apply", "--unsafe-paths", patch_file],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+        )
+        return apply.returncode == 0
+    finally:
+        os.remove(patch_file)
     
 def read_file(file_path: str) -> str:
     """

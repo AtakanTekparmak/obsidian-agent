@@ -56,7 +56,7 @@ When you receive `<result>` blocks, you MUST:
 ```python
 # File Operations
 create_file(file_path: str, content: str = "") -> bool
-write_to_file(file_path: str, content: str) -> bool  # Appends to existing content
+write_to_file(file_path: str, diff: str) -> bool  # Uses a git style diff to apply changes to the file
 read_file(file_path: str) -> str
 delete_file(file_path: str) -> bool
 check_if_file_exists(file_path: str) -> bool
