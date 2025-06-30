@@ -86,6 +86,8 @@ install-training: check-uv
 	)
 	@echo "Installing vllm separately if needed..."
 	@cd training && (uv add 'vllm>=0.8.3' --frozen || echo "Warning: Could not install vllm, training may still work")
+	@echo "Installing skyrl-gym in SkyRL/skyrl-train directory for direct execution..."
+	@cd SkyRL/skyrl-train && (uv add skyrl-gym || echo "Warning: Could not install skyrl-gym in SkyRL directory")
 	@echo "Training environment setup complete!"
 
 # Copy the .env.example file to .env if it doesn't exist

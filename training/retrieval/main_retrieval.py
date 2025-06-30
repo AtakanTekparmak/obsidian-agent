@@ -52,7 +52,11 @@ def main():
     base_config = {
         # Environment settings
         "environment": {
-            "env_class": "obsidian-retrieval"
+            "env_class": "obsidian-retrieval",
+            "skyrl_gym": {
+                "env_kwargs": {},
+                "extras": {}
+            }
         },
         
         # Data settings - use relative paths from script directory
