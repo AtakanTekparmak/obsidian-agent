@@ -108,7 +108,7 @@ def main():
     # Load SkyRL's default PPO configuration. This ensures that all
     # required fields expected by ``skyrl_train`` are present.
     cwd = os.getcwd()
-    skyrl_base_cfg_path = os.path.join(cwd, "SkyRL", "skyrl-train", "config", "ppo_base_config.yaml")
+    skyrl_base_cfg_path = os.path.join(cwd, "SkyRL", "skyrl-train", "skyrl_train", "config", "ppo_base_config.yaml")
     skyrl_base_cfg = OmegaConf.load(skyrl_base_cfg_path)
 
     # Create OmegaConf config from our base and merge with SkyRL defaults
