@@ -14,3 +14,8 @@ class JudgeResponse(BaseModel):
         else:
             self.ratio_of_facts_present = 0.0
 
+class ReplyJudgeResponse(BaseModel):
+    reply: str
+    ground_truth: str
+    ground_truth_in_reply: bool
+

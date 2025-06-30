@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # File paths
-JUDGE_PROMPT_PATH = "training/reward/judge_prompt.txt"
+FOLDER_JUDGE_PROMPT_PATH = "training/reward/prompts/judge_prompt.txt"
+REPLY_JUDGE_PROMPT_PATH = "training/reward/prompts/reply_judge_prompt.txt"
 VERIFIERS_DATASET_PATH = "output/datasets/verifiers_dataset.json"
 
 # Models

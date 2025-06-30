@@ -96,8 +96,8 @@ class RetrievalEnv(BaseTextEnv):
                 observations=[],
                 done=True,
                 reward=get_reward(
-                    folder_dump_str=reply,
-                    facts_to_check=[Fact(fact_description=ground_truth)]
+                    agent_reply=reply,
+                    ground_truth=ground_truth
                 ),
                 metadata={"reply": reply}
             )
