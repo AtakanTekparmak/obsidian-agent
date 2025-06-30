@@ -36,6 +36,28 @@ class RetrievalPPOExp(BasePPOExp):
 @ray.remote(num_cpus=1)
 def main_remote(cfg: DictConfig):
     """Remote main function to run training."""
+    import sys
+    import os
+    
+    # Add obsidian-agent root directory to Python path in Ray worker context
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    obsidian_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    
+    if obsidian_root not in sys.path:
+        sys.path.insert(0, obsidian_root)
+    
+    # Import modules to ensure they're available
+    try:
+        import training
+        import agent
+        print(f"Successfully imported training module from: {training.__file__}")
+        print(f"Successfully imported agent module from: {agent.__file__}")
+    except ImportError as e:
+        print(f"Failed to import modules: {e}")
+        print(f"Python path: {sys.path}")
+        print(f"Obsidian root: {obsidian_root}")
+        raise
+    
     exp = RetrievalPPOExp(cfg)
     exp.run()
 
