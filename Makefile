@@ -113,7 +113,11 @@ build-dataset:
 
 # Run the retrieval training
 run-retrieval:
-	cd SkyRL/skyrl-train && uv run --isolated --extra vllm python /lambda/nfs/skyrl/obsidian-agent/training/retrieval/main_retrieval.py
+	@echo "Running retrieval training..."
+	@if [ -z "$${OBSIDIAN_ROOT}" ]; then \
+		export OBSIDIAN_ROOT="$$(pwd)"; \
+	fi; \
+	cd SkyRL/skyrl-train && PYTHONPATH="$${OBSIDIAN_ROOT}:$$PYTHONPATH" uv run --isolated --extra vllm python "$${OBSIDIAN_ROOT}/training/retrieval/main_retrieval.py"
 
 # Generate knowledge base with personas for training
 generate-kb:
