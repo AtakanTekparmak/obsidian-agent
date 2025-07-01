@@ -12,7 +12,7 @@ OBSIDIAN_ROOT = TRAINING_DIR.parent
 FOLDER_JUDGE_PROMPT_PATH = str(OBSIDIAN_ROOT / "training" / "reward" / "prompts" / "judge_prompt.txt")
 REPLY_JUDGE_PROMPT_PATH = str(OBSIDIAN_ROOT / "training" / "reward" / "prompts" / "reply_judge_prompt.txt")
 VERIFIERS_DATASET_PATH = str(OBSIDIAN_ROOT / "output" / "datasets" / "verifiers_dataset.json")
-JUDGE_CONVERSATION_SAVE_PATH = str(OBSIDIAN_ROOT / "conversations")
+JUDGE_CONVERSATION_SAVE_PATH = str(OBSIDIAN_ROOT / "judge_conversations")
 
 # Models
 GEMINI_PRO = "gemini-2.5-pro-exp-03-25"
