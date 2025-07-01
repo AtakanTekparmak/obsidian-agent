@@ -65,6 +65,7 @@ class RetrievalEnv(BaseTextEnv):
         self.reset()
 
         self.messages = []
+        self.initial_prompt = None
         
     def reset(self):
         """Reset the environment for a new episode."""
@@ -77,7 +78,7 @@ class RetrievalEnv(BaseTextEnv):
         # Use the obsidian-agent root directory to ensure consistency
         obsidian_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
         memory_dir = os.path.join(obsidian_root, "memory")
-        conversation_dir = os.path.join(obsidian_root, "conversation")
+        conversation_dir = os.path.join(obsidian_root, "conversations")
         
         if not os.path.exists(memory_dir):
             os.makedirs(memory_dir, exist_ok=True)
@@ -93,8 +94,17 @@ class RetrievalEnv(BaseTextEnv):
         # Reset step counter
         self.step_count = 0
 
-        # Reset messages
-        self.messages = []
+        # Reset messages but preserve initial prompt if it exists
+        if hasattr(self, 'initial_prompt') and self.initial_prompt:
+            self.messages = []
+            # Re-add initial prompt messages
+            for message in self.initial_prompt:
+                if isinstance(message, dict):
+                    role = Role(message["role"])
+                    content = message["content"]
+                    self.messages.append(ChatMessage(role=role, content=content))
+        else:
+            self.messages = []
         
         # Create memory directory
         try:
@@ -115,6 +125,20 @@ class RetrievalEnv(BaseTextEnv):
                     delete_memory(self.memory_path)
                 raise
 
+    def init(self, prompt):
+        """Initialize the environment with the initial prompt."""
+        # Store the initial prompt
+        self.initial_prompt = prompt
+        
+        # Add initial messages to conversation
+        for message in prompt:
+            if isinstance(message, dict):
+                role = Role(message["role"])
+                content = message["content"]
+                self.messages.append(ChatMessage(role=role, content=content))
+        
+        return prompt, {}
+
     def parse_response(self, action: str) -> tuple[str, str]:
         reply = extract_reply(action)
         python_code = extract_python_code(action)
@@ -134,7 +158,7 @@ class RetrievalEnv(BaseTextEnv):
             raise
     
     def step(self, action: str) -> BaseTextEnvStepOutput:
-        self.messages.append(ChatMessage(role=Role.USER, content=action))
+        self.messages.append(ChatMessage(role=Role.ASSISTANT, content=action))
         # Increment step counter
         self.step_count += 1
         
@@ -152,6 +176,9 @@ class RetrievalEnv(BaseTextEnv):
                 allowed_path=self.memory_path,
                 import_module="agent.tools"
             )
+            # Add environment response to messages
+            env_response = format_results(local_vars, error_msg)
+            self.messages.append(ChatMessage(role=Role.USER, content=env_response))
 
         # Check if we should terminate
         if reply or self.step_count >= self.max_turns:
@@ -182,11 +209,20 @@ class RetrievalEnv(BaseTextEnv):
                 metadata={"reply": reply, "max_turns_reached": self.step_count >= self.max_turns}
             )
         else:
-            env_response = format_results(local_vars, error_msg)
-            self.messages.append(ChatMessage(role=Role.USER, content=env_response))
-            return BaseTextEnvStepOutput(
-                observations=[{"role": "user", "content": env_response}],
-                done=False,
-                reward=0,
-                metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
-            )
+            # Return the environment response as an observation
+            # Note: env_response was already added to messages if python_code was executed
+            if python_code:
+                return BaseTextEnvStepOutput(
+                    observations=[{"role": "user", "content": env_response}],
+                    done=False,
+                    reward=0,
+                    metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
+                )
+            else:
+                # No code executed, just continue
+                return BaseTextEnvStepOutput(
+                    observations=[],
+                    done=False,
+                    reward=0,
+                    metadata={"step": self.step_count}
+                )
