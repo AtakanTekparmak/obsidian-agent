@@ -165,10 +165,12 @@ class RetrievalEnv(BaseTextEnv):
         # Parse the response
         reply, python_code = self.parse_response(action)
         python_code_present = len(python_code) > 0
+        reply_present = len(reply) > 0
 
         # Initialize variables for execution results
         local_vars = {}
         error_msg = ""
+        env_response = ""
 
         # Execute the python code if present
         if python_code_present:
@@ -182,12 +184,12 @@ class RetrievalEnv(BaseTextEnv):
             self.messages.append(ChatMessage(role=Role.USER, content=env_response))
 
         # Check if we should terminate
-        if (reply or self.step_count >= self.max_turns) and not python_code_present:
+        if (reply_present or self.step_count >= self.max_turns) and not python_code_present:
             # Get the ground truth
             ground_truth = str(self.ground_truth).strip()
             
             # Calculate reward based on whether agent replied and if reply contains ground truth
-            if reply:
+            if reply_present:
                 reward_bool = get_reward(
                     agent_reply=reply,
                     ground_truth=ground_truth,
@@ -211,10 +213,16 @@ class RetrievalEnv(BaseTextEnv):
                 metadata={"reply": reply, "max_turns_reached": self.step_count >= self.max_turns}
             )
         else:
-            # Return the environment response as an observation
-            return BaseTextEnvStepOutput(
-                observations=[{"role": "user", "content": env_response}],
-                done=False,
-                reward=0,
-                metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
-            )
+            if python_code_present and not reply_present:
+                return BaseTextEnvStepOutput(
+                    observations=[{"role": "user", "content": env_response}],
+                    done=False,
+                    reward=0.1,
+                    metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
+                )
+            else:
+                return BaseTextEnvStepOutput(
+                    observations=[{"role": "user", "content": "Wrong format. Please provide either a </reply> or </python> block."}],
+                    reward=0,
+                    metadata={"step": self.step_count}
+                )
