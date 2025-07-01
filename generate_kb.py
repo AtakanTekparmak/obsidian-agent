@@ -60,32 +60,25 @@ Given how you expect the agent to operate, the persona & the fact, generate a st
 """
 
 
-def generate_static_memory(
-        persona: Persona,
-        fact: str
-    ) -> StaticMemory:
-        """
-        Generate a static memory for the agent.
+def generate_static_memory(persona: Persona, fact: str) -> StaticMemory:
+    """
+    Generate a static memory for the agent.
 
-        Args:
-            persona: The persona
-            fact: The fact
+    Args:
+        persona: The persona
+        fact: The fact
 
-        Returns:
-            StaticMemory: The static memory
-        """
-        prompt = MEMORY_GEN_PROMPT.format(
-                agent_prompt=load_system_prompt(), 
-                persona=persona, 
-                fact=fact
-            )
-        response = get_model_response(
-                prompt=prompt, 
-                model=OPENROUTER_SONNET,
-                schema=StaticMemory
-            )
-        
-        return response
+    Returns:
+        StaticMemory: The static memory
+    """
+    prompt = MEMORY_GEN_PROMPT.format(
+        agent_prompt=load_system_prompt(), persona=persona, fact=fact
+    )
+    response = get_model_response(
+        prompt=prompt, model=OPENROUTER_SONNET, schema=StaticMemory
+    )
+
+    return response
 
 
 def generate_question_prompt(persona: Persona, fact: str) -> str:
@@ -117,7 +110,7 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         List[Dict]: The SkyRL dataset
     """
     dataset: List[Dict] = []
-    
+
     # Create a coroutine to generate content for each fact
     async def process_fact(persona, fact):
         # Run these operations concurrently
@@ -127,12 +120,14 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         question_task = asyncio.create_task(
             asyncio.to_thread(generate_question_prompt, persona, fact.fact_description)
         )
-        
+
         # Wait for both tasks to complete
-        static_memory, question = await asyncio.gather(static_memory_task, question_task)
+        static_memory, question = await asyncio.gather(
+            static_memory_task, question_task
+        )
 
         return {
-             "data_source": "obsidian-retrieval",
+            "data_source": "obsidian-retrieval",
             "prompt": [
                 {
                     "role": "user",
@@ -140,26 +135,21 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
                 }
             ],
             "env_class": "obsidian-retrieval",
-            "reward_spec": {
-                "method": "rule",
-                "ground_truth": fact.fact_description
-            },
-            "extra_info": {
-                "static_memory": static_memory.model_dump_json()
-            }
+            "reward_spec": {"method": "rule", "ground_truth": fact.fact_description},
+            "extra_info": {"static_memory": static_memory.model_dump_json()},
         }
-    
+
     # Create tasks for all facts in all personas
     tasks = []
     for item in kb.items:
         persona = item.persona
         for fact in item.facts:
             tasks.append(process_fact(persona, fact))
-    
+
     # Run all tasks concurrently and collect results
     async def gather_all():
         return await asyncio.gather(*tasks)
-    
+
     results = asyncio.run(gather_all())
     dataset.extend(results)
     if save:
@@ -174,12 +164,12 @@ def main():
     """Generate knowledge base with personas for Groningen, Netherlands in 2025."""
     scenario = "Groningen, the Netherlands in 2025"
     print(f"Generating knowledge base for scenario: {scenario}")
-    
+
     # Create KB with personas and save to file
     # personas = generate_personas(8, scenario, save=True)
     # kb = generate_kb(personas, save=True)
     kb = load_kb_from_json()
-    
+
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
     print("Building SkyRL dataset...")
@@ -190,5 +180,6 @@ def main():
     format_dataset()
     print("Dataset formatted successfully.")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

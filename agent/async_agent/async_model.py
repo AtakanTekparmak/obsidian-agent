@@ -3,8 +3,15 @@ from pydantic import BaseModel
 
 from typing import Optional, Union
 
-from agent.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_STRONG_MODEL, VLLM_HOST, VLLM_PORT
+from agent.settings import (
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
+    OPENROUTER_STRONG_MODEL,
+    VLLM_HOST,
+    VLLM_PORT,
+)
 from agent.schemas import ChatMessage, Role
+
 
 def create_async_openai_client() -> AsyncOpenAI:
     """Create a new AsyncOpenAI client instance."""
@@ -13,12 +20,14 @@ def create_async_openai_client() -> AsyncOpenAI:
         base_url=OPENROUTER_BASE_URL,
     )
 
+
 def create_async_vllm_client(host: str = "0.0.0.0", port: int = 8000) -> AsyncOpenAI:
     """Create a new async vLLM client instance (OpenAI-compatible)."""
     return AsyncOpenAI(
         base_url=f"http://{host}:{port}/v1",
         api_key="EMPTY",  # vLLM doesn't require a real API key
     )
+
 
 def _as_dict(msg: Union[ChatMessage, dict]) -> dict:
     """
@@ -32,13 +41,14 @@ def _as_dict(msg: Union[ChatMessage, dict]) -> dict:
     """
     return msg if isinstance(msg, dict) else msg.model_dump()
 
+
 async def get_model_response(
-        messages: Optional[list[ChatMessage]] = None,
-        message: Optional[str] = None,
-        system_prompt: Optional[str] = None,
-        model: str = OPENROUTER_STRONG_MODEL,
-        client: Optional[AsyncOpenAI] = None,
-        use_vllm: bool = False,
+    messages: Optional[list[ChatMessage]] = None,
+    message: Optional[str] = None,
+    system_prompt: Optional[str] = None,
+    model: str = OPENROUTER_STRONG_MODEL,
+    client: Optional[AsyncOpenAI] = None,
+    use_vllm: bool = False,
 ) -> Union[str, BaseModel]:
     """
     Get a response from a model using OpenRouter or vLLM asynchronously, with optional schema for structured output.
@@ -68,21 +78,21 @@ async def get_model_response(
     if messages is None:
         messages = []
         if system_prompt:
-            messages.append(_as_dict(ChatMessage(role=Role.SYSTEM, content=system_prompt)))
+            messages.append(
+                _as_dict(ChatMessage(role=Role.SYSTEM, content=system_prompt))
+            )
         messages.append(_as_dict(ChatMessage(role=Role.USER, content=message)))
     else:
         messages = [_as_dict(m) for m in messages]
 
     if use_vllm:
         completion = await client.chat.completions.create(
-            model=model,
-            messages=messages
+            model=model, messages=messages
         )
-            
+
         return completion.choices[0].message.content
     else:
         completion = await client.chat.completions.create(
-            model=model,
-            messages=messages
+            model=model, messages=messages, stop=["</reply>", "</python>"]
         )
-        return completion.choices[0].message.content 
+        return completion.choices[0].message.content

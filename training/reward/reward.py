@@ -5,10 +5,8 @@ from training.settings import GPT_O3
 
 from data.schemas.kb import Fact
 
-def get_reward(
-        folder_dump_str: str,
-        facts_to_check: list[Fact]
-    ) -> float:
+
+def get_reward(folder_dump_str: str, facts_to_check: list[Fact]) -> float:
     """
     Get the LLM-as-a-judge reward for the given folder dump and facts to check.
 
@@ -21,8 +19,6 @@ def get_reward(
     """
     judge_prompt = construct_judge_prompt(folder_dump_str, facts_to_check)
     judge_response = get_model_response(
-        schema=JudgeResponse,
-        prompt=judge_prompt,
-        model=GPT_O3
+        schema=JudgeResponse, prompt=judge_prompt, model=GPT_O3
     )
     return judge_response.ratio_of_facts_present

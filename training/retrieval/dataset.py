@@ -56,7 +56,7 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
         List[Dict]: The verifiers dataset
     """
     dataset: List[Dict] = []
-    
+
     # Create a coroutine to generate content for each fact
     async def process_fact(persona, fact):
         # Run these operations concurrently
@@ -66,25 +66,27 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
         question_task = asyncio.create_task(
             asyncio.to_thread(generate_question_prompt, persona, fact.fact_description)
         )
-        
+
         # Wait for both tasks to complete
-        static_memory, question = await asyncio.gather(static_memory_task, question_task)
-        
+        static_memory, question = await asyncio.gather(
+            static_memory_task, question_task
+        )
+
         return {
             "question": question,
             "answer": fact.fact_description,
             "task": "retrieval",
             "static_memory": static_memory,
-            "persona": persona.name_surname
+            "persona": persona.name_surname,
         }
-    
+
     # Create tasks for all facts in all personas
     tasks = []
     for item in kb.items:
         persona = item.persona
         for fact in item.facts:
             tasks.append(process_fact(persona, fact))
-    
+
     # Run all tasks concurrently and collect results
     results = asyncio.run(asyncio.gather(*tasks))
     dataset.extend(results)
@@ -92,6 +94,7 @@ def build_verifiers_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]
         with open(VERIFIERS_DATASET_PATH, "w") as f:
             json.dump(dataset, f)
     return dataset
+
 
 def load_verifiers_dataset(path: str = VERIFIERS_DATASET_PATH) -> List[Dict]:
     """
@@ -111,7 +114,9 @@ def load_verifiers_dataset(path: str = VERIFIERS_DATASET_PATH) -> List[Dict]:
         return []
 
 
-def create_kb_with_personas(num_personas: int, scenario: str, save: bool = False) -> KnowledgeBase:
+def create_kb_with_personas(
+    num_personas: int, scenario: str, save: bool = False
+) -> KnowledgeBase:
     """
     Utility to generate personas and KB in one go.
 

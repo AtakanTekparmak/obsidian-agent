@@ -4,10 +4,12 @@ from data.schemas.base import BaseSchema
 
 from agent.utils import create_memory_if_not_exists
 
+
 class EntityFile(BaseSchema):
     entity_name: str
     entity_file_path: str
     entity_file_content: str
+
 
 class StaticMemory(BaseSchema):
     user_md: str
@@ -25,7 +27,7 @@ class StaticMemory(BaseSchema):
             entity_file_path = os.path.join(path, entity.entity_file_path)
             with open(entity_file_path, "w") as f:
                 f.write(entity.entity_file_content)
-    
+
     def to_json(self):
         """
         Return a dictionary representation for JSON serialization.
@@ -33,9 +35,9 @@ class StaticMemory(BaseSchema):
         return {
             "guideline": self.guideline,
             "user_file_path": self.user_file_path,
-            "user_file_content": self.user_file_content
+            "user_file_content": self.user_file_content,
         }
-            
+
 
 class FactUpdate(BaseSchema):
     initial_fact: str
