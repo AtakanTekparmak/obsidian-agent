@@ -117,7 +117,8 @@ run-retrieval:
 	@if [ -z "$${OBSIDIAN_ROOT}" ]; then \
 		export OBSIDIAN_ROOT="$$(pwd)"; \
 	fi; \
-	cd SkyRL/skyrl-train && PYTHONPATH="$${OBSIDIAN_ROOT}:$$PYTHONPATH" uv run --isolated --extra vllm python "$${OBSIDIAN_ROOT}/training/retrieval/main_retrieval.py"
+	cd SkyRL/skyrl-train && PYTHONPATH="$${OBSIDIAN_ROOT}:$$PYTHONPATH" uv run --isolated --extra vllm python "$${OBSIDIAN_ROOT}/training/retrieval/main_retrieval.py" \
+		'generator.sampling_params.stop=["</reply>","</python>"]'
 
 # Generate knowledge base with personas for training
 generate-kb:
