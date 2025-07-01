@@ -143,7 +143,8 @@ def main():
             "sampling_params": {
                 "temperature": 0.7,
                 "top_p": 0.9,
-                "max_generate_length": 2048
+                "max_generate_length": 2048,
+                "stop": ["</reply>", "</python>"]
             },
             "max_input_length": 16384,
             "async_engine": False,
