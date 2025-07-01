@@ -118,9 +118,9 @@ class Agent:
 
         # Extract the thoughts, reply and python code from the response
         thoughts, reply, python_code = self.extract_response_parts(response)
+        result = None
 
         # Execute the code from the agent's response
-        result = ({}, "")
         if python_code:
             create_memory_if_not_exists(self.memory_path)
             result = execute_sandboxed_code(
@@ -133,7 +133,12 @@ class Agent:
         self._add_message(ChatMessage(role=Role.ASSISTANT, content=response))
 
         remaining_tool_turns = self.max_tool_turns
-        while remaining_tool_turns > 0 and not reply:
+        while (
+            remaining_tool_turns > 0
+            and len(reply) == 0
+            and result is not None
+            and len(python_code) > 0
+        ):
             self._add_message(
                 ChatMessage(role=Role.USER, content=format_results(result))
             )
