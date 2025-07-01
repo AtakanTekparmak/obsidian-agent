@@ -7,6 +7,7 @@ from pathlib import Path
 from agent.settings import MEMORY_PATH
 from agent.utils import check_size_limits, create_memory_if_not_exists
 
+
 def get_size(file_or_dir_path: str) -> int:
     """
     Get the size of a file or directory.
@@ -19,11 +20,12 @@ def get_size(file_or_dir_path: str) -> int:
     """
     return os.path.getsize(file_or_dir_path)
 
+
 def create_file(file_path: str, content: str = "") -> bool:
     """
     Create a new file in the memory with the given content (if any).
-    First create a temporary file with the given content, check if 
-    the size limits are respected, if so, move the temporary file to 
+    First create a temporary file with the given content, check if
+    the size limits are respected, if so, move the temporary file to
     the final destination.
 
     Args:
@@ -36,10 +38,10 @@ def create_file(file_path: str, content: str = "") -> bool:
     try:
         # Create a unique temporary file name to avoid conflicts
         temp_file_path = f"temp_{uuid.uuid4().hex[:8]}.txt"
-        
+
         with open(temp_file_path, "w") as f:
             f.write(content)
-        
+
         if check_size_limits(temp_file_path):
             # Move the temporary file to the final destination
             with open(file_path, "w") as f:
@@ -51,7 +53,8 @@ def create_file(file_path: str, content: str = "") -> bool:
             return False
     except Exception:
         return False
-    
+
+
 def create_dir(dir_path: str) -> bool:
     """
     Create a new directory in the memory.
@@ -67,6 +70,7 @@ def create_dir(dir_path: str) -> bool:
         return True
     except Exception:
         return False
+
 
 def write_to_file(file_path: str, diff: str) -> bool:
     """
@@ -89,7 +93,7 @@ def write_to_file(file_path: str, diff: str) -> bool:
     workdir = Path(file_path).expanduser().resolve().parent
 
     # Stash the diff text in a temp file; Git only reads from disk.
-    with tempfile.NamedTemporaryFile("w+", delete=False) as tmp:
+    with tempfile.NamedTemporaryFile("w+", delete=False, dir=workdir) as tmp:
         tmp.write(diff)
         patch_file = tmp.name
 
@@ -115,7 +119,8 @@ def write_to_file(file_path: str, diff: str) -> bool:
         return apply.returncode == 0
     finally:
         os.remove(patch_file)
-    
+
+
 def read_file(file_path: str) -> str:
     """
     Read a file in the memory.
@@ -130,20 +135,21 @@ def read_file(file_path: str) -> str:
         # Ensure the file path is properly resolved
         if not os.path.exists(file_path):
             return f"Error: File {file_path} does not exist"
-        
+
         if not os.path.isfile(file_path):
             return f"Error: {file_path} is not a file"
-            
+
         with open(file_path, "r") as f:
             return f.read()
     except PermissionError:
         return f"Error: Permission denied accessing {file_path}"
     except Exception as e:
         return f"Error: {e}"
-    
+
+
 def list_files(dir_path: str = None) -> list[str]:
     """
-    List all files and directories in the memory. Full paths 
+    List all files and directories in the memory. Full paths
     are returned and directories are searched recursively. An
     example of the output is:
     ["dir/a.txt", "dir/b.txt", "dir/subdir/c.txt", "d.txt"]
@@ -158,14 +164,14 @@ def list_files(dir_path: str = None) -> list[str]:
         # Use current directory if dir_path is None
         if dir_path is None:
             dir_path = os.getcwd()
-        
+
         # Ensure dir_path is absolute for consistent path handling
         dir_path = os.path.abspath(dir_path)
-        
+
         # Check if the directory exists
         if not os.path.exists(dir_path) or not os.path.isdir(dir_path):
             return [f"Error: Directory {dir_path} does not exist or is not a directory"]
-            
+
         result_files = []
         for root, _, files_list in os.walk(dir_path):
             for file in files_list:
@@ -180,7 +186,8 @@ def list_files(dir_path: str = None) -> list[str]:
         return result_files
     except Exception as e:
         return [f"Error: {e}"]
-    
+
+
 def delete_file(file_path: str) -> bool:
     """
     Delete a file in the memory.
@@ -196,7 +203,8 @@ def delete_file(file_path: str) -> bool:
         return True
     except Exception:
         return False
-    
+
+
 def go_to_link(link_string: str) -> str:
     """
     Go to a link in the memory and return the content of the note Y. A link in a note X to a note Y, with the
@@ -213,18 +221,18 @@ def go_to_link(link_string: str) -> str:
         # Handle Obsidian-style links: [[path/to/note]] -> path/to/note.md
         if link_string.startswith("[[") and link_string.endswith("]]"):
             file_path = link_string[2:-2]  # Remove [[ and ]]
-            if not file_path.endswith('.md'):
-                file_path += '.md'
+            if not file_path.endswith(".md"):
+                file_path += ".md"
         else:
             file_path = link_string
-            
+
         # Ensure the file path is properly resolved
         if not os.path.exists(file_path):
             return f"Error: File {file_path} not found"
-        
+
         if not os.path.isfile(file_path):
             return f"Error: {file_path} is not a file"
-            
+
         with open(file_path, "r") as f:
             return f.read()
     except PermissionError:
@@ -232,13 +240,14 @@ def go_to_link(link_string: str) -> str:
     except Exception as e:
         return f"Error: {e}"
 
+
 def check_if_file_exists(file_path: str) -> bool:
     """
     Check if a file exists in the given filepath.
-    
+
     Args:
         file_path: The path to the file.
-        
+
     Returns:
         True if the file exists and is a file, False otherwise.
     """
@@ -247,13 +256,14 @@ def check_if_file_exists(file_path: str) -> bool:
     except (OSError, TypeError, ValueError):
         return False
 
+
 def check_if_dir_exists(dir_path: str) -> bool:
     """
     Check if a directory exists in the given filepath.
-    
+
     Args:
         dir_path: The path to the directory.
-        
+
     Returns:
         True if the directory exists and is a directory, False otherwise.
     """
@@ -261,4 +271,3 @@ def check_if_dir_exists(dir_path: str) -> bool:
         return os.path.exists(dir_path) and os.path.isdir(dir_path)
     except (OSError, TypeError, ValueError):
         return False
-
