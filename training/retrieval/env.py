@@ -164,13 +164,14 @@ class RetrievalEnv(BaseTextEnv):
         
         # Parse the response
         reply, python_code = self.parse_response(action)
+        python_code_present = len(python_code) > 0
 
         # Initialize variables for execution results
         local_vars = {}
         error_msg = ""
 
         # Execute the python code if present
-        if python_code:
+        if python_code_present:
             local_vars, error_msg = execute_sandboxed_code(
                 code=python_code,
                 allowed_path=self.memory_path,
@@ -181,7 +182,7 @@ class RetrievalEnv(BaseTextEnv):
             self.messages.append(ChatMessage(role=Role.USER, content=env_response))
 
         # Check if we should terminate
-        if reply or self.step_count >= self.max_turns:
+        if (reply or self.step_count >= self.max_turns) and not python_code_present:
             # Get the ground truth
             ground_truth = str(self.ground_truth).strip()
             
@@ -211,19 +212,9 @@ class RetrievalEnv(BaseTextEnv):
             )
         else:
             # Return the environment response as an observation
-            # Note: env_response was already added to messages if python_code was executed
-            if python_code:
-                return BaseTextEnvStepOutput(
-                    observations=[{"role": "user", "content": env_response}],
-                    done=False,
-                    reward=0,
-                    metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
-                )
-            else:
-                # No code executed, just continue
-                return BaseTextEnvStepOutput(
-                    observations=[],
-                    done=False,
-                    reward=0,
-                    metadata={"step": self.step_count}
-                )
+            return BaseTextEnvStepOutput(
+                observations=[{"role": "user", "content": env_response}],
+                done=False,
+                reward=0,
+                metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
+            )
