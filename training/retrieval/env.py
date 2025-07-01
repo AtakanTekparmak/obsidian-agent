@@ -189,7 +189,8 @@ class RetrievalEnv(BaseTextEnv):
             if reply:
                 reward_bool = get_reward(
                     agent_reply=reply,
-                    ground_truth=ground_truth
+                    ground_truth=ground_truth,
+                    debug=self.debug_mode
                 )
                 # Convert boolean to float reward (1.0 for correct, 0.0 for incorrect)
                 reward = 1.0 if reward_bool else 0.0
