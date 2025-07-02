@@ -196,7 +196,7 @@ class RetrievalEnv(BaseTextEnv):
                     debug=self.debug_mode
                 )
                 # Convert boolean to float reward (1.0 for correct, 0.0 for incorrect)
-                reward = 1.0 if reward_bool else 0.1
+                reward = 1.0 if reward_bool else 0.1 # format reward for giving a <reply> block and not giving a <python> block
             else:
                 # No reply after max turns, assign 0 reward
                 reward = 0.0
@@ -217,7 +217,7 @@ class RetrievalEnv(BaseTextEnv):
                 return BaseTextEnvStepOutput(
                     observations=[{"role": "user", "content": env_response}],
                     done=False,
-                    reward=0.1,
+                    reward=0.1, # format reward for giving a <python> block and not giving a <reply> block
                     metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
                 )
             else:
