@@ -1,7 +1,7 @@
-
 from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
+
 
 class Role(str, Enum):
     SYSTEM = "system"
@@ -9,9 +9,11 @@ class Role(str, Enum):
     ASSISTANT = "assistant"
     TOOL = "tool"
 
+
 class ChatMessage(BaseModel):
     role: Role
     content: str
+
 
 class AgentResponse(BaseModel):
     thoughts: str
