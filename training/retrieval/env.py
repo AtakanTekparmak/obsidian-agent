@@ -196,7 +196,7 @@ class RetrievalEnv(BaseTextEnv):
                     debug=self.debug_mode
                 )
                 # Convert boolean to float reward (1.0 for correct, 0.0 for incorrect)
-                reward = 1.0 if reward_bool else 0.0
+                reward = 1.0 if reward_bool else 0.1
             else:
                 # No reply after max turns, assign 0 reward
                 reward = 0.0
