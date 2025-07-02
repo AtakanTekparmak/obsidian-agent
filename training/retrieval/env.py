@@ -127,6 +127,10 @@ class RetrievalEnv(BaseTextEnv):
 
     def init(self, prompt):
         """Initialize the environment with the initial prompt."""
+
+        # Reset the environment
+        self.reset()
+
         # Store the initial prompt
         self.initial_prompt = prompt
         
@@ -145,8 +149,9 @@ class RetrievalEnv(BaseTextEnv):
         return reply, python_code
     
     def is_done(self, action: str) -> bool:
-        # Episode is done if agent provides a reply OR max turns reached
-        return bool(extract_reply(action)) or self.step_count >= self.max_turns
+        """Determine if the episode should terminate."""
+        reply, python_code = self.parse_response(action)
+        return (bool(reply) or self.step_count >= self.max_turns) and not python_code
     
     def save_conversation(self):
         conversation = Conversation(messages=self.messages)
@@ -184,7 +189,7 @@ class RetrievalEnv(BaseTextEnv):
             self.messages.append(ChatMessage(role=Role.USER, content=env_response))
 
         # Check if we should terminate
-        if (reply_present or self.step_count >= self.max_turns) and not python_code_present:
+        if self.is_done(action):
             # Get the ground truth
             ground_truth = str(self.ground_truth).strip()
             
