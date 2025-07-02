@@ -223,6 +223,7 @@ class RetrievalEnv(BaseTextEnv):
             else:
                 return BaseTextEnvStepOutput(
                     observations=[{"role": "user", "content": "Wrong format. Please provide either a </reply> or </python> block."}],
+                    done=False,
                     reward=0,
                     metadata={"step": self.step_count}
                 )
