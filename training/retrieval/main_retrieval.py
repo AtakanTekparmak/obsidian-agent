@@ -148,7 +148,7 @@ def main():
             "backend": "vllm",
             "num_inference_engines": 2,
             "inference_engine_tensor_parallel_size": 2,
-            "n_samples_per_prompt": 4,
+            "n_samples_per_prompt": 1,
             "sampling_params": {
                 "temperature": 0.7,
                 "top_p": 0.9,
