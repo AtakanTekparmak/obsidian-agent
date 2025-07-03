@@ -42,8 +42,8 @@ class ObsidianRetrievalEnv(BaseTextEnv):
         self.ground_truth = extras["reward_spec"]["ground_truth"]
 
         if DEBUG_MODE:
-            print(f"DEBUG: Reward spec: {extras['reward_spec']}")
-            print(f"DEBUG: Ground truth: {self.ground_truth}")
+            logger.debug(f"DEBUG: Reward spec: {extras['reward_spec']}")
+            logger.debug(f"DEBUG: Ground truth: {self.ground_truth}")
 
         # Store maximum number of turns
         self.max_turns =  MAX_TOOL_TURNS
@@ -61,7 +61,7 @@ class ObsidianRetrievalEnv(BaseTextEnv):
             self.static_memory_data = extras["extra_info"]["static_memory"]
 
         if DEBUG_MODE:
-            print(f"DEBUG: Static memory data: {self.static_memory_data}")
+            logger.debug(f"DEBUG: Static memory data: {self.static_memory_data}")
 
         # Initialise messages and initial prompt
         self.messages = []
@@ -92,6 +92,7 @@ class ObsidianRetrievalEnv(BaseTextEnv):
 
         # Generate a new agent UUID
         agent_uuid = str(uuid.uuid4())
+        self.agent_uuid = agent_uuid
 
         # Set the memory path
         self.memory_path = os.path.join(memory_dir, f"memory_{agent_uuid}")
@@ -119,10 +120,10 @@ class ObsidianRetrievalEnv(BaseTextEnv):
                 static_memory.instantiate(self.memory_path)
                 
                 if DEBUG_MODE:
-                    print(f"DEBUG: Static memory instantiated at {self.memory_path}")
+                    logger.debug(f"DEBUG: Static memory instantiated at {self.memory_path}")
                 
             except Exception as e:
-                print(f"Error instantiating static memory: {e}")
+                logger.error(f"Error instantiating static memory: {e}")
                 # Clean up on error
                 if os.path.exists(self.memory_path):
                     delete_memory(self.memory_path)
@@ -171,7 +172,7 @@ class ObsidianRetrievalEnv(BaseTextEnv):
     
     def step(self, action: str) -> BaseTextEnvStepOutput:
         if self.debug_mode:
-            logger.debug(f"DEBUG: Step {self.step_count} - Action: {action}")
+            logger.debug(f"DEBUG: Agent {self.agent_uuid}: Step {self.step_count} - Action: {action}")
 
         self.messages.append(ChatMessage(role=Role.ASSISTANT, content=action))
         self.step_count += 1
@@ -206,12 +207,11 @@ class ObsidianRetrievalEnv(BaseTextEnv):
             ground_truth = str(self.ground_truth).strip()
 
             if DEBUG_MODE:
-                print(f"DEBUG: Ground truth: {ground_truth}")
-                print(f"DEBUG: Agent reply: {reply}")
-                print(f"DEBUG: Python code present: {python_code_present}")
-                print(f"DEBUG: Reply present: {reply_present}")
-                print(f"DEBUG: Step count: {self.step_count}")
-                print(f"DEBUG: Max turns: {self.max_turns}")
+                logger.debug(f"DEBUG: Agent {self.agent_uuid}: Ground truth: {ground_truth}")
+                logger.debug(f"DEBUG: Agent {self.agent_uuid}: Python code present: {python_code_present}")
+                logger.debug(f"DEBUG: Agent {self.agent_uuid}: Reply present: {reply_present}")
+                logger.debug(f"DEBUG: Agent {self.agent_uuid}: Step count: {self.step_count}")
+                logger.debug(f"DEBUG: Agent {self.agent_uuid}: Max turns: {self.max_turns}")
             
             # Calculate reward based on whether agent replied and if reply contains ground truth
             if reply_present:
@@ -250,7 +250,7 @@ class ObsidianRetrievalEnv(BaseTextEnv):
         else:
             if python_code_present and not reply_present:
                 if self.debug_mode:
-                    logger.debug(f"DEBUG: Python code present but no reply - Step {self.step_count}")
+                    logger.debug(f"DEBUG: Agent {self.agent_uuid}: Python code present but no reply - Step {self.step_count}")
 
                 return BaseTextEnvStepOutput(
                     observations=[{"role": "user", "content": env_response}],
@@ -260,7 +260,7 @@ class ObsidianRetrievalEnv(BaseTextEnv):
                 )
             else:
                 if self.debug_mode:
-                    logger.debug(f"DEBUG: No reply or python code - Step {self.step_count}")
+                    logger.debug(f"DEBUG: Agent {self.agent_uuid}: No reply or python code - Step {self.step_count}")
 
                 return BaseTextEnvStepOutput(
                     observations=[{"role": "user", "content": "Wrong format. Please provide either a </reply> or </python> block."}],
