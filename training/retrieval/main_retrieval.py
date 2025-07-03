@@ -27,8 +27,8 @@ import skyrl_gym.error
 # Register the environment at module level (only once)
 try:
     register(
-        id="obsidian-retrieval-env",
-        entry_point="training.retrieval.new_env:ObsidianRetrievalEnv",
+        id="obsidian-retrieval",
+        entry_point="training.retrieval.env:RetrievalEnv",
     )
     print("Successfully registered obsidian-retrieval environment")
 except skyrl_gym.error.RegistrationError:
@@ -70,16 +70,16 @@ def main_remote(cfg: DictConfig):
 
 def main():
     """Main function that parses arguments and launches training."""
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Obsidian Retrieval Training with SkyRL')
+    # Parse --single-agent flag separately
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--single-agent', action='store_true', 
-                       help='Run single agent for debugging (sets batch sizes to 1)')
+                        help='Run a single agent rollout for diagnostic purposes')
     
-    # Parse known args to separate our flags from SkyRL config overrides
-    args, unknown_args = parser.parse_known_args()
+    # Parse known args (just --single-agent) and leave the rest as overrides
+    args, remaining_args = parser.parse_known_args()
     
-    # The remaining arguments are SkyRL config overrides in key=value format
-    overrides = unknown_args
+    # The remaining args are the key=value overrides for OmegaConf
+    overrides = remaining_args
     
     # Calculate obsidian_root path early so we can use it in base_config
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -89,7 +89,7 @@ def main():
     base_config = {
         # Environment settings
         "environment": {
-            "env_class": "obsidian-retrieval-env",
+            "env_class": "obsidian-retrieval",
             "skyrl_gym": {
                 "env_kwargs": {},
                 "extras": {}
@@ -161,44 +161,40 @@ def main():
         }
     }
     
-    # Apply single-agent debugging configuration if requested
+    # If --single-agent flag is set, modify configuration for single agent diagnostic
     if args.single_agent:
-        print("🔍 Single-agent debugging mode enabled!")
-        print("   - Setting all batch sizes to 1")
-        print("   - Using 1 sample per prompt")
-        print("   - Reducing GPU requirements")
-        print("   - Enabling more verbose logging")
+        print("\n=== SINGLE AGENT MODE ENABLED ===")
+        print("Running diagnostic mode with a single agent rollout\n")
         
-        # Adjust trainer settings for single-agent debugging
-        base_config["trainer"].update({
-            "train_batch_size": 1,
-            "policy_mini_batch_size": 1,
-            "micro_forward_batch_size_per_gpu": 1,
-            "micro_train_batch_size_per_gpu": 1,
-            "eval_batch_size": 1,
-            "placement": {
-                "colocate_all": True,
-                "policy_num_gpus_per_node": 1  # Use fewer GPUs for debugging
+        # Override settings for single agent diagnostic
+        single_agent_overrides = {
+            "trainer": {
+                "train_batch_size": 1,
+                "policy_mini_batch_size": 1,
+                "micro_forward_batch_size_per_gpu": 1,
+                "micro_train_batch_size_per_gpu": 1,
+                "eval_batch_size": 1,
+                "eval_before_train": False,  # Skip initial evaluation
+                "eval_interval": 1, 
+                "epochs": 1,
+                "run_name": "obsidian-retrieval-single-agent-diagnostic",
+                "output_dir": "./output/training/single-agent-diagnostic",
+                "logger": "console",  # Ensure console logging for diagnostics
             },
-            "num_policy_gpus": 4,
-            "num_rollout_gpus": 4,
-            "run_name": "obsidian-retrieval-single-agent-debug",
-            "output_dir": "./output/training/obsidian-retrieval-single-agent-debug",
-            "ckpt_path": "./output/training/obsidian-retrieval-single-agent-debug/ckpt",
-            "export_path": "./output/training/obsidian-retrieval-single-agent-debug/export",
-        })
-        
-        # Adjust generator settings for single-agent debugging
-        base_config["generator"].update({
-            "num_inference_engines": 1,
-            "inference_engine_tensor_parallel_size": 1,
-            "n_samples_per_prompt": 1,  # Only generate 1 sample per prompt
-            "sampling_params": {
-                "temperature": 0.1,  # Lower temperature for more deterministic behavior
-                "top_p": 0.9,
-                "max_generate_length": 2048
+            "generator": {
+                "n_samples_per_prompt": 1,  # Only generate one sample
+                "sampling_params": {
+                    "temperature": 0.7,  # Keep the same sampling params
+                    "top_p": 0.9,
+                    "max_generate_length": 2048
+                }
             }
-        })
+        }
+        
+        # Merge single agent overrides into base config
+        base_config = OmegaConf.merge(OmegaConf.create(base_config), 
+                                      OmegaConf.create(single_agent_overrides))
+        base_config = OmegaConf.to_container(base_config)
     
     # Load SkyRL's default PPO configuration. This ensures that all
     # required fields expected by ``skyrl_train`` are present.
@@ -228,6 +224,15 @@ def main():
     if overrides:
         override_cfg = OmegaConf.from_dotlist(overrides)
         cfg = OmegaConf.merge(cfg, override_cfg)
+    
+    if args.single_agent:
+        print("Final configuration for single agent mode:")
+        print(f"  train_batch_size: {cfg.trainer.train_batch_size}")
+        print(f"  n_samples_per_prompt: {cfg.generator.n_samples_per_prompt}")
+        print(f"  eval_before_train: {cfg.trainer.eval_before_train}")
+        print(f"  epochs: {cfg.trainer.epochs}")
+        print(f"  output_dir: {cfg.trainer.output_dir}")
+        print()
     
     print("Configuration:")
     print(OmegaConf.to_yaml(cfg))

@@ -31,12 +31,12 @@ help:
 	@echo "  9. build-dataset     Build the HF dataset and upload it to the Hub"
 	@echo "  10. generate-kb      Generate knowledge base with personas for training"
 	@echo "  11. run-retrieval   Run the retrieval training"
-	@echo "  12. debug-retrieval Run single-agent retrieval for debugging"
-	@echo "  13. clean-all        Remove all virtual environments and SkyRL repository"
-	@echo "  14. clean-agent      Remove agent virtual environment"
-	@echo "  15. clean-data       Remove data virtual environment"
-	@echo "  16. clean-training   Remove training virtual environment"
-	@echo "  17. clean-skyrl      Remove SkyRL repository"
+	@echo "  12. clean-all        Remove all virtual environments and SkyRL repository"
+	@echo "  13. clean-agent      Remove agent virtual environment"
+	@echo "  14. clean-data       Remove data virtual environment"
+	@echo "  15. clean-training   Remove training virtual environment"
+	@echo "  16. clean-skyrl      Remove SkyRL repository"
+	@echo "  17. run-retrieval-single  Run single agent diagnostic for retrieval training"
 
 # Check if uv is installed and install if needed
 check-uv:
@@ -120,9 +120,9 @@ run-retrieval:
 	fi; \
 	cd SkyRL/skyrl-train && PYTHONPATH="$${OBSIDIAN_ROOT}:$$PYTHONPATH" uv run --isolated --extra vllm python "$${OBSIDIAN_ROOT}/training/retrieval/main_retrieval.py"
 
-# Run single-agent retrieval for debugging
-debug-retrieval:
-	@echo "Running single-agent retrieval debugging..."
+# Run single agent diagnostic for retrieval training
+run-retrieval-single:
+	@echo "Running single agent diagnostic for retrieval training..."
 	@if [ -z "$${OBSIDIAN_ROOT}" ]; then \
 		export OBSIDIAN_ROOT="$$(pwd)"; \
 	fi; \
