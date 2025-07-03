@@ -20,6 +20,7 @@ from data.schemas.sft import StaticMemory
 
 # Constants
 DEBUG_MODE = True
+OBSIDIAN_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 class Conversation(BaseModel):
     messages: list[ChatMessage]
@@ -27,6 +28,17 @@ class Conversation(BaseModel):
 # Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+# Create a file handler
+file_handler = logging.FileHandler(os.path.join(OBSIDIAN_ROOT, "logs", "obsidian_retrieval_env.log"))
+file_handler.setLevel(logging.DEBUG)
+
+# Create a formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
 
 class ObsidianRetrievalEnv(BaseTextEnv):
     def __init__(self, env_config: dict[str, Any] = {}, extras: dict[str, Any] = {}):
@@ -79,9 +91,8 @@ class ObsidianRetrievalEnv(BaseTextEnv):
 
         # Create a new memory path with absolute path
         # Use the obsidian-agent root directory to ensure consistency
-        obsidian_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        memory_dir = os.path.join(obsidian_root, "memory")
-        conversation_dir = os.path.join(obsidian_root, "conversations")
+        memory_dir = os.path.join(OBSIDIAN_ROOT, "memory")
+        conversation_dir = os.path.join(OBSIDIAN_ROOT, "conversations")
 
         # Create memory and conversation directories if they don't exist
         if not os.path.exists(memory_dir):
