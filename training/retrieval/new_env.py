@@ -3,6 +3,7 @@ import uuid
 import os
 import json
 from enum import Enum
+import logging
 
 from skyrl_gym.envs.base_text_env import BaseTextEnv, BaseTextEnvStepOutput
 from pydantic import BaseModel
@@ -22,6 +23,10 @@ DEBUG_MODE = True
 
 class Conversation(BaseModel):
     messages: list[ChatMessage]
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 class ObsidianRetrievalEnv(BaseTextEnv):
     def __init__(self, env_config: dict[str, Any] = {}, extras: dict[str, Any] = {}):
@@ -165,6 +170,9 @@ class ObsidianRetrievalEnv(BaseTextEnv):
             raise
     
     def step(self, action: str) -> BaseTextEnvStepOutput:
+        if self.debug_mode:
+            logger.debug(f"DEBUG: Step {self.step_count} - Action: {action}")
+
         self.messages.append(ChatMessage(role=Role.ASSISTANT, content=action))
         self.step_count += 1
         
@@ -191,6 +199,9 @@ class ObsidianRetrievalEnv(BaseTextEnv):
 
         # Check if we should terminate
         if self.is_done(action):
+            if self.debug_mode:
+                logger.debug(f"DEBUG: Episode terminated at step {self.step_count}")
+
             # Get the ground truth
             ground_truth = str(self.ground_truth).strip()
 
@@ -221,15 +232,26 @@ class ObsidianRetrievalEnv(BaseTextEnv):
 
             self.save_conversation()
 
-            return BaseTextEnvStepOutput(
-                observations=[],
-                done=True,
-                reward=reward,
-                metadata={"reply": reply, "max_turns_reached": self.step_count >= self.max_turns}
+            if not self.step_count >= self.max_turns:
+                return BaseTextEnvStepOutput(
+                    observations=[],
+                    done=True,
+                    reward=reward,
+                    metadata={"reply": reply, "max_turns_reached": self.step_count >= self.max_turns}
+                )
+            else:
+                return BaseTextEnvStepOutput(
+                    observations=[{"role": "user", "content": "Max turns reached."}],
+                    done=True,
+                    reward=0.0,
+                    metadata={"step": self.step_count}
             )
         
         else:
             if python_code_present and not reply_present:
+                if self.debug_mode:
+                    logger.debug(f"DEBUG: Python code present but no reply - Step {self.step_count}")
+
                 return BaseTextEnvStepOutput(
                     observations=[{"role": "user", "content": env_response}],
                     done=False,
@@ -237,6 +259,9 @@ class ObsidianRetrievalEnv(BaseTextEnv):
                     metadata={"python_code": python_code, "env_response": env_response, "step": self.step_count}
                 )
             else:
+                if self.debug_mode:
+                    logger.debug(f"DEBUG: No reply or python code - Step {self.step_count}")
+
                 return BaseTextEnvStepOutput(
                     observations=[{"role": "user", "content": "Wrong format. Please provide either a </reply> or </python> block."}],
                     done=False,
