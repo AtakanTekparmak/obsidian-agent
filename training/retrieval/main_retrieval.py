@@ -180,8 +180,8 @@ def main():
                 "colocate_all": True,
                 "policy_num_gpus_per_node": 1  # Use fewer GPUs for debugging
             },
-            "num_policy_gpus": 1,
-            "num_rollout_gpus": 1,
+            "num_policy_gpus": 2,
+            "num_rollout_gpus": 2,
             "run_name": "obsidian-retrieval-single-agent-debug",
             "output_dir": "./output/training/obsidian-retrieval-single-agent-debug",
             "ckpt_path": "./output/training/obsidian-retrieval-single-agent-debug/ckpt",
