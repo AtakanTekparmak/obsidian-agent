@@ -11,6 +11,7 @@ from agent.agent import Agent
 from agent.async_agent.async_model import get_model_response
 from judge import JUDGE_PROMPT
 import re
+from agent.utils import extract_reply
 
 
 def capture_xml_tag(text, tag):
@@ -61,7 +62,7 @@ def read_jsonl(
             return [UpdateQAEntry(**json.loads(line)) for line in f]
 
 
-MODEL_NAME = "qwen/qwen3-14b"  # anthropic/claude-sonnet-4 #qwen/qwen3-14b #google/gemma-3-27b-it #google/gemma-3-12b-it #"google/gemini-2.5-pro"
+MODEL_NAME = "google/gemini-2.5-pro"  # anthropic/claude-sonnet-4 #qwen/qwen3-14b #google/gemma-3-27b-it #google/gemma-3-12b-it #"google/gemini-2.5-pro"
 JUDGE_NAME = "google/gemini-2.5-pro"
 TMP_DIR = "tmp_work"
 
@@ -84,6 +85,7 @@ async def evaluate_agents():
         folders = list_folders(base_path)
         print(f"Found folders: {folders}")
         # folders = folders[1:2]  # For testing, limit to the first folder
+        folders = ["1", "2"]
 
         for folder in tqdm(folders, desc="Folders"):
             src_folder_path = os.path.join(base_path, folder)
@@ -107,10 +109,23 @@ async def evaluate_agents():
                         )
                         retrieval_agent.chat(entry.question)
                         model_answer = retrieval_agent.messages[-1]
-                        # print(json.dumps([a.content for a in agent.messages[1:]], indent=4, ensure_ascii=False))
-                        # print("**Model Anwswer**")
-                        # print(json.dumps([a.content for a in retrieval_agent.messages[1:]], indent=4, ensure_ascii=False))
-                        # print("**"*10)
+                        answer = extract_reply(model_answer.content)
+                        print(
+                            json.dumps(
+                                [a.content for a in agent.messages[1:]],
+                                indent=4,
+                                ensure_ascii=False,
+                            )
+                        )
+                        print("**Model Anwswer**")
+                        print(
+                            json.dumps(
+                                [a.content for a in retrieval_agent.messages[1:]],
+                                indent=4,
+                                ensure_ascii=False,
+                            )
+                        )
+                        print("**" * 10)
                         # reset memory, keep the first message
                         agent.messages = [agent.messages[0]]
                         shutil.rmtree(tmp_folder_path)
@@ -119,13 +134,22 @@ async def evaluate_agents():
                         )
                         shutil.copy2(src_qa_path, tmp_qa_path)
                     else:
+                        agent.messages = [agent.messages[0]]
                         agent.chat(entry.question)
+                        print(
+                            json.dumps(
+                                [a.content for a in agent.messages[1:]],
+                                indent=4,
+                                ensure_ascii=False,
+                            )
+                        )
                         model_answer = agent.messages[-1]
+                        answer = extract_reply(model_answer.content)
 
                     jp = JUDGE_PROMPT.render(
                         question=entry.question,
                         correct_answer=entry.answer,
-                        answer=model_answer.content,
+                        answer=answer,
                         judge=entry.judge,
                     )
                     response = await get_model_response(
