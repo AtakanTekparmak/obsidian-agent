@@ -152,7 +152,8 @@ def main():
             "sampling_params": {
                 "temperature": 0.7,
                 "top_p": 0.9,
-                "max_generate_length": 2048
+                "max_generate_length": 2048,
+                "stop": ["</python>", "</reply>"]
             },
             "max_input_length": 16384,
             "async_engine": False,
@@ -186,7 +187,8 @@ def main():
                 "sampling_params": {
                     "temperature": 0.7,  # Keep the same sampling params
                     "top_p": 0.9,
-                    "max_generate_length": 2048
+                    "max_generate_length": 2048,
+                    "stop": ["</python>", "</reply>"]  # Keep stop tokens
                 }
             }
         }
