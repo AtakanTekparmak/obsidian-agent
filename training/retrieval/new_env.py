@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Create a file handler
-file_handler = logging.FileHandler(os.path.join(OBSIDIAN_ROOT, "logs", "obsidian_retrieval_env.log"))
+file_handler = logging.FileHandler(os.path.join("obsidian_retrieval_env.log"))
 file_handler.setLevel(logging.DEBUG)
 
 # Create a formatter
