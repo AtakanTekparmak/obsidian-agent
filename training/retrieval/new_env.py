@@ -29,8 +29,13 @@ class Conversation(BaseModel):
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# Create a file handler
-file_handler = logging.FileHandler("obsidian_retrieval_env.log")
+# Create logs directory if it doesn't exist
+logs_dir = os.path.join(OBSIDIAN_ROOT, "logs")
+os.makedirs(logs_dir, exist_ok=True)
+
+# Create a file handler with absolute path
+log_file_path = os.path.join(logs_dir, "obsidian_retrieval_env.log")
+file_handler = logging.FileHandler(log_file_path)
 file_handler.setLevel(logging.DEBUG)
 
 # Create a formatter
@@ -39,6 +44,15 @@ file_handler.setFormatter(formatter)
 
 # Add the file handler to the logger
 logger.addHandler(file_handler)
+
+# Also add a console handler for immediate feedback (optional)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)  # Show all debug messages in console
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# Log the log file location
+logger.info(f"Logging to: {log_file_path}")
 
 class ObsidianRetrievalEnv(BaseTextEnv):
     def __init__(self, env_config: dict[str, Any] = {}, extras: dict[str, Any] = {}):
