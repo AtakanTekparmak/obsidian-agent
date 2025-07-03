@@ -27,8 +27,8 @@ import skyrl_gym.error
 # Register the environment at module level (only once)
 try:
     register(
-        id="obsidian-retrieval",
-        entry_point="training.retrieval.env:RetrievalEnv",
+        id="obsidian-retrieval-env",
+        entry_point="training.retrieval.new_env:ObsidianRetrievalEnv",
     )
     print("Successfully registered obsidian-retrieval environment")
 except skyrl_gym.error.RegistrationError:
@@ -89,7 +89,7 @@ def main():
     base_config = {
         # Environment settings
         "environment": {
-            "env_class": "obsidian-retrieval",
+            "env_class": "obsidian-retrieval-env",
             "skyrl_gym": {
                 "env_kwargs": {},
                 "extras": {}
