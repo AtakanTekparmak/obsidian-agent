@@ -8,6 +8,7 @@ import ray
 from omegaconf import DictConfig, OmegaConf
 import sys
 import os
+import argparse
 
 # Add obsidian-agent root directory to Python path if running from SkyRL directory
 current_dir = os.getcwd()
@@ -26,8 +27,8 @@ import skyrl_gym.error
 # Register the environment at module level (only once)
 try:
     register(
-        id="obsidian-retrieval",
-        entry_point="training.retrieval.env:RetrievalEnv",
+        id="obsidian-retrieval-env",
+        entry_point="training.retrieval.new_env:ObsidianRetrievalEnv",
     )
     print("Successfully registered obsidian-retrieval environment")
 except skyrl_gym.error.RegistrationError:
@@ -69,8 +70,16 @@ def main_remote(cfg: DictConfig):
 
 def main():
     """Main function that parses arguments and launches training."""
-    # Parse command line arguments as key=value pairs
-    overrides = sys.argv[1:]
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Obsidian Retrieval Training with SkyRL')
+    parser.add_argument('--single-agent', action='store_true', 
+                       help='Run single agent for debugging (sets batch sizes to 1)')
+    
+    # Parse known args to separate our flags from SkyRL config overrides
+    args, unknown_args = parser.parse_known_args()
+    
+    # The remaining arguments are SkyRL config overrides in key=value format
+    overrides = unknown_args
     
     # Calculate obsidian_root path early so we can use it in base_config
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -80,7 +89,7 @@ def main():
     base_config = {
         # Environment settings
         "environment": {
-            "env_class": "obsidian-retrieval",
+            "env_class": "obsidian-retrieval-env",
             "skyrl_gym": {
                 "env_kwargs": {},
                 "extras": {}
@@ -112,7 +121,7 @@ def main():
                 "advantage_estimator": "grpo",
                 "use_kl_loss": False
             },
-            "epochs": 2,
+            "epochs": 1,
             "train_batch_size": 64,
             "policy_mini_batch_size": 32,
             "micro_forward_batch_size_per_gpu": 4,
@@ -151,6 +160,45 @@ def main():
             "max_turns": 8
         }
     }
+    
+    # Apply single-agent debugging configuration if requested
+    if args.single_agent:
+        print("🔍 Single-agent debugging mode enabled!")
+        print("   - Setting all batch sizes to 1")
+        print("   - Using 1 sample per prompt")
+        print("   - Reducing GPU requirements")
+        print("   - Enabling more verbose logging")
+        
+        # Adjust trainer settings for single-agent debugging
+        base_config["trainer"].update({
+            "train_batch_size": 1,
+            "policy_mini_batch_size": 1,
+            "micro_forward_batch_size_per_gpu": 1,
+            "micro_train_batch_size_per_gpu": 1,
+            "eval_batch_size": 1,
+            "placement": {
+                "colocate_all": True,
+                "policy_num_gpus_per_node": 1  # Use fewer GPUs for debugging
+            },
+            "num_policy_gpus": 1,
+            "num_rollout_gpus": 1,
+            "run_name": "obsidian-retrieval-single-agent-debug",
+            "output_dir": "./output/training/obsidian-retrieval-single-agent-debug",
+            "ckpt_path": "./output/training/obsidian-retrieval-single-agent-debug/ckpt",
+            "export_path": "./output/training/obsidian-retrieval-single-agent-debug/export",
+        })
+        
+        # Adjust generator settings for single-agent debugging
+        base_config["generator"].update({
+            "num_inference_engines": 1,
+            "inference_engine_tensor_parallel_size": 1,
+            "n_samples_per_prompt": 1,  # Only generate 1 sample per prompt
+            "sampling_params": {
+                "temperature": 0.1,  # Lower temperature for more deterministic behavior
+                "top_p": 0.9,
+                "max_generate_length": 2048
+            }
+        })
     
     # Load SkyRL's default PPO configuration. This ensures that all
     # required fields expected by ``skyrl_train`` are present.

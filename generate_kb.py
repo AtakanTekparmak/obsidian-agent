@@ -135,7 +135,7 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         static_memory, question = await asyncio.gather(static_memory_task, question_task)
 
         return {
-             "data_source": "obsidian-retrieval",
+            "data_source": "obsidian-retrieval",
             "prompt": [
                 {
                     "role": "system",
