@@ -194,7 +194,3 @@ output/conversations/
 
 # uv.lock
 **/uv.lock
-
-
-# data/eval
-data/eval/
