@@ -71,8 +71,7 @@ async def evaluate_agents():
     """
     Run agents on the retrieval evaluation dataset.
     """
-    # categories = ["retrieval", "clarification", "update"]
-    categories = ["retrieval"]
+    categories = ["retrieval", "clarification", "update"]
     evaluation_table = {"agent": MODEL_NAME, "avg": 0.0, "scores": []}
     os.makedirs(TMP_DIR, exist_ok=True)
     for category in categories:
@@ -84,8 +83,6 @@ async def evaluate_agents():
 
         folders = list_folders(base_path)
         print(f"Found folders: {folders}")
-        # folders = folders[1:2]  # For testing, limit to the first folder
-        folders = ["1", "2"]
 
         for folder in tqdm(folders, desc="Folders"):
             src_folder_path = os.path.join(base_path, folder)
@@ -110,6 +107,7 @@ async def evaluate_agents():
                         retrieval_agent.chat(entry.question)
                         model_answer = retrieval_agent.messages[-1]
                         answer = extract_reply(model_answer.content)
+                        """
                         print(
                             json.dumps(
                                 [a.content for a in agent.messages[1:]],
@@ -126,6 +124,7 @@ async def evaluate_agents():
                             )
                         )
                         print("**" * 10)
+                        """
                         # reset memory, keep the first message
                         agent.messages = [agent.messages[0]]
                         shutil.rmtree(tmp_folder_path)
