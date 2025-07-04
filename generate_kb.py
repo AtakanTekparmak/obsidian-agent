@@ -17,7 +17,7 @@ from agent.utils import load_system_prompt
 from training.retrieval.format_dataset import main as format_dataset
 
 # Define path directly to avoid imports from training package
-SKRL_DATASET_PATH = "output/datasets/skrl_dataset.json"
+BASE_DATASET_PATH = "output/datasets/base_dataset.json"
 
 QUESTION_GEN_PROMPT = """
 You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}.
@@ -106,15 +106,15 @@ def generate_question_prompt(persona: Persona, fact: str) -> str:
     return str(response)
 
 
-def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
+def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
     """
-    Construct a SkyRL dataset for retrieval.
+    Construct a base dataset for retrieval.
 
     Args:
         kb: The knowledge base
 
     Returns:
-        List[Dict]: The SkyRL dataset
+        List[Dict]: The base dataset
     """
     dataset: List[Dict] = []
     
@@ -135,7 +135,6 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         static_memory, question = await asyncio.gather(static_memory_task, question_task)
 
         return {
-            "data_source": "obsidian-retrieval",
             "prompt": [
                 {
                     "role": "system",
@@ -146,14 +145,9 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
                     "content": question,
                 }
             ],
-            "env_class": "obsidian-retrieval",
-            "reward_spec": {
-                "method": "rule",
-                "ground_truth": fact.fact_description
-            },
-            "extra_info": {
-                "static_memory": static_memory.model_dump_json()
-            }
+            "question": question,
+            "answer": fact.fact_description,
+            "static_memory": static_memory.model_dump_json()
         }
     
     # Create tasks for all facts in all personas
@@ -179,19 +173,18 @@ def build_skyrl_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
 
 def main():
     """Generate knowledge base with personas for Groningen, Netherlands in 2025."""
-    scenario = "Groningen, the Netherlands in 2025"
+    scenario = "Berlin, Germany in 2025"
     print(f"Generating knowledge base for scenario: {scenario}")
     
     # Create KB with personas and save to file
-    # personas = generate_personas(8, scenario, save=True)
-    # kb = generate_kb(personas, save=True)
-    kb = load_kb_from_json()
+    personas = generate_personas(16, scenario, save=True)
+    kb = generate_kb(personas, save=True)
     
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
-    print("Building SkyRL dataset...")
-    dataset = build_skyrl_dataset(kb, save=True)
-    print(f"SkyRL dataset built successfully with {len(dataset)} items.")
+    print("Building base dataset...")
+    dataset = build_base_dataset(kb, save=True)
+    print(f"Base dataset built successfully with {len(dataset)} items.")
 
     print("Formatting dataset...")
     format_dataset()
