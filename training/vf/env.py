@@ -111,6 +111,7 @@ class MemoryEnv(MultiTurnEnv):
         Response from the environment.
         """
         # Get the last message
+        print(messages)
         last_message = messages[-1]["content"]
 
         # Get the reply and python code
