@@ -9,6 +9,10 @@ from omegaconf import DictConfig, OmegaConf
 import sys
 import os
 import argparse
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add obsidian-agent root directory to Python path if running from SkyRL directory
 current_dir = os.getcwd()
@@ -130,12 +134,12 @@ def main():
             "eval_before_train": True,
             "eval_interval": 1,
             "max_prompt_length": 16384,
-            "logger": "console",
+            "logger": "wandb",
             "project_name": "obsidian-retrieval-skyrl",
-            "run_name": "obsidian-retrieval-qwen3-8b",
-            "output_dir": "./output/training/obsidian-retrieval-qwen3-8b",
-            "ckpt_path": "./output/training/obsidian-retrieval-qwen3-8b/ckpt",
-            "export_path": "./output/training/obsidian-retrieval-qwen3-8b/export",
+            "run_name": "obsidian-retrieval-qwen3-14b",
+            "output_dir": "./output/training/obsidian-retrieval-qwen3-14b",
+            "ckpt_path": "./output/training/obsidian-retrieval-qwen3-14b/ckpt",
+            "export_path": "./output/training/obsidian-retrieval-qwen3-14b/export",
             "save_strategy": "epoch",
             "save_total_limit": 4,
             "disable_fast_tokenizer": False,
