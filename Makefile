@@ -139,10 +139,10 @@ install-verifiers:
 	uv pip install flash-attn==2.7.4.post1 --no-build-isolation
 
 run-vf-llm:
-	CUDA_VISIBLE_DEVICES=0,1,2,3 uv run vf-vllm --model Qwen/Qwen3-14B
+	CUDA_VISIBLE_DEVICES=0,1,2,3 NCCL_P2P_LEVEL=NVL uv run vf-vllm --model Qwen/Qwen3-14B
 
 run-vf-ret:
-	CUDA_VISIBLE_DEVICES=4,5,6,7 uv run accelerate launch --config-file training/configs/rl/zero3.yaml run_vf_ret.py
+	CUDA_VISIBLE_DEVICES=4,5,6,7 NCCL_P2P_LEVEL=NVL uv run accelerate launch --config-file training/configs/rl/zero3.yaml --gpu_ids 4,5,6,7 run_vf_ret.py
 
 # Clean all virtual environments
 clean-all: clean-agent clean-data clean-training clean-skyrl
