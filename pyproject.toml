@@ -1,0 +1,28 @@
+[project]
+name = "obsidian-agent"
+version = "0.1.0"
+description = ""
+dependencies = [
+    # Agent dependencies
+    "openai",
+    "pydantic",
+    "python-dotenv",
+    "aiofiles",
+    # Training dependencies
+    "datasets",
+    "transformers",
+    "huggingface-hub",
+    "torch==2.6.0",
+    "accelerate",
+    "deepspeed",
+    "setuptools",
+    # Data dependencies
+    "tqdm",
+]
+requires-python = ">=3.12,<3.13"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "pytest-asyncio",
+]
