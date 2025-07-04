@@ -42,17 +42,6 @@ class StaticMemory(BaseSchema):
         except Exception as e:
             print(f"Error instantiating static memory at {path}: {e}")
             raise
-    
-    def to_json(self):
-        """
-        Return a dictionary representation for JSON serialization.
-        """
-        return {
-            "guideline": self.guideline,
-            "user_file_path": self.user_file_path,
-            "user_file_content": self.user_file_content
-        }
-            
 
 class FactUpdate(BaseSchema):
     initial_fact: str
