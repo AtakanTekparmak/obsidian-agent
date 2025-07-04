@@ -87,7 +87,7 @@ class MemoryEnv(MultiTurnEnv):
         if "content" in last_message:
             last_message = last_message["content"]
         else:
-            raise ValueError(f"Last message is not a dict with a 'content' key. \nObject: \n{last_message}\nType: {type(last_message)}")
+            raise ValueError(f"Last message is not a dict with a 'content' key. \nObject: \n{last_message}\nType: {type(last_message)}\nmessages: \n{messages}\n messages_type: {type(messages)}")
 
         # Get the reply and python code
         python_code, reply = self.parse_response(last_message)
