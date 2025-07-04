@@ -11,7 +11,7 @@ from verifiers.parsers import XMLParser
 from training.vf.rubric import MemoryRubric
 
 from agent.engine import execute_sandboxed_code
-from agent.utils import load_system_prompt, extract_reply, extract_python_code
+from agent.utils import load_system_prompt, extract_reply, extract_python_code, format_results
 from agent.settings import MAX_TOOL_TURNS, SANDBOX_TIMEOUT
 
 from data.schemas.sft import StaticMemory
@@ -20,6 +20,11 @@ from data.schemas.sft import StaticMemory
 OBSIDIAN_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 BASE_DATASET_PATH = os.path.join(OBSIDIAN_ROOT, "output", "datasets", "base_dataset.json")
 BASE_MEMORY_PATH = os.path.join(OBSIDIAN_ROOT, "memory", "base_memory")
+
+# Define undesired state exception
+class UndesiredStateError(Exception):
+    """Exception raised when the state is undesired."""
+    pass
 
 def load_dataset() -> Dataset:
     """Load the base dataset from the file."""
@@ -61,13 +66,18 @@ class MemoryEnv(MultiTurnEnv):
         # Set the memory path
         self.memory_path = memory_path
 
+    def parse_response(self, response: str) -> Tuple[str, str]:
+        """
+        Parse the response from the environment.
+        """
+        return extract_python_code(response), extract_reply(response)
+
     def is_completed(self, messages: List[Dict[str, str]], state: Dict[str, Any], **kwargs: Any) -> bool:
         # Get the last message
         last_message = messages[-1].content
 
         # Get the reply and python code
-        reply = extract_reply(last_message)
-        python_code = extract_python_code(last_message)
+        python_code, reply = self.parse_response(last_message)
 
         # Check if the episode should terminate
         python_code_present = len(python_code) > 0
@@ -78,26 +88,36 @@ class MemoryEnv(MultiTurnEnv):
             and not python_code_present
         )
 
-    def execute_python(self, code: str) -> str:
+    def execute_python(self, code: str) -> Tuple[Dict[str, Any], str]:
         locals_dict, error = execute_sandboxed_code(
             code,
             timeout=SANDBOX_TIMEOUT,
             allowed_path=self.memory_path,
             import_module="agent.tools",
         )
-        if error:
-            return error
         
-        # Combine the locals_dict and error into a dictionary
-        result = {
-            "locals": locals_dict,
-            "error": error
-        }
-        return str(result)
+        return locals_dict, error
     
-    # TODO
     def env_response(self, messages: List[Dict[str, str]], state: Dict[str, Any], **kwargs: Any) -> Tuple[Dict[str, str], Dict[str, Any]]:
         """
         Response from the environment.
         """
-        pass
+        # Get the last message
+        last_message = messages[-1].content
+
+        # Get the reply and python code
+        python_code, reply = self.parse_response(last_message)
+        python_code_present = len(python_code) > 0
+        reply_present = len(reply) > 0
+
+        if python_code_present:
+            locals_dict, error = self.execute_python(python_code)
+            
+            return {"role": "user", "content": format_results(locals_dict, error)}
+        
+        if not python_code_present and reply_present:
+            raise UndesiredStateError("The state is undesired. The agent has no reply but is_completed didn't trigger.")
+        
+        if not python_code_present and not reply_present:
+            return {"role": "user", "content": "You need to provide either a <python> block or a <reply> block."}
+        

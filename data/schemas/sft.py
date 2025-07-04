@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from data.schemas.base import BaseSchema
 
@@ -41,6 +42,21 @@ class StaticMemory(BaseSchema):
                     
         except Exception as e:
             print(f"Error instantiating static memory at {path}: {e}")
+            raise
+
+    def reset(self, path: str):
+        """
+        Reset the static memory inside the memory path.
+        """
+        try:
+            # Delete the memory directory
+            if os.path.exists(path):
+                shutil.rmtree(path)
+
+            # Call the instantiate method
+            self.instantiate(path)
+        except Exception as e:
+            print(f"Error resetting static memory at {path}: {e}")
             raise
 
 class FactUpdate(BaseSchema):
