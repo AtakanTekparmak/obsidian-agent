@@ -10,7 +10,7 @@ import wandb
 STATIC_MEMORY_PATH = "memory/base_agent_memory/"
 BASE_MEMORY_JSON_PATH = "output/static_mem/base_memory.json"
 
-MODEL_NAME = "Qwen/Qwen3-14B"
+MODEL_NAME = "Qwen/Qwen3-8B"
 
 def create_static_memory():
     """
