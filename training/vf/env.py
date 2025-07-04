@@ -112,10 +112,11 @@ class MemoryEnv(MultiTurnEnv):
         """
         # Get the last message
         last_message = messages[-1]
-        print(last_message)
         # last_message is a dict, print keys
-        print(last_message.keys())
-        last_message = last_message["content"]
+        if "content" in last_message:
+            last_message = last_message["content"]
+        else:
+            raise ValueError(f"Last message is not a dict with a 'content' key: {last_message}")
 
         # Get the reply and python code
         python_code, reply = self.parse_response(last_message)
