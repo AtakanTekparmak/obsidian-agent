@@ -54,11 +54,16 @@ class MemoryEnv(MultiTurnEnv):
         parser = XMLParser(["think", "python", "reply"], answer_field="reply")
         rubric = MemoryRubric(parser=parser)
         
-        # Load the dataset
+       # Load the dataset
         dataset = load_dataset()
             
+        split_dataset = dataset.train_test_split(test_size=0.2, seed=42)
+        train_dataset = split_dataset["train"]
+        eval_dataset = split_dataset["test"]
+
         super().__init__(
-            dataset=dataset,
+            dataset=train_dataset,
+            eval_dataset=eval_dataset,
             system_prompt=system_prompt,
             parser=parser,
             rubric=rubric,
