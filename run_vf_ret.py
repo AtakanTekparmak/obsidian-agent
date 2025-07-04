@@ -4,6 +4,7 @@ from training.vf.env import MemoryEnv
 from data.schemas.sft import StaticMemory
 
 import verifiers as vf
+import wandb
 
 # Constants
 STATIC_MEMORY_PATH = "memory/base_agent_memory/"
@@ -30,6 +31,9 @@ def create_static_memory():
         static_memory.reset(STATIC_MEMORY_PATH)
     
 def main():
+    # Initialise wandb
+    wandb.init(project="obsidian-retrieval-vf")
+
     # Create the static memory
     create_static_memory()
 
