@@ -45,6 +45,10 @@ def main():
     # Construct the args
     args = vf.grpo_defaults(run_name=run_name)
     args.num_train_epochs = 200
+    args.eval_strategy = "steps"
+    args.eval_steps = 10
+    args.save_strategy = "steps"
+    args.save_steps = 10
 
     # Construct the trainer
     trainer = vf.GRPOTrainer(
