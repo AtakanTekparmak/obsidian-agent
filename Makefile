@@ -134,6 +134,7 @@ generate-kb:
 	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project data generate_kb.py
 
 install-verifiers: check-uv
+	source ~/.bashrc;
 	uv venv;
 	source .venv/bin/activate;
 	uv add 'verifiers[all]' && uv pip install flash-attn==2.7.4.post1 --no-build-isolation;
