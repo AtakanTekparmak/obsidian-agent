@@ -82,7 +82,12 @@ class MemoryEnv(MultiTurnEnv):
 
     def is_completed(self, messages: List[Dict[str, str]], state: Dict[str, Any], **kwargs: Any) -> bool:
         # Get the last message
-        last_message = messages[-1]["content"]
+        last_message = messages[-1]
+        # last_message is a dict, print keys
+        if "content" in last_message:
+            last_message = last_message["content"]
+        else:
+            raise ValueError(f"Last message is not a dict with a 'content' key. \nObject: \n{last_message}\nType: {type(last_message)}")
 
         # Get the reply and python code
         python_code, reply = self.parse_response(last_message)
