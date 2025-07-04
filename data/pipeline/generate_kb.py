@@ -1,7 +1,7 @@
 import os
 
 from data.model import get_model_response
-from data.settings import OUTPUT_PATH, KB_PATH, OPENROUTER_SONNET
+from data.settings import OUTPUT_PATH, KB_PATH, OPENROUTER_GEMINI
 from data.utils import save_pydantic_to_json
 from data.schemas.personas import Personas
 from data.schemas.kb import (
@@ -32,7 +32,7 @@ def generate_kb(
     personal_facts = get_model_response(
         schema=PersonalFacts,
         prompt=prompt,
-        model=OPENROUTER_SONNET
+        model=OPENROUTER_GEMINI
     )
 
     persona_map = {persona.name_surname: persona for persona in personas.personas}

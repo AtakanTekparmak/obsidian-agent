@@ -7,34 +7,39 @@ import os
 
 from data.pipeline.generate_personas import generate_personas
 from data.pipeline.generate_kb import generate_kb
-from data.settings import OPENROUTER_SONNET
+from data.settings import OPENROUTER_GEMINI, OPENROUTER_SONNET
 from data.model import get_model_response
 from data.utils import load_kb_from_json
 from data.schemas.kb import KnowledgeBase, Persona
 from data.schemas.sft import StaticMemory
 from agent.utils import load_system_prompt
 
-from training.retrieval.format_dataset import main as format_dataset
-
-# Define path directly to avoid imports from training package
+# Define path directly to avoid imports from training packag
 BASE_DATASET_PATH = "output/datasets/base_dataset.json"
+BASE_MEMORY_PATH = "memory/base_memory"
+BASE_MEMORY_JSON_PATH = "output/static_mem/base_memory.json"
 
 QUESTION_GEN_PROMPT = """
-You are {persona.name_surname}. You are a {persona.age} year old {persona.gender} from {persona.birthplace.city}, {persona.birthplace.country}. You are a {persona.occupation}. Your detailed backstory is: {persona.detailed_backstory}.
+You are {kb.items[0].persona.name_surname}. You are a {kb.items[0].persona.age} year old {kb.items[0].persona.gender} from {kb.items[0].persona.birthplace.city}, {kb.items[0].persona.birthplace.country}. You are a {kb.items[0].persona.occupation}. Your detailed backstory is: {kb.items[0].persona.detailed_backstory}.
 
 You have the following relationships:
-{persona.relationships}
+{kb.items[0].persona.relationships}
 
-This is a fact about you:
+This is a persona related to you:
+{persona}
+
+This is a fact about the persona:
 {fact}
 
-Generate a direct question you might ask an assistant so that it reveals this fact about you. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself. Some example fact-question pairs:
+Generate a direct question you might ask an assistant so that it reveals this fact about the persona. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself. Some example fact-question pairs:
 
+Persona: Jane Doe, Wife of {kb.items[0].persona.name_surname}
 Fact: Age: 23
-Question: What is my age?
+Question: What is my wife's age?
 
+Persona: Mike Doe, Son of {kb.items[0].persona.name_surname}
 Fact: birthplace: Groningen, Netherlands
-Question: Where was I born?
+Question: Where was my son born?
 """
 
 MEMORY_GEN_PROMPT = """
@@ -44,25 +49,19 @@ Below is the system prompt of an LLM agent with a self managed, Obsidian-like me
 {agent_prompt}
 </agent_prompt>
 
-Below is a persona.
+Below is a knowledge base of personas.
 
-<persona>
-{persona}
-</persona>
+<knowledge_base>
+{knowledge_base}
+</knowledge_base>
 
-Below is a fact about the persona.
+The first persona in the knowledge base is the main user of the agent.
 
-<fact>
-{fact}
-</fact>
-
-Given how you expect the agent to operate, the persona & the fact, generate a static memory for the agent. This memory should contain the content of user.md and the entity files found in entities/ directory. The user.md should contain the attributes of the persona and the entity files should be for the relationships of the persona.
+Given how you expect the agent to operate and the knowledge base, generate a static memory for the agent. This memory should contain the content of user.md and the entity files found in entities/ directory. The user.md should contain the attributes of the main user and the entity files should be for the relationships of the main user. All personas other than the main user should be in the entities/ directory.
 """
 
-
 def generate_static_memory(
-        persona: Persona,
-        fact: str
+        knowledge_base: KnowledgeBase
     ) -> StaticMemory:
         """
         Generate a static memory for the agent.
@@ -76,19 +75,18 @@ def generate_static_memory(
         """
         prompt = MEMORY_GEN_PROMPT.format(
                 agent_prompt=load_system_prompt(), 
-                persona=persona, 
-                fact=fact
+                knowledge_base=knowledge_base
             )
         response = get_model_response(
                 prompt=prompt, 
-                model=OPENROUTER_SONNET,
+                model=OPENROUTER_GEMINI,
                 schema=StaticMemory
             )
         
         return response
 
 
-def generate_question_prompt(persona: Persona, fact: str) -> str:
+def generate_question_prompt(persona: Persona, fact: str, knowledge_base: KnowledgeBase) -> str:
     """
     Generate a question to elicit the given fact.
 
@@ -99,8 +97,8 @@ def generate_question_prompt(persona: Persona, fact: str) -> str:
     Returns:
         str: The question
     """
-    prompt = QUESTION_GEN_PROMPT.format(persona=persona, fact=fact)
-    response = get_model_response(prompt=prompt, model=OPENROUTER_SONNET)
+    prompt = QUESTION_GEN_PROMPT.format(persona=persona, fact=fact, kb=knowledge_base)
+    response = get_model_response(prompt=prompt, model=OPENROUTER_GEMINI)
     if isinstance(response, str):
         return response.strip()
     return str(response)
@@ -117,32 +115,28 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         List[Dict]: The base dataset
     """
     dataset: List[Dict] = []
-    
-    # Load the system prompt once for all dataset entries
-    system_prompt = load_system_prompt()
+
+    # Generate the static memory
+    static_memory = generate_static_memory(kb)
     
     # Create a coroutine to generate content for each fact
     async def process_fact(persona, fact):
-        # Run these operations concurrently
-        static_memory_task = asyncio.create_task(
-            asyncio.to_thread(generate_static_memory, persona, fact.fact_description)
-        )
         question_task = asyncio.create_task(
-            asyncio.to_thread(generate_question_prompt, persona, fact.fact_description)
+            asyncio.to_thread(generate_question_prompt, persona, fact.fact_description, kb)
         )
         
         # Wait for both tasks to complete
-        static_memory, question = await asyncio.gather(static_memory_task, question_task)
+        question = await asyncio.gather(question_task)
 
         return {
             "question": question,
-            "answer": fact.fact_description,
-            "static_memory": static_memory.model_dump_json()
+            "answer": fact.fact_description
         }
     
     # Create tasks for all facts in all personas
     tasks = []
-    for item in kb.items:
+    new_kb = KnowledgeBase(items=kb.items[1:])
+    for item in new_kb.items:
         persona = item.persona
         for fact in item.facts:
             tasks.append(process_fact(persona, fact))
@@ -153,17 +147,25 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
     
     results = asyncio.run(gather_all())
     dataset.extend(results)
+    
     if save:
         # Make the output/datasets folder if it doesn't exist
         os.makedirs("output/datasets", exist_ok=True)
         with open(BASE_DATASET_PATH, "w") as f:
             json.dump(dataset, f)
+
+        static_memory.instantiate(BASE_MEMORY_PATH)
+
+        os.makedirs("output/static_mem", exist_ok=True)
+        with open(BASE_MEMORY_JSON_PATH, "w") as f:
+            json.dump(static_memory.model_dump(), f)
+
     return dataset
 
 
 def main():
     """Generate knowledge base with personas for Groningen, Netherlands in 2025."""
-    scenario = "Berlin, Germany in 2025"
+    scenario = "Groningen, the Netherlands in 2025"
     print(f"Generating knowledge base for scenario: {scenario}")
     
     # Create KB with personas and save to file
