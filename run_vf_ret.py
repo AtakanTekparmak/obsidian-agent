@@ -55,6 +55,8 @@ def main():
     args.save_steps = 10
     args.num_steps = 100
     args.max_steps = 100
+    args.max_prompt_length = 16384
+    args.max_completion_length = 2048
 
     # Construct the trainer
     trainer = vf.GRPOTrainer(
