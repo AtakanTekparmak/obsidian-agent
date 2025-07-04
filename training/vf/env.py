@@ -34,6 +34,9 @@ def load_dataset() -> Dataset:
             # Add a "task": "obsidian-retrieval" to each item
             for item in dataset:
                 item["task"] = "obsidian-retrieval"
+                question = item.get("question")
+                if isinstance(question, list) and len(question) == 1:
+                    item["question"] = question[0]
         return Dataset.from_list(dataset)
     except FileNotFoundError:
         raise FileNotFoundError(f"Dataset file not found at {BASE_DATASET_PATH}")
