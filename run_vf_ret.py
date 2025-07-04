@@ -53,6 +53,7 @@ def main():
     args.eval_steps = 10
     args.save_strategy = "steps"
     args.save_steps = 10
+    args.num_steps = 100
 
     # Construct the trainer
     trainer = vf.GRPOTrainer(
