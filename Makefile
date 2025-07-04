@@ -133,6 +133,19 @@ generate-kb:
 	@echo "Generating knowledge base..."
 	PYTHONPATH="$(PWD):$$PYTHONPATH" uv run --project data generate_kb.py
 
+install-verifiers: check-uv
+	uv venv;
+	source .venv/bin/activate;
+	uv add 'verifiers[all]' && uv pip install flash-attn==2.7.4.post1 --no-build-isolation;
+
+run-vf-llm:
+	source .venv/bin/activate;
+	CUDA_VISIBLE_DEVICES=0,1,2,3 vf-vllm --model Qwen/Qwen3-14B
+
+run-vf-ret:
+	source .venv/bin/activate;
+	CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file training/configs/rl/zero3.yaml run_vf_ret.py
+
 # Clean all virtual environments
 clean-all: clean-agent clean-data clean-training clean-skyrl
 
