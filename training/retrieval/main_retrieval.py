@@ -125,7 +125,7 @@ def main():
                 "advantage_estimator": "grpo",
                 "use_kl_loss": False
             },
-            "epochs": 1,
+            "epochs": 16,
             "train_batch_size": 64,
             "policy_mini_batch_size": 32,
             "micro_forward_batch_size_per_gpu": 4,

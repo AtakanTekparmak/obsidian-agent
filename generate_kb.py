@@ -135,16 +135,6 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         static_memory, question = await asyncio.gather(static_memory_task, question_task)
 
         return {
-            "prompt": [
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": question,
-                }
-            ],
             "question": question,
             "answer": fact.fact_description,
             "static_memory": static_memory.model_dump_json()
@@ -166,7 +156,7 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
     if save:
         # Make the output/datasets folder if it doesn't exist
         os.makedirs("output/datasets", exist_ok=True)
-        with open(SKRL_DATASET_PATH, "w") as f:
+        with open(BASE_DATASET_PATH, "w") as f:
             json.dump(dataset, f)
     return dataset
 
@@ -177,18 +167,15 @@ def main():
     print(f"Generating knowledge base for scenario: {scenario}")
     
     # Create KB with personas and save to file
-    personas = generate_personas(16, scenario, save=True)
-    kb = generate_kb(personas, save=True)
+    #personas = generate_personas(16, scenario, save=True)
+    #kb = generate_kb(personas, save=True)
+    kb = load_kb_from_json()
     
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
     print("Building base dataset...")
     dataset = build_base_dataset(kb, save=True)
     print(f"Base dataset built successfully with {len(dataset)} items.")
-
-    print("Formatting dataset...")
-    format_dataset()
-    print("Dataset formatted successfully.")
 
 if __name__ == "__main__":
     main() 
