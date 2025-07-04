@@ -82,7 +82,7 @@ class MemoryEnv(MultiTurnEnv):
 
     def is_completed(self, messages: List[Dict[str, str]], state: Dict[str, Any], **kwargs: Any) -> bool:
         # Get the last message
-        last_message = messages[-1].content
+        last_message = messages[-1]["content"]
 
         # Get the reply and python code
         python_code, reply = self.parse_response(last_message)
@@ -111,7 +111,7 @@ class MemoryEnv(MultiTurnEnv):
         Response from the environment.
         """
         # Get the last message
-        last_message = messages[-1].content
+        last_message = messages[-1]["content"]
 
         # Get the reply and python code
         python_code, reply = self.parse_response(last_message)
