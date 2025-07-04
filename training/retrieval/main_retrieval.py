@@ -106,7 +106,7 @@ def main():
         "trainer": {
             "policy": {
                 "model": {
-                    "path": "Qwen/Qwen3-8B",
+                    "path": "Qwen/Qwen3-14B",
                     "trust_remote_code": True
                 },
                 "optimizer_config": {
@@ -148,7 +148,7 @@ def main():
             "backend": "vllm",
             "num_inference_engines": 2,
             "inference_engine_tensor_parallel_size": 2,
-            "n_samples_per_prompt": 1,
+            "n_samples_per_prompt": 4,
             "sampling_params": {
                 "temperature": 0.7,
                 "top_p": 0.9,
@@ -177,7 +177,7 @@ def main():
                 "eval_batch_size": 1,
                 "eval_before_train": False,  # Skip initial evaluation
                 "eval_interval": 1, 
-                "epochs": 1,
+                "epochs": 16,
                 "run_name": "obsidian-retrieval-single-agent-diagnostic",
                 "output_dir": "./output/training/single-agent-diagnostic",
                 "logger": "console",  # Ensure console logging for diagnostics
