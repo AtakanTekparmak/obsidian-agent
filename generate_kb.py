@@ -31,7 +31,7 @@ This is a persona related to you:
 This is a fact about the persona:
 {fact}
 
-Generate a direct question you might ask an assistant so that it reveals this fact about the persona. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself. Some example fact-question pairs:
+Generate a direct question you might ask an assistant so that it reveals this fact about the persona. Keep it concise and natural. Respond with only the question. The question should be directly inquiring about the fact so the only valid answer is the fact itself. The question should NOT be an indirect question that has the possibility of being answered with the fact itself. Make sure in your questions you are not asking about someone in the form of name and surname, but rather how they are related to you. Some example fact-question pairs:
 
 Persona: Jane Doe, Wife of {kb.items[0].persona.name_surname}
 Fact: Age: 23
@@ -164,7 +164,7 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
 
 
 def main():
-    scenario = "Berlin, Germany in 2025"
+    scenario = "Groningen, Netherlands in 2025"
     print(f"Generating knowledge base for scenario: {scenario}")
     
     # Create KB with personas and save to file
