@@ -2,47 +2,174 @@
   "items": [
     {
       "persona": {
-        "name_surname": "Anouk van der Meer",
-        "age": 38,
+        "name_surname": "Klara Schmidt",
+        "age": 34,
         "gender": "female",
         "birthplace": {
-          "city": "Loppersum",
-          "country": "Netherlands"
+          "city": "Berlin",
+          "country": "Germany"
         },
-        "occupation": "Architect & Founder of 'Meer Duurzaam'",
-        "detailed_backstory": "Anouk grew up in the heart of the earthquake-affected region near Groningen. The constant threat and visible damage to her childhood home and community instilled in her a deep-seated desire to create safe, resilient structures. She studied architecture at TU Delft, specializing in structural engineering and sustainable design. In 2018, she returned to Groningen to found her own architectural firm, 'Meer Duurzaam' (More Sustainable). The firm focuses on designing earthquake-resistant buildings and retrofitting existing ones, prioritizing green materials and energy-neutral solutions. She is driven, passionate, and sometimes overworked, feeling the weight of her community's future on her shoulders.",
+        "occupation": "Co-working Space Founder",
+        "detailed_backstory": "Born in East Berlin shortly before the wall fell, Klara grew up witnessing the city's radical transformation. Inspired by the communal and creative spirit of post-reunification Berlin but dismayed by accelerating gentrification, she founded 'KiezKonnekt', a co-working and community space in Neukölln. Her mission is to provide an affordable hub for freelancers, artists, and local initiatives. She's passionate and a natural leader but struggles with the financial pressures of the business and the emotional toll of fighting what feels like a losing battle against corporate development. She has recently started seeing a therapist to cope with burnout.",
         "relationships": [
           {
-            "name_surname": "Hendrik van der Meer",
-            "relationship": "Father"
+            "name_surname": "Lukas Schmidt",
+            "relationship": "brother"
           },
           {
-            "name_surname": "Lars van der Meer",
-            "relationship": "Brother"
+            "name_surname": "Cem Yilmaz",
+            "relationship": "business partner"
           },
           {
-            "name_surname": "Ben Carter",
-            "relationship": "Business Partner and Lead Engineer"
+            "name_surname": "David Chen",
+            "relationship": "ex-boyfriend"
           },
           {
-            "name_surname": "Fatima Al-Jamil",
-            "relationship": "Employee / Mentee"
+            "name_surname": "Anja Weber",
+            "relationship": "mentor"
           },
           {
-            "name_surname": "Elena Popescu",
-            "relationship": "Best Friend"
+            "name_surname": "Elena Petrova",
+            "relationship": "tenant/member of her space"
           },
           {
-            "name_surname": "Gerda Dijkema",
-            "relationship": "Primary Client"
+            "name_surname": "Dr. Sofia Costa",
+            "relationship": "therapist"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 34"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Co-working Space Founder"
+        },
+        {
+          "fact_description": "Born in East Berlin shortly before the fall of the Berlin Wall."
+        },
+        {
+          "fact_description": "Founded 'KiezKonnekt', a co-working and community space in Neukölln."
+        },
+        {
+          "fact_description": "Her mission is to provide an affordable hub for freelancers, artists, and local initiatives."
+        },
+        {
+          "fact_description": "Struggles with the financial pressures of her business."
+        },
+        {
+          "fact_description": "Experiencing burnout from fighting against corporate development."
+        },
+        {
+          "fact_description": "Is currently seeing a therapist, Dr. Sofia Costa."
+        },
+        {
+          "fact_description": "brother(Lukas Schmidt)"
+        },
+        {
+          "fact_description": "business_partner(Cem Yilmaz)"
+        },
+        {
+          "fact_description": "ex-boyfriend(David Chen)"
+        },
+        {
+          "fact_description": "mentor(Anja Weber)"
+        },
+        {
+          "fact_description": "therapist(Dr. Sofia Costa)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Lukas Schmidt",
+        "age": 29,
+        "gender": "male",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Musician / Bartender",
+        "detailed_backstory": "Klara's younger brother, Lukas, is the archetypal struggling artist. He fronts a moderately successful indie rock band that plays in small clubs around Friedrichshain and Kreuzberg. To pay rent on his shared flat (WG), he works part-time as a bartender. He loves his sister but has a complicated mix of pride and envy regarding her success with KiezKonnekt, which he views as both a genuine community effort and a symbol of the 'new Berlin' that is pushing out artists like him. His music is often melancholic, reflecting his frustration with the city's changing landscape.",
+        "relationships": [
+          {
+            "name_surname": "Klara Schmidt",
+            "relationship": "sister"
           },
           {
-            "name_surname": "Thomas Janssen",
-            "relationship": "Professional Rival"
+            "name_surname": "Felix Meyer",
+            "relationship": "bandmate and friend"
           },
           {
-            "name_surname": "Sophie de Vries",
-            "relationship": "Niece"
+            "name_surname": "Sophie Dubois",
+            "relationship": "roommate"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 29"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Musician / Bartender"
+        },
+        {
+          "fact_description": "Fronts an indie rock band."
+        },
+        {
+          "fact_description": "Works part-time as a bartender to pay rent."
+        },
+        {
+          "fact_description": "Lives in a shared flat (WG)."
+        },
+        {
+          "fact_description": "Feels a mix of pride and envy regarding his sister Klara's success."
+        },
+        {
+          "fact_description": "Writes melancholic music reflecting his frustration with the city."
+        },
+        {
+          "fact_description": "sister(Klara Schmidt)"
+        },
+        {
+          "fact_description": "bandmate_and_friend(Felix Meyer)"
+        },
+        {
+          "fact_description": "roommate(Sophie Dubois)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Cem Yilmaz",
+        "age": 38,
+        "gender": "male",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Co-founder / Financial Manager",
+        "detailed_backstory": "Born and raised in Kreuzberg to Turkish 'Gastarbeiter' parents, Cem is the pragmatic, level-headed business partner of KiezKonnekt. He met Klara at a local community board meeting and was impressed by her vision, but knew it needed a solid financial foundation to survive. He handles the accounting, contracts, and strategic planning, often clashing with Klara's more idealistic, spend-heavy ideas. He's deeply rooted in his neighborhood and wants to ensure the space is a sustainable asset for the community, not just a fleeting trend.",
+        "relationships": [
+          {
+            "name_surname": "Klara Schmidt",
+            "relationship": "business partner"
+          },
+          {
+            "name_surname": "Fatima Yilmaz",
+            "relationship": "wife"
           }
         ]
       },
@@ -51,592 +178,118 @@
           "fact_description": "age: 38"
         },
         {
-          "fact_description": "gender: female"
-        },
-        {
-          "fact_description": "birthplace: Loppersum, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Architect"
-        },
-        {
-          "fact_description": "Founder of the firm 'Meer Duurzaam'"
-        },
-        {
-          "fact_description": "Studied architecture at TU Delft, specializing in structural engineering and sustainable design."
-        },
-        {
-          "fact_description": "Grew up in a region affected by earthquakes."
-        },
-        {
-          "fact_description": "Is driven, passionate, and often overworked."
-        },
-        {
-          "fact_description": "daughter(Hendrik van der Meer)"
-        },
-        {
-          "fact_description": "sister(Lars van der Meer)"
-        },
-        {
-          "fact_description": "business_partner(Ben Carter)"
-        },
-        {
-          "fact_description": "best_friend(Elena Popescu)"
-        },
-        {
-          "fact_description": "aunt(Sophie de Vries)"
-        },
-        {
-          "fact_description": "mentor(Fatima Al-Jamil)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Lars van der Meer",
-        "age": 41,
-        "gender": "male",
-        "birthplace": {
-          "city": "Loppersum",
-          "country": "Netherlands"
-        },
-        "occupation": "Construction Contractor",
-        "detailed_backstory": "Lars is Anouk's older brother. While Anouk pursued academia, Lars followed a more hands-on path, becoming a skilled contractor. He runs a medium-sized construction company that frequently partners with his sister's firm, translating her ambitious designs into reality. Lars is pragmatic, grounded, and deeply familiar with the practical challenges of reinforcing old Groningen houses. He shares Anouk's commitment to the region but is often more cynical about the bureaucracy and pace of change. He feels a strong responsibility to provide steady work for his crew, including many skilled workers from other EU countries.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Sister"
-          },
-          {
-            "name_surname": "Hendrik van der Meer",
-            "relationship": "Father"
-          },
-          {
-            "name_surname": "Marek Nowak",
-            "relationship": "Employee / Foreman"
-          },
-          {
-            "name_surname": "Ben Carter",
-            "relationship": "Professional Collaborator"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 41"
-        },
-        {
           "fact_description": "gender: male"
         },
         {
-          "fact_description": "birthplace: Loppersum, Netherlands"
+          "fact_description": "birthplace: Berlin, Germany"
         },
         {
-          "fact_description": "occupation: Construction Contractor"
+          "fact_description": "occupation: Co-founder / Financial Manager"
         },
         {
-          "fact_description": "Runs his own medium-sized construction company."
+          "fact_description": "His parents were Turkish 'Gastarbeiter' (guest workers)."
         },
         {
-          "fact_description": "Is pragmatic, grounded, and cynical about bureaucracy."
+          "fact_description": "Is the pragmatic business partner and financial manager of KiezKonnekt."
         },
         {
-          "fact_description": "Feels a strong sense of responsibility for providing work for his crew."
+          "fact_description": "Handles accounting, contracts, and strategic planning for KiezKonnekt."
         },
         {
-          "fact_description": "brother(Anouk van der Meer)"
+          "fact_description": "Often clashes with Klara's more idealistic, spend-heavy ideas."
         },
         {
-          "fact_description": "son(Hendrik van der Meer)"
+          "fact_description": "Is deeply rooted in his Kreuzberg neighborhood."
+        },
+        {
+          "fact_description": "business_partner(Klara Schmidt)"
+        },
+        {
+          "fact_description": "wife(Fatima Yilmaz)"
         }
       ]
     },
     {
       "persona": {
-        "name_surname": "Hendrik van der Meer",
-        "age": 68,
-        "gender": "male",
-        "birthplace": {
-          "city": "Ten Boer",
-          "country": "Netherlands"
-        },
-        "occupation": "Retired Farmer",
-        "detailed_backstory": "Hendrik has lived his entire life on the same piece of land, a farm that has been in his family for generations. He has witnessed the landscape and his own home change due to gas extraction, with cracks spiderwebbing through the walls of his farmhouse. He is immensely proud of both his children, Anouk for her innovative solutions and Lars for his practical skills. However, he is also part of an older, more skeptical generation that is weary of promises from officials and experts. His home is a long-term reinforcement project for Anouk and Lars, a constant, personal reminder of the stakes.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Daughter"
-          },
-          {
-            "name_surname": "Lars van der Meer",
-            "relationship": "Son"
-          },
-          {
-            "name_surname": "Klaas de Boer",
-            "relationship": "Old acquaintance and fellow affected resident"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 68"
-        },
-        {
-          "fact_description": "gender: male"
-        },
-        {
-          "fact_description": "birthplace: Ten Boer, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Retired Farmer"
-        },
-        {
-          "fact_description": "Has lived his whole life on the family farm."
-        },
-        {
-          "fact_description": "His farmhouse is damaged due to gas extraction."
-        },
-        {
-          "fact_description": "Is proud of both of his children."
-        },
-        {
-          "fact_description": "Is skeptical of promises from officials and experts."
-        },
-        {
-          "fact_description": "father(Anouk van der Meer)"
-        },
-        {
-          "fact_description": "father(Lars van der Meer)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Sophie de Vries",
-        "age": 21,
+        "name_surname": "Elena Petrova",
+        "age": 28,
         "gender": "female",
         "birthplace": {
-          "city": "Groningen",
-          "country": "Netherlands"
+          "city": "St. Petersburg",
+          "country": "Russia"
         },
-        "occupation": "University Student (Environmental Sciences)",
-        "detailed_backstory": "Sophie is Anouk's niece, the daughter of her other sister. Inspired by her aunt's work and the visible impact of energy policy on her family, Sophie is studying Environmental Sciences at the University of Groningen (RUG). She is an idealist, passionate about the potential for a green hydrogen economy in the north. She's part of a student-led initiative promoting sustainable living on campus. She looks up to Anouk but also challenges her, believing the focus should be less on reinforcing old structures and more on building a completely new, sustainable future.",
+        "occupation": "UI/UX Designer",
+        "detailed_backstory": "Elena moved to Berlin four years ago, attracted by the city's vibrant tech scene and international atmosphere. She works as a high-demand freelance UI/UX designer, primarily for a US-based tech startup. KiezKonnekt is her daily office, and she values the separation from her apartment and the quiet sense of community Klara fosters. She is professionally successful but sometimes feels isolated, navigating the complexities of German bureaucracy and missing her family back in Russia. She is a core, stable member of Klara's space.",
         "relationships": [
           {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Aunt"
+            "name_surname": "Klara Schmidt",
+            "relationship": "community space manager"
           },
           {
-            "name_surname": "David Chen",
-            "relationship": "Friend and Classmate"
+            "name_surname": "Marcus Holloway",
+            "relationship": "primary client"
           },
           {
-            "name_surname": "Lisa Schmidt",
-            "relationship": "Friend from a student association"
+            "name_surname": "Isabella Rossi",
+            "relationship": "best friend"
           }
         ]
       },
       "facts": [
         {
-          "fact_description": "age: 21"
+          "fact_description": "age: 28"
         },
         {
           "fact_description": "gender: female"
         },
         {
-          "fact_description": "birthplace: Groningen, Netherlands"
+          "fact_description": "birthplace: St. Petersburg, Russia"
         },
         {
-          "fact_description": "occupation: University Student (Environmental Sciences)"
+          "fact_description": "occupation: UI/UX Designer"
         },
         {
-          "fact_description": "Inspired by her aunt, Anouk van der Meer."
+          "fact_description": "Moved to Berlin four years ago for the tech scene."
         },
         {
-          "fact_description": "Passionate about a green hydrogen economy."
+          "fact_description": "Works as a high-demand freelance designer."
         },
         {
-          "fact_description": "Believes in building a completely new sustainable future rather than just reinforcing old structures."
+          "fact_description": "Uses Klara Schmidt's KiezKonnekt as her daily office."
         },
         {
-          "fact_description": "niece(Anouk van der Meer)"
+          "fact_description": "Is professionally successful but sometimes feels isolated."
         },
         {
-          "fact_description": "friend(Lisa Schmidt)"
+          "fact_description": "Misses her family in Russia."
+        },
+        {
+          "fact_description": "best_friend(Isabella Rossi)"
+        },
+        {
+          "fact_description": "primary_client(Marcus Holloway)"
         }
       ]
     },
     {
       "persona": {
-        "name_surname": "Ben Carter",
-        "age": 42,
-        "gender": "male",
-        "birthplace": {
-          "city": "Manchester",
-          "country": "United Kingdom"
-        },
-        "occupation": "Structural Engineer",
-        "detailed_backstory": "Ben is a highly experienced structural engineer who moved to the Netherlands for a job opportunity at a large firm. He met Anouk at a conference on seismic retrofitting and was captivated by her vision. He decided to leave his corporate job and join her as a co-founder and lead engineer at 'Meer Duurzaam'. Ben is the stoic, data-driven force behind Anouk's creative designs, responsible for the complex calculations that make them feasible and safe. As a British expat, he sometimes feels like an outsider but has grown to love Groningen's compact, cycling-friendly lifestyle.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Business Partner and close friend"
-          },
-          {
-            "name_surname": "Lars van der Meer",
-            "relationship": "Professional Collaborator"
-          },
-          {
-            "name_surname": "Fatima Al-Jamil",
-            "relationship": "Mentor"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 42"
-        },
-        {
-          "fact_description": "gender: male"
-        },
-        {
-          "fact_description": "birthplace: Manchester, United Kingdom"
-        },
-        {
-          "fact_description": "occupation: Structural Engineer"
-        },
-        {
-          "fact_description": "Is Anouk's business partner and co-founder of 'Meer Duurzaam'."
-        },
-        {
-          "fact_description": "Is a British expat."
-        },
-        {
-          "fact_description": "Is a stoic, data-driven force behind the firm's designs."
-        },
-        {
-          "fact_description": "business_partner(Anouk van der Meer)"
-        },
-        {
-          "fact_description": "close_friend(Anouk van der Meer)"
-        },
-        {
-          "fact_description": "mentor(Fatima Al-Jamil)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Fatima Al-Jamil",
-        "age": 25,
-        "gender": "female",
-        "birthplace": {
-          "city": "Aleppo",
-          "country": "Syria"
-        },
-        "occupation": "Junior Architect",
-        "detailed_backstory": "Fatima's family fled Syria when she was a teenager. She finished her schooling in the Netherlands and, having seen her home city devastated by war, was drawn to architecture with a focus on rebuilding and creating safe communities. She was a top student at the Hanze University of Applied Sciences and was personally recruited by Anouk. Fatima is incredibly talented and hardworking, bringing a unique global perspective on resilience and recovery to the firm. She sees Anouk and Ben as key mentors and is passionate about contributing to her new home.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Employer / Mentor"
-          },
-          {
-            "name_surname": "Ben Carter",
-            "relationship": "Mentor"
-          },
-          {
-            "name_surname": "Bram Bakker",
-            "relationship": "Acquaintance (slight crush from his side)"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 25"
-        },
-        {
-          "fact_description": "gender: female"
-        },
-        {
-          "fact_description": "birthplace: Aleppo, Syria"
-        },
-        {
-          "fact_description": "occupation: Junior Architect"
-        },
-        {
-          "fact_description": "Her family fled the war in Syria."
-        },
-        {
-          "fact_description": "Was drawn to architecture to focus on rebuilding and creating safe communities."
-        },
-        {
-          "fact_description": "Was a top student at Hanze University of Applied Sciences."
-        },
-        {
-          "fact_description": "Works at 'Meer Duurzaam'."
-        },
-        {
-          "fact_description": "mentee_of(Anouk van der Meer)"
-        },
-        {
-          "fact_description": "mentee_of(Ben Carter)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Gerda Dijkema",
-        "age": 52,
-        "gender": "female",
-        "birthplace": {
-          "city": "Assen",
-          "country": "Netherlands"
-        },
-        "occupation": "Municipal Project Manager (Reinforcement Operations)",
-        "detailed_backstory": "Gerda is a career civil servant who has found herself in one of the most challenging roles in the regional government: managing the municipal budget and timeline for reinforcement projects. She is pragmatic, often caught between the demands of frustrated residents like Klaas de Boer, the financial realities imposed by the national government, and the technical requirements of firms like Anouk's. She respects Anouk's expertise and integrity, making 'Meer Duurzaam' one of her preferred contractors, but she is constantly forced to make unpopular, budget-driven decisions.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Contractor / Professional Contact"
-          },
-          {
-            "name_surname": "Bram Bakker",
-            "relationship": "Subordinate / Assistant"
-          },
-          {
-            "name_surname": "Klaas de Boer",
-            "relationship": "Adversary / Community Stakeholder"
-          },
-          {
-            "name_surname": "Thomas Janssen",
-            "relationship": "Contractor"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 52"
-        },
-        {
-          "fact_description": "gender: female"
-        },
-        {
-          "fact_description": "birthplace: Assen, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Municipal Project Manager (Reinforcement Operations)"
-        },
-        {
-          "fact_description": "Is a career civil servant."
-        },
-        {
-          "fact_description": "Manages the municipal budget and timeline for reinforcement projects."
-        },
-        {
-          "fact_description": "Is pragmatic and often forced to make unpopular, budget-driven decisions."
-        },
-        {
-          "fact_description": "Respects Anouk's expertise and integrity."
-        },
-        {
-          "fact_description": "supervisor_of(Bram Bakker)"
-        },
-        {
-          "fact_description": "client_of(Anouk van der Meer)"
-        },
-        {
-          "fact_description": "client_of(Thomas Janssen)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Thomas Janssen",
-        "age": 45,
-        "gender": "male",
-        "birthplace": {
-          "city": "Rotterdam",
-          "country": "Netherlands"
-        },
-        "occupation": "Architect & Partner at a large firm",
-        "detailed_backstory": "Thomas is a partner at a large, established architectural firm with offices across the Netherlands. He saw the Groningen reinforcement program as a massive business opportunity and leads his firm's efforts in the region. His approach is more corporate and cost-focused than Anouk's. While his firm is efficient, they are sometimes criticized for a lack of personal touch and for prioritizing profit over heritage. He and Anouk often compete for the same public tenders, creating a tense professional rivalry. He views her as a talented but naive idealist.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Professional Rival"
-          },
-          {
-            "name_surname": "Lisa Schmidt",
-            "relationship": "Intern's supervisor"
-          },
-          {
-            "name_surname": "Gerda Dijkema",
-            "relationship": "Client"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 45"
-        },
-        {
-          "fact_description": "gender: male"
-        },
-        {
-          "fact_description": "birthplace: Rotterdam, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Architect & Partner at a large firm"
-        },
-        {
-          "fact_description": "His approach to architecture is corporate and cost-focused."
-        },
-        {
-          "fact_description": "Views the Groningen reinforcement program as a business opportunity."
-        },
-        {
-          "fact_description": "Views Anouk as a talented but naive idealist."
-        },
-        {
-          "fact_description": "professional_rival(Anouk van der Meer)"
-        },
-        {
-          "fact_description": "supervisor_of(Lisa Schmidt)"
-        },
-        {
-          "fact_description": "contractor_for(Gerda Dijkema)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Elena Popescu",
-        "age": 39,
-        "gender": "female",
-        "birthplace": {
-          "city": "Bucharest",
-          "country": "Romania"
-        },
-        "occupation": "Associate Professor of Sociology (RUG)",
-        "detailed_backstory": "Elena came to Groningen for her PhD and never left. She is a sociologist at the University of Groningen specializing in the social impact of technological and environmental disasters. The Groningen gas situation has become her primary case study. She and Anouk met at a university event about the region's future and bonded instantly over their shared passion. Elena is Anouk's intellectual sounding board and closest friend, the person she turns to when the professional pressures become too much. Elena provides a broader, more academic perspective on the community trauma Anouk deals with daily.",
-        "relationships": [
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Best Friend"
-          },
-          {
-            "name_surname": "David Chen",
-            "relationship": "Student in her department"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 39"
-        },
-        {
-          "fact_description": "gender: female"
-        },
-        {
-          "fact_description": "birthplace: Bucharest, Romania"
-        },
-        {
-          "fact_description": "occupation: Associate Professor of Sociology (RUG)"
-        },
-        {
-          "fact_description": "Came to Groningen for her PhD and stayed."
-        },
-        {
-          "fact_description": "Specializes in the social impact of technological and environmental disasters."
-        },
-        {
-          "fact_description": "Acts as Anouk's intellectual sounding board."
-        },
-        {
-          "fact_description": "best_friend(Anouk van der Meer)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Klaas de Boer",
-        "age": 62,
-        "gender": "male",
-        "birthplace": {
-          "city": "Appingedam",
-          "country": "Netherlands"
-        },
-        "occupation": "Activist & Head of 'Groninger Grond in Verzet'",
-        "detailed_backstory": "Klaas is a former primary school teacher who has become a full-time, high-profile activist. His house suffered severe damage, and he became disillusioned with the slow, bureaucratic process for compensation and reinforcement. He founded 'Groninger Grond in Verzet' (Groningen Soil in Resistance), a group that organizes protests, provides legal aid to residents, and is a constant thorn in the side of the government. He sees Gerda Dijkema as the face of a failing system. While he can be adversarial, he quietly respects Anouk's genuine commitment, even if he thinks her project-by-project approach is too slow.",
-        "relationships": [
-          {
-            "name_surname": "Gerda Dijkema",
-            "relationship": "Primary Adversary"
-          },
-          {
-            "name_surname": "Hendrik van der Meer",
-            "relationship": "Fellow affected resident"
-          },
-          {
-            "name_surname": "Jelle de Boer",
-            "relationship": "Son"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 62"
-        },
-        {
-          "fact_description": "gender: male"
-        },
-        {
-          "fact_description": "birthplace: Appingedam, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Activist"
-        },
-        {
-          "fact_description": "Founder of the activist group 'Groninger Grond in Verzet'."
-        },
-        {
-          "fact_description": "Is a former primary school teacher."
-        },
-        {
-          "fact_description": "Became an activist after his house suffered severe damage."
-        },
-        {
-          "fact_description": "Is a primary adversary to Gerda Dijkema and the government system she represents."
-        },
-        {
-          "fact_description": "father(Jelle de Boer)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Matteo Rossi",
+        "name_surname": "David Chen",
         "age": 35,
         "gender": "male",
         "birthplace": {
-          "city": "Bologna",
-          "country": "Italy"
+          "city": "Vancouver",
+          "country": "Canada"
         },
-        "occupation": "Cafe Owner",
-        "detailed_backstory": "Matteo came to Groningen as a student and fell in love with the city's atmosphere. He opened a small, high-quality coffee bar near Anouk's office and the university. 'Caffè Rossi' has become an informal meeting spot for a diverse crowd: architects from Anouk's firm, university students like Sophie, and locals. Matteo is a charming, observant host who knows everyone and hears all the local gossip. He acts as a social connector in the neighborhood. He often hires students for part-time work.",
+        "occupation": "Architect",
+        "detailed_backstory": "David is Klara's ex-boyfriend; they had an intense two-year relationship that ended amicably due to differing life goals. A Canadian architect with a focus on sustainable and community-oriented urban planning, he moved to Berlin to study the city's unique architectural history. He now runs his own small firm, often competing for municipal contracts to develop social housing or repurpose old industrial buildings. He and Klara still care for each other and often cross paths professionally and socially, which is a source of mild, unspoken tension.",
         "relationships": [
           {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Regular customer"
+            "name_surname": "Klara Schmidt",
+            "relationship": "ex-girlfriend and friend"
           },
           {
-            "name_surname": "Jelle de Boer",
-            "relationship": "Part-time Employee"
-          },
-          {
-            "name_surname": "Elena Popescu",
-            "relationship": "Regular customer"
+            "name_surname": "Dr. Brandt Auer",
+            "relationship": "professional contact at the city senate"
           }
         ]
       },
@@ -648,48 +301,1312 @@
           "fact_description": "gender: male"
         },
         {
-          "fact_description": "birthplace: Bologna, Italy"
+          "fact_description": "birthplace: Vancouver, Canada"
         },
         {
-          "fact_description": "occupation: Cafe Owner"
+          "fact_description": "occupation: Architect"
         },
         {
-          "fact_description": "Owns 'Caffè Rossi', a popular local spot."
+          "fact_description": "Focuses on sustainable and community-oriented urban planning."
         },
         {
-          "fact_description": "Came to Groningen as a student and stayed."
+          "fact_description": "Runs his own small architecture firm."
         },
         {
-          "fact_description": "Acts as a social connector in the neighborhood."
+          "fact_description": "His two-year relationship with Klara Schmidt ended amicably."
         },
         {
-          "fact_description": "employer(Jelle de Boer)"
+          "fact_description": "He and Klara still care for each other, causing mild tension."
+        },
+        {
+          "fact_description": "ex_girlfriend_and_friend(Klara Schmidt)"
         }
       ]
     },
     {
       "persona": {
-        "name_surname": "David Chen",
+        "name_surname": "Anja Weber",
+        "age": 62,
+        "gender": "female",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Retired Professor / Activist",
+        "detailed_backstory": "A native West-Berliner and retired sociology professor from the Freie Universität, Anja has been an activist her entire life. She was involved in feminist and anti-capitalist movements in the 70s and 80s and sees Klara as a spiritual successor. She met Klara through a protest against a luxury apartment development and took her under her wing, becoming a mentor and a board advisor for KiezKonnekt. She provides historical perspective and strategic advice, though her radical politics sometimes clash with the practical needs of running a business.",
+        "relationships": [
+          {
+            "name_surname": "Klara Schmidt",
+            "relationship": "mentee"
+          },
+          {
+            "name_surname": "Ingrid Bauer",
+            "relationship": "life partner"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 62"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Retired Professor / Activist"
+        },
+        {
+          "fact_description": "Is a native West-Berliner and retired sociology professor."
+        },
+        {
+          "fact_description": "Has been an activist her entire life, involved in 1970s and 80s movements."
+        },
+        {
+          "fact_description": "Serves as a mentor and board advisor for Klara's KiezKonnekt."
+        },
+        {
+          "fact_description": "Her radical politics sometimes clash with the practical needs of KiezKonnekt."
+        },
+        {
+          "fact_description": "mentee(Klara Schmidt)"
+        },
+        {
+          "fact_description": "life_partner(Ingrid Bauer)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Felix Meyer",
+        "age": 30,
+        "gender": "male",
+        "birthplace": {
+          "city": "Leipzig",
+          "country": "Germany"
+        },
+        "occupation": "Bike Courier / Drummer",
+        "detailed_backstory": "Felix is the drummer in Lukas Schmidt's band and his most reliable friend. Originally from Leipzig, he moved to Berlin a decade ago for the music scene. He's a man of few words, with a dry, cynical wit. He works as a bike courier for a food delivery service, a physically demanding job that he hates but which gives him the flexibility to play gigs and rehearse. He sees the city from street level, delivering expensive meals to new condos and feels the economic shift more acutely than anyone.",
+        "relationships": [
+          {
+            "name_surname": "Lukas Schmidt",
+            "relationship": "bandmate and friend"
+          },
+          {
+            "name_surname": "Omar Al-Jamil",
+            "relationship": "frequent delivery client contact"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 30"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Leipzig, Germany"
+        },
+        {
+          "fact_description": "occupation: Bike Courier / Drummer"
+        },
+        {
+          "fact_description": "Is the drummer in Lukas Schmidt's band."
+        },
+        {
+          "fact_description": "Moved to Berlin a decade ago for the music scene."
+        },
+        {
+          "fact_description": "Works as a bike courier, a job he hates, for the flexibility."
+        },
+        {
+          "fact_description": "Has a dry, cynical wit."
+        },
+        {
+          "fact_description": "bandmate_and_friend(Lukas Schmidt)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Sophie Dubois",
+        "age": 27,
+        "gender": "female",
+        "birthplace": {
+          "city": "Lyon",
+          "country": "France"
+        },
+        "occupation": "PhD Student",
+        "detailed_backstory": "Sophie is Lukas's roommate in their Neukölln WG. She is a PhD student in German literature at Humboldt University, writing her dissertation on memory and identity in post-reunification novels. She is studious, organized, and quiet, which often puts her at odds with Lukas's more chaotic, musical lifestyle. They have a tense but functional relationship built on the necessity of sharing rent. She spends most of her time at the state library or in her room, deeply engrossed in her academic work.",
+        "relationships": [
+          {
+            "name_surname": "Lukas Schmidt",
+            "relationship": "roommate"
+          },
+          {
+            "name_surname": "Professor Jörg Schmidt",
+            "relationship": "PhD supervisor"
+          },
+          {
+            "name_surname": "Ben Carter",
+            "relationship": "classmate"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 27"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Lyon, France"
+        },
+        {
+          "fact_description": "occupation: PhD Student"
+        },
+        {
+          "fact_description": "Is a PhD student in German literature at Humboldt University."
+        },
+        {
+          "fact_description": "Her dissertation is on memory and identity in post-reunification novels."
+        },
+        {
+          "fact_description": "Is studious, organized, and quiet."
+        },
+        {
+          "fact_description": "Has a tense but functional relationship with her roommate, Lukas."
+        },
+        {
+          "fact_description": "roommate(Lukas Schmidt)"
+        },
+        {
+          "fact_description": "phd_supervisor(Professor Jörg Schmidt)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Fatima Yilmaz",
+        "age": 36,
+        "gender": "female",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Primary School Teacher",
+        "detailed_backstory": "Cem's wife, Fatima, is a primary school teacher at a school in Kreuzberg with a high percentage of students from immigrant backgrounds. She is warm, patient, and deeply committed to her students. She fully supports Cem's work with KiezKonnekt but worries constantly about the long hours he works and the financial risks involved. She is the grounding force in his life, connecting him to the everyday realities of the community they are both trying to serve.",
+        "relationships": [
+          {
+            "name_surname": "Cem Yilmaz",
+            "relationship": "husband"
+          },
+          {
+            "name_surname": "Kenan Demir",
+            "relationship": "parent of a student"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 36"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Primary School Teacher"
+        },
+        {
+          "fact_description": "Teaches at a school in Kreuzberg with many students from immigrant backgrounds."
+        },
+        {
+          "fact_description": "Is warm, patient, and deeply committed to her students."
+        },
+        {
+          "fact_description": "Worries about the long hours and financial risks her husband Cem takes."
+        },
+        {
+          "fact_description": "Is the grounding force in her husband's life."
+        },
+        {
+          "fact_description": "husband(Cem Yilmaz)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Marcus Holloway",
+        "age": 45,
+        "gender": "male",
+        "birthplace": {
+          "city": "Palo Alto",
+          "country": "USA"
+        },
+        "occupation": "Startup CEO",
+        "detailed_backstory": "Marcus is the CEO of a San Francisco-based ed-tech startup and Elena Petrova's most important client. He is a quintessential Silicon Valley figure: driven, charismatic, and always focused on growth. He has a small European office in Berlin and travels there quarterly. He relies heavily on Elena's design work and considers her a key part of his team, though he pays her freelance rates. He is currently in Berlin trying to secure a new round of funding from a prominent local VC.",
+        "relationships": [
+          {
+            "name_surname": "Elena Petrova",
+            "relationship": "freelance contractor"
+          },
+          {
+            "name_surname": "Nina Fischer",
+            "relationship": "potential investor"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 45"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Palo Alto, USA"
+        },
+        {
+          "fact_description": "occupation: Startup CEO"
+        },
+        {
+          "fact_description": "Is CEO of a San Francisco-based ed-tech startup."
+        },
+        {
+          "fact_description": "Is driven, charismatic, and focused on growth."
+        },
+        {
+          "fact_description": "Travels to his company's small Berlin office quarterly."
+        },
+        {
+          "fact_description": "Is currently in Berlin seeking a new round of venture capital funding."
+        },
+        {
+          "fact_description": "relies_on_freelance_contractor(Elena Petrova)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Isabella Rossi",
+        "age": 29,
+        "gender": "female",
+        "birthplace": {
+          "city": "Florence",
+          "country": "Italy"
+        },
+        "occupation": "Art Gallerist",
+        "detailed_backstory": "Isabella is Elena's best and perhaps only close friend in Berlin. They met in a German language class years ago. An art history graduate from Florence, Isabella runs a tiny, perpetually struggling art gallery in a Friedrichshain back alley. She is passionate and has an excellent eye for new talent but lacks business acumen. Her gallery is a labor of love, showcasing emerging, often radical artists who can't get a foothold elsewhere. She and Elena support each other through their respective freelance struggles.",
+        "relationships": [
+          {
+            "name_surname": "Elena Petrova",
+            "relationship": "best friend"
+          },
+          {
+            "name_surname": "Pawel Nowak",
+            "relationship": "artist she represents"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 29"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Florence, Italy"
+        },
+        {
+          "fact_description": "occupation: Art Gallerist"
+        },
+        {
+          "fact_description": "Met her best friend, Elena, in a German language class."
+        },
+        {
+          "fact_description": "Runs a tiny, perpetually struggling art gallery in Friedrichshain."
+        },
+        {
+          "fact_description": "Is passionate and has a great eye for talent, but lacks business acumen."
+        },
+        {
+          "fact_description": "Her gallery is a labor of love."
+        },
+        {
+          "fact_description": "best_friend(Elena Petrova)"
+        },
+        {
+          "fact_description": "represents_artist(Pawel Nowak)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Dr. Brandt Auer",
+        "age": 55,
+        "gender": "male",
+        "birthplace": {
+          "city": "Bonn",
+          "country": "Germany"
+        },
+        "occupation": "Civil Servant",
+        "detailed_backstory": "Dr. Auer is a senior administrator in the Berlin Senate Department for Urban Development and Planning. He is a career bureaucrat, a stickler for rules and process. He is the gatekeeper David Chen must often get past to get his innovative building projects approved. While he publicly appears skeptical and resistant to change, he privately admires David's passion and sometimes subtly helps him navigate the labyrinthine bureaucracy. He has seen countless 'visionaries' come and go and values stability above all.",
+        "relationships": [
+          {
+            "name_surname": "David Chen",
+            "relationship": "professional acquaintance"
+          },
+          {
+            "name_surname": "Stefan Auer",
+            "relationship": "son"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 55"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Bonn, Germany"
+        },
+        {
+          "fact_description": "occupation: Civil Servant"
+        },
+        {
+          "fact_description": "Is a senior administrator in Berlin's Urban Development department."
+        },
+        {
+          "fact_description": "Is a career bureaucrat and a stickler for rules."
+        },
+        {
+          "fact_description": "Privately admires the passion of people like David Chen."
+        },
+        {
+          "fact_description": "Values stability above all else."
+        },
+        {
+          "fact_description": "son(Stefan Auer)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Ingrid Bauer",
+        "age": 65,
+        "gender": "female",
+        "birthplace": {
+          "city": "Hamburg",
+          "country": "Germany"
+        },
+        "occupation": "Retired Nurse",
+        "detailed_backstory": "Ingrid is Anja Weber's partner of over 40 years. A retired nurse, she is the calm, pragmatic heart of their household. While she supports Anja's lifelong activism, she often has to be the one to remind her about doctors' appointments and paying bills. She is more interested in their small garden in Schöneberg and planning their next trip than in attending another protest. She offers a different, more grounded kind of wisdom to Klara whenever she visits.",
+        "relationships": [
+          {
+            "name_surname": "Anja Weber",
+            "relationship": "life partner"
+          },
+          {
+            "name_surname": "Jutta Müller",
+            "relationship": "local shop manager"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 65"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Hamburg, Germany"
+        },
+        {
+          "fact_description": "occupation: Retired Nurse"
+        },
+        {
+          "fact_description": "Has been Anja Weber's partner for over 40 years."
+        },
+        {
+          "fact_description": "Is the calm, pragmatic heart of their household."
+        },
+        {
+          "fact_description": "Is more interested in their garden than in activism."
+        },
+        {
+          "fact_description": "life_partner(Anja Weber)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Omar Al-Jamil",
+        "age": 40,
+        "gender": "male",
+        "birthplace": {
+          "city": "Damascus",
+          "country": "Syria"
+        },
+        "occupation": "Restaurant Owner",
+        "detailed_backstory": "Omar came to Germany as a refugee in 2015. After years of hard work, navigating bureaucracy, and saving every cent, he opened a highly successful Syrian restaurant on Sonnenallee. The restaurant is celebrated for its authentic food and has become a community hub. He is a kind but tired man, working tirelessly to support his family, including his younger sister who is studying at university. He frequently orders supplies for his restaurant via courier, which is how he knows Felix Meyer.",
+        "relationships": [
+          {
+            "name_surname": "Felix Meyer",
+            "relationship": "regular courier"
+          },
+          {
+            "name_surname": "Samira Al-Jamil",
+            "relationship": "sister"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 40"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Damascus, Syria"
+        },
+        {
+          "fact_description": "occupation: Restaurant Owner"
+        },
+        {
+          "fact_description": "Came to Germany as a refugee in 2015."
+        },
+        {
+          "fact_description": "Opened a highly successful Syrian restaurant on Sonnenallee."
+        },
+        {
+          "fact_description": "Is a kind but tired man."
+        },
+        {
+          "fact_description": "Works tirelessly to support his family, including his sister."
+        },
+        {
+          "fact_description": "sister(Samira Al-Jamil)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Professor Jörg Schmidt",
+        "age": 58,
+        "gender": "male",
+        "birthplace": {
+          "city": "Munich",
+          "country": "Germany"
+        },
+        "occupation": "University Professor",
+        "detailed_backstory": "Professor Schmidt is a highly respected, traditionalist professor of German literature and Sophie Dubois's 'Doktorvater' (PhD supervisor). He is a formidable intellectual but is old-fashioned in his methods and skeptical of modern critical theories and digital humanities, which he sees as frivolous. He pushes Sophie hard, believing in her potential but demanding a level of rigor that she finds both motivating and exhausting. He is often in departmental conflict with younger, more progressive colleagues.",
+        "relationships": [
+          {
+            "name_surname": "Sophie Dubois",
+            "relationship": "PhD student"
+          },
+          {
+            "name_surname": "Dr. Lena Hahn",
+            "relationship": "professional rival"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 58"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Munich, Germany"
+        },
+        {
+          "fact_description": "occupation: University Professor"
+        },
+        {
+          "fact_description": "Is a highly respected, traditionalist professor of German literature."
+        },
+        {
+          "fact_description": "Is skeptical of modern critical theories and digital humanities."
+        },
+        {
+          "fact_description": "Believes in his student Sophie's potential but pushes her very hard."
+        },
+        {
+          "fact_description": "Is in frequent departmental conflict with younger colleagues."
+        },
+        {
+          "fact_description": "phd_supervisor_for(Sophie Dubois)"
+        },
+        {
+          "fact_description": "professional_rival(Dr. Lena Hahn)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Kenan Demir",
+        "age": 42,
+        "gender": "male",
+        "birthplace": {
+          "city": "Gaziantep",
+          "country": "Turkey"
+        },
+        "occupation": "Taxi Driver",
+        "detailed_backstory": "Kenan is a widower and the father of one of Fatima Yilmaz's 8-year-old students. He works long, often grueling hours as a taxi driver to provide for his daughter, of whom he is fiercely protective. He is grateful for Fatima's kindness and attention towards his child and makes a point of attending every parent-teacher conference. He has lived in Berlin for 20 years and has a philosophical, and often critical, view of the city he observes through his windshield.",
+        "relationships": [
+          {
+            "name_surname": "Fatima Yilmaz",
+            "relationship": "daughter's teacher"
+          },
+          {
+            "name_surname": "Marie Schulz",
+            "relationship": "regular customer"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 42"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Gaziantep, Turkey"
+        },
+        {
+          "fact_description": "occupation: Taxi Driver"
+        },
+        {
+          "fact_description": "Is a widower."
+        },
+        {
+          "fact_description": "Has an 8-year-old daughter he is fiercely protective of."
+        },
+        {
+          "fact_description": "Works long, grueling hours to provide for his daughter."
+        },
+        {
+          "fact_description": "Is grateful for his daughter's teacher, Fatima Yilmaz."
+        },
+        {
+          "fact_description": "Has lived in Berlin for 20 years."
+        },
+        {
+          "fact_description": "his_daughter_is_a_student_of(Fatima Yilmaz)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Nina Fischer",
+        "age": 49,
+        "gender": "female",
+        "birthplace": {
+          "city": "Frankfurt",
+          "country": "Germany"
+        },
+        "occupation": "Venture Capitalist",
+        "detailed_backstory": "A formidable figure in Berlin's tech ecosystem, Nina is a partner at a major venture capital firm. She moved from Frankfurt's finance world to Berlin's startup scene in the early 2010s and made her name with several successful fintech investments. She is sharp, analytical, and unsentimental in her business dealings. Marcus Holloway is actively trying to get a meeting with her to pitch his company, but she is notoriously difficult to impress. She is passionate about finding and funding genuinely disruptive technologies.",
+        "relationships": [
+          {
+            "name_surname": "Marcus Holloway",
+            "relationship": "potential investment target"
+          },
+          {
+            "name_surname": "Max Richter",
+            "relationship": "mentee and portfolio founder"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 49"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Frankfurt, Germany"
+        },
+        {
+          "fact_description": "occupation: Venture Capitalist"
+        },
+        {
+          "fact_description": "Is a partner at a major Berlin venture capital firm."
+        },
+        {
+          "fact_description": "Is sharp, analytical, and unsentimental in business."
+        },
+        {
+          "fact_description": "Is notoriously difficult to impress."
+        },
+        {
+          "fact_description": "Is being pitched for funding by Marcus Holloway."
+        },
+        {
+          "fact_description": "mentor_to(Max Richter)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Pawel Nowak",
+        "age": 26,
+        "gender": "male",
+        "birthplace": {
+          "city": "Krakow",
+          "country": "Poland"
+        },
+        "occupation": "Sculptor",
+        "detailed_backstory": "Pawel is a young sculptor from Poland, recently arrived in Berlin. He creates intricate, large-scale sculptures from scrap metal and discarded objects he finds on the streets. Isabella Rossi discovered his work on Instagram and offered him his first solo show at her gallery. He is talented and driven but naive about the art world and the harsh realities of Berlin's housing market. He lives in a small, run-down studio apartment in Prenzlauer Berg and is currently facing an eviction notice from his landlord.",
+        "relationships": [
+          {
+            "name_surname": "Isabella Rossi",
+            "relationship": "gallerist"
+          },
+          {
+            "name_surname": "Herr Klaus Richter",
+            "relationship": "landlord"
+          },
+          {
+            "name_surname": "Eva Krause",
+            "relationship": "legal aid lawyer"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 26"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Krakow, Poland"
+        },
+        {
+          "fact_description": "occupation: Sculptor"
+        },
+        {
+          "fact_description": "Creates large-scale sculptures from scrap metal."
+        },
+        {
+          "fact_description": "Is talented and driven but naive about the art world and housing market."
+        },
+        {
+          "fact_description": "Was discovered by gallerist Isabella Rossi on Instagram."
+        },
+        {
+          "fact_description": "Is currently facing an eviction notice from his landlord."
+        },
+        {
+          "fact_description": "gallerist(Isabella Rossi)"
+        },
+        {
+          "fact_description": "client_of_lawyer(Eva Krause)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Stefan Auer",
+        "age": 31,
+        "gender": "male",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Police Officer",
+        "detailed_backstory": "Dr. Brandt Auer's son, Stefan, chose a very different path from his academic father, joining the Berlin Police. He is now a 'Polizeiobermeister' who often patrols high-conflict areas like Görlitzer Park and Kottbusser Tor. The daily exposure to crime, addiction, and social despair has made him cynical and hard-edged. His father's bureaucratic work seems abstract and pointless to him, creating a rift between them. He believes in order and enforcement, seeing little room for the social experiments his father's department plans.",
+        "relationships": [
+          {
+            "name_surname": "Dr. Brandt Auer",
+            "relationship": "father"
+          },
+          {
+            "name_surname": "Emilia Schmidt",
+            "relationship": "patrol partner"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 31"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Police Officer"
+        },
+        {
+          "fact_description": "Is a 'Polizeiobermeister' with the Berlin Police."
+        },
+        {
+          "fact_description": "Often patrols high-conflict areas like Görlitzer Park."
+        },
+        {
+          "fact_description": "Has become cynical and hard-edged from his work."
+        },
+        {
+          "fact_description": "His father's bureaucratic work seems pointless to him, creating a rift."
+        },
+        {
+          "fact_description": "father(Dr. Brandt Auer)"
+        },
+        {
+          "fact_description": "patrol_partner(Emilia Schmidt)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Samira Al-Jamil",
+        "age": 24,
+        "gender": "female",
+        "birthplace": {
+          "city": "Damascus",
+          "country": "Syria"
+        },
+        "occupation": "Social Work Student",
+        "detailed_backstory": "Omar's younger sister, Samira, is a bright and ambitious student at the Alice Salomon Hochschule, studying social work. She is fluent in German and deeply passionate about helping other refugee families navigate the system. She helps at her brother's restaurant on weekends but is determined to build her own career and identity outside of his shadow. She is currently working on a university project about youth services in Neukölln with a fellow student.",
+        "relationships": [
+          {
+            "name_surname": "Omar Al-Jamil",
+            "relationship": "brother"
+          },
+          {
+            "name_surname": "Yasemin Aydin",
+            "relationship": "classmate and project partner"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 24"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Damascus, Syria"
+        },
+        {
+          "fact_description": "occupation: Social Work Student"
+        },
+        {
+          "fact_description": "Is studying social work at the Alice Salomon Hochschule."
+        },
+        {
+          "fact_description": "Is fluent in German and passionate about helping refugee families."
+        },
+        {
+          "fact_description": "Helps at her brother's restaurant on weekends."
+        },
+        {
+          "fact_description": "Is determined to build her own career and identity."
+        },
+        {
+          "fact_description": "brother(Omar Al-Jamil)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Dr. Lena Hahn",
+        "age": 39,
+        "gender": "female",
+        "birthplace": {
+          "city": "Düsseldorf",
+          "country": "Germany"
+        },
+        "occupation": "Assistant Professor",
+        "detailed_backstory": "Dr. Hahn is an ambitious assistant professor in the same German literature department as Professor Schmidt. She represents the new guard of academia, specializing in digital humanities and data-driven analysis of texts. She sees Professor Schmidt's methods as outdated and is constantly fighting for funding and curriculum changes that he opposes. Their rivalry is the talk of the department, representing a broader ideological clash within the humanities.",
+        "relationships": [
+          {
+            "name_surname": "Professor Jörg Schmidt",
+            "relationship": "senior colleague and rival"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 39"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Düsseldorf, Germany"
+        },
+        {
+          "fact_description": "occupation: Assistant Professor"
+        },
+        {
+          "fact_description": "Is an ambitious assistant professor of German literature."
+        },
+        {
+          "fact_description": "Represents the 'new guard' of academia, specializing in digital humanities."
+        },
+        {
+          "fact_description": "Sees Professor Schmidt's methods as outdated."
+        },
+        {
+          "fact_description": "Her professional rivalry with Professor Schmidt is well-known in their department."
+        },
+        {
+          "fact_description": "professional_rival(Professor Jörg Schmidt)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Marie Schulz",
+        "age": 50,
+        "gender": "female",
+        "birthplace": {
+          "city": "Cologne",
+          "country": "Germany"
+        },
+        "occupation": "Flight Attendant",
+        "detailed_backstory": "Marie is a senior flight attendant for a major German airline. She lives a transient life, spending as much time in hotels around the world as she does in her quiet, well-kept apartment in leafy Charlottenburg. When flying into Berlin, she frequently takes Kenan Demir's taxi from the airport, appreciating his reliability and calm demeanor. Her view of Berlin is that of an outsider looking in, a comfortable home base far removed from the daily struggles of people like Kenan.",
+        "relationships": [
+          {
+            "name_surname": "Kenan Demir",
+            "relationship": "regular taxi driver"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 50"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Cologne, Germany"
+        },
+        {
+          "fact_description": "occupation: Flight Attendant"
+        },
+        {
+          "fact_description": "Is a senior flight attendant for a major German airline."
+        },
+        {
+          "fact_description": "Lives a transient life between hotels and her Charlottenburg apartment."
+        },
+        {
+          "fact_description": "Views Berlin as an outsider from a comfortable distance."
+        },
+        {
+          "fact_description": "regular_customer_of_taxi_driver(Kenan Demir)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Max Richter",
+        "age": 23,
+        "gender": "male",
+        "birthplace": {
+          "city": "Stuttgart",
+          "country": "Germany"
+        },
+        "occupation": "Tech Founder",
+        "detailed_backstory": "Max is the wunderkind founder of an AI-powered language-learning app. He dropped out of a prestigious technical university to pursue his startup, which has gained significant traction. Nina Fischer was an early investor and now serves as his mentor, pushing him to scale aggressively. He works out of a sleek, corporate co-working space in Mitte, the antithesis of Klara's KiezKonnekt. He is brilliant and driven but lacks emotional intelligence and has a high employee turnover rate.",
+        "relationships": [
+          {
+            "name_surname": "Nina Fischer",
+            "relationship": "investor and mentor"
+          },
+          {
+            "name_surname": "Liam O'Connell",
+            "relationship": "employee"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 23"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Stuttgart, Germany"
+        },
+        {
+          "fact_description": "occupation: Tech Founder"
+        },
+        {
+          "fact_description": "Is the wunderkind founder of an AI language-learning app."
+        },
+        {
+          "fact_description": "Dropped out of a prestigious university to pursue his startup."
+        },
+        {
+          "fact_description": "Is brilliant and driven but lacks emotional intelligence."
+        },
+        {
+          "fact_description": "His company has a high employee turnover rate."
+        },
+        {
+          "fact_description": "investor_and_mentor(Nina Fischer)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Herr Klaus Richter",
+        "age": 72,
+        "gender": "male",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Landlord / Retiree",
+        "detailed_backstory": "An 'Ur-Berliner' from Prenzlauer Berg, Herr Richter has owned his apartment building for nearly 50 years, inheriting it from his parents. He has witnessed the district transform from a working-class neighborhood to a playground for young families and creatives. He complains constantly about his new tenants, noise, and the price of coffee, but he is not malicious, just set in his ways. He is trying to evict Pawel Nowak to carry out a 'Luxussanierung' (luxury renovation) to dramatically increase the rent, a common practice he sees as his right.",
+        "relationships": [
+          {
+            "name_surname": "Pawel Nowak",
+            "relationship": "tenant"
+          },
+          {
+            "name_surname": "Eva Krause",
+            "relationship": "opposing counsel in eviction case"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 72"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Landlord / Retiree"
+        },
+        {
+          "fact_description": "Is an 'Ur-Berliner' (original Berliner) from Prenzlauer Berg."
+        },
+        {
+          "fact_description": "Has owned his apartment building for nearly 50 years."
+        },
+        {
+          "fact_description": "Is set in his ways and complains about new tenants."
+        },
+        {
+          "fact_description": "Is trying to evict tenant Pawel Nowak to carry out a luxury renovation."
+        },
+        {
+          "fact_description": "landlord_for(Pawel Nowak)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Emilia Schmidt",
+        "age": 28,
+        "gender": "female",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Police Officer",
+        "detailed_backstory": "Emilia is Stefan Auer's patrol partner. She grew up in a Plattenbau in Marzahn, a world away from both Stefan's West-Berlin upbringing and the trendy districts they now patrol. This background gives her a practical, non-judgmental perspective that often balances Stefan's cynicism. She is calm, observant, and exceptionally good at de-escalating tense situations, earning her the respect of her colleagues, including her often-moody partner.",
+        "relationships": [
+          {
+            "name_surname": "Stefan Auer",
+            "relationship": "patrol partner"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 28"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Police Officer"
+        },
+        {
+          "fact_description": "Grew up in a Plattenbau (large concrete slab building) in Marzahn."
+        },
+        {
+          "fact_description": "Her background gives her a practical, non-judgmental perspective."
+        },
+        {
+          "fact_description": "Is exceptionally good at de-escalating tense situations."
+        },
+        {
+          "fact_description": "Her perspective often balances her partner's cynicism."
+        },
+        {
+          "fact_description": "patrol_partner(Stefan Auer)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Yasemin Aydin",
+        "age": 23,
+        "gender": "female",
+        "birthplace": {
+          "city": "Berlin",
+          "country": "Germany"
+        },
+        "occupation": "Student / Activist",
+        "detailed_backstory": "A third-generation Turkish-German, Yasemin is Samira Al-Jamil's project partner and a firebrand activist. While also studying social work, her real passion is politics. She is a member of the university student council and volunteers at a local legal aid clinic that helps tenants fight evictions. She is sharp, outspoken, and fiercely critical of what she sees as systemic inequality in the city. She encourages Samira to be more politically active.",
+        "relationships": [
+          {
+            "name_surname": "Samira Al-Jamil",
+            "relationship": "classmate and project partner"
+          },
+          {
+            "name_surname": "Eva Krause",
+            "relationship": "supervisor at legal aid clinic"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 23"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Berlin, Germany"
+        },
+        {
+          "fact_description": "occupation: Student / Activist"
+        },
+        {
+          "fact_description": "Is a third-generation Turkish-German."
+        },
+        {
+          "fact_description": "Is a firebrand activist and politically passionate."
+        },
+        {
+          "fact_description": "Volunteers at a legal aid clinic that helps tenants fight evictions."
+        },
+        {
+          "fact_description": "Is fiercely critical of systemic inequality in the city."
+        },
+        {
+          "fact_description": "classmate_and_project_partner(Samira Al-Jamil)"
+        },
+        {
+          "fact_description": "volunteer_is_supervised_by(Eva Krause)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Thomas Neumann",
+        "age": 33,
+        "gender": "male",
+        "birthplace": {
+          "city": "Dresden",
+          "country": "Germany"
+        },
+        "occupation": "Bartender / Aspiring Filmmaker",
+        "detailed_backstory": "Thomas works as a bartender at a popular craft beer bar in Friedrichshain, a frequent post-rehearsal spot for Lukas Schmidt's band. By night he serves drinks, but by day he is an aspiring documentary filmmaker. He is currently working on a long-term project documenting the disappearing alternative music venues in Berlin. He sees people like Lukas and Felix as important subjects for his film, chronicling their creative struggles against the city's economic pressures.",
+        "relationships": [
+          {
+            "name_surname": "Lukas Schmidt",
+            "relationship": "acquaintance and film subject"
+          },
+          {
+            "name_surname": "Liam O'Connell",
+            "relationship": "regular customer"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 33"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Dresden, Germany"
+        },
+        {
+          "fact_description": "occupation: Bartender / Aspiring Filmmaker"
+        },
+        {
+          "fact_description": "Works as a bartender at a craft beer bar in Friedrichshain."
+        },
+        {
+          "fact_description": "Is working on a documentary about disappearing alternative music venues in Berlin."
+        },
+        {
+          "fact_description": "Considers people like Lukas and Felix to be important subjects for his film."
+        },
+        {
+          "fact_description": "acquaintance_and_film_subject(Lukas Schmidt)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Ben Carter",
+        "age": 21,
+        "gender": "male",
+        "birthplace": {
+          "city": "Chicago",
+          "country": "USA"
+        },
+        "occupation": "Exchange Student",
+        "detailed_backstory": "Ben is an American on a one-year exchange program at Humboldt University, studying in the same department as Sophie Dubois. He is captivated by Berlin's history and nightlife but finds the German university system incredibly rigid and isolating. He is often at the library, where he has developed a quiet, unrequited crush on the intensely focused Sophie. He represents the transient, temporary population of young people who come to Berlin for a short, intense experience.",
+        "relationships": [
+          {
+            "name_surname": "Sophie Dubois",
+            "relationship": "classmate he has a crush on"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 21"
+        },
+        {
+          "fact_description": "gender: male"
+        },
+        {
+          "fact_description": "birthplace: Chicago, USA"
+        },
+        {
+          "fact_description": "occupation: Exchange Student"
+        },
+        {
+          "fact_description": "Is on a one-year exchange program at Humboldt University."
+        },
+        {
+          "fact_description": "Is captivated by Berlin's history and nightlife."
+        },
+        {
+          "fact_description": "Finds the German university system rigid and isolating."
+        },
+        {
+          "fact_description": "Has a quiet, unrequited crush on his classmate Sophie Dubois."
+        },
+        {
+          "fact_description": "has_a_crush_on(Sophie Dubois)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Eva Krause",
+        "age": 41,
+        "gender": "female",
+        "birthplace": {
+          "city": "Rostock",
+          "country": "Germany"
+        },
+        "occupation": "Lawyer",
+        "detailed_backstory": "Eva is a dedicated, overworked lawyer at a non-profit legal aid clinic specializing in housing and tenancy law. She works for a fraction of what she could earn at a corporate firm because she believes passionately in housing as a human right. She is currently representing Pawel Nowak in his eviction case against his landlord, Herr Richter, a case that is consuming a great deal of her time. She is a skilled lawyer but is constantly battling a lack of resources and an overwhelming caseload.",
+        "relationships": [
+          {
+            "name_surname": "Yasemin Aydin",
+            "relationship": "volunteer she supervises"
+          },
+          {
+            "name_surname": "Pawel Nowak",
+            "relationship": "client"
+          },
+          {
+            "name_surname": "Herr Klaus Richter",
+            "relationship": "opposing party in a legal case"
+          }
+        ]
+      },
+      "facts": [
+        {
+          "fact_description": "age: 41"
+        },
+        {
+          "fact_description": "gender: female"
+        },
+        {
+          "fact_description": "birthplace: Rostock, Germany"
+        },
+        {
+          "fact_description": "occupation: Lawyer"
+        },
+        {
+          "fact_description": "Is a dedicated lawyer at a non-profit legal aid clinic."
+        },
+        {
+          "fact_description": "Specializes in housing and tenancy law."
+        },
+        {
+          "fact_description": "Believes passionately that housing is a human right."
+        },
+        {
+          "fact_description": "Is constantly battling a lack of resources and an overwhelming caseload."
+        },
+        {
+          "fact_description": "client_is(Pawel Nowak)"
+        },
+        {
+          "fact_description": "opposing_party_is(Herr Klaus Richter)"
+        },
+        {
+          "fact_description": "supervises_volunteer(Yasemin Aydin)"
+        }
+      ]
+    },
+    {
+      "persona": {
+        "name_surname": "Liam O'Connell",
         "age": 27,
         "gender": "male",
         "birthplace": {
-          "city": "Shanghai",
-          "country": "China"
+          "city": "Cork",
+          "country": "Ireland"
         },
-        "occupation": "PhD Student (AI & Data Science)",
-        "detailed_backstory": "David is a brilliant PhD student at RUG, working on predictive models for seismic activity using AI. His research is partly funded by the Netherlands Gentre for Energy Transition. He chose Groningen specifically for this research focus. He lives in a recently completed apartment block that was a flagship reinforcement and sustainability project for Anouk's firm. He is friends with Sophie de Vries, whom he met in an interdisciplinary course, and they often discuss the intersection of technology, data, and environmental policy.",
+        "occupation": "Software Developer",
+        "detailed_backstory": "Liam is a talented programmer who was lured from Dublin to Berlin three years ago by the promise of exciting tech jobs and a low cost of living. He now works for Max Richter's demanding startup. While he is well-paid, he finds the work culture draining and is beginning to feel the squeeze as Berlin's rents catch up with other European capitals. He frequently unwinds at the craft beer bar where Thomas Neumann works, complaining about his boss and the changing city.",
         "relationships": [
           {
-            "name_surname": "Sophie de Vries",
-            "relationship": "Friend and classmate"
+            "name_surname": "Max Richter",
+            "relationship": "employer"
           },
           {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "His apartment's architect (knows of her)"
-          },
-          {
-            "name_surname": "Elena Popescu",
-            "relationship": "Professor in his faculty"
+            "name_surname": "Thomas Neumann",
+            "relationship": "acquaintance/bartender"
           }
         ]
       },
@@ -701,40 +1618,43 @@
           "fact_description": "gender: male"
         },
         {
-          "fact_description": "birthplace: Shanghai, China"
+          "fact_description": "birthplace: Cork, Ireland"
         },
         {
-          "fact_description": "occupation: PhD Student (AI & Data Science)"
+          "fact_description": "occupation: Software Developer"
         },
         {
-          "fact_description": "Studies at the University of Groningen (RUG)."
+          "fact_description": "Moved to Berlin from Dublin three years ago."
         },
         {
-          "fact_description": "His research involves using AI to create predictive models for seismic activity."
+          "fact_description": "Works for Max Richter's demanding startup."
         },
         {
-          "fact_description": "Lives in an apartment block designed by Anouk's firm."
+          "fact_description": "Is well-paid but finds the work culture draining."
         },
         {
-          "fact_description": "friend(Sophie de Vries)"
+          "fact_description": "Is feeling the squeeze of Berlin's rising rents."
+        },
+        {
+          "fact_description": "employer(Max Richter)"
         }
       ]
     },
     {
       "persona": {
-        "name_surname": "Marek Nowak",
+        "name_surname": "Dr. Sofia Costa",
         "age": 44,
-        "gender": "male",
+        "gender": "female",
         "birthplace": {
-          "city": "Gdańsk",
-          "country": "Poland"
+          "city": "Lisbon",
+          "country": "Portugal"
         },
-        "occupation": "Construction Foreman",
-        "detailed_backstory": "Marek came to the Netherlands over fifteen years ago for work and has established his life in Groningen. He is a highly skilled and experienced builder, specializing in masonry and foundation work. He is Lars van der Meer's most trusted foreman, respected by his crew for his fairness and expertise. He has worked on dozens of reinforcement projects and has a deep, unspoken understanding of the structural pains of the region's buildings. He is saving money to buy a house for his family, who live with him in a rented apartment.",
+        "occupation": "Psychotherapist",
+        "detailed_backstory": "Sofia is a Portuguese psychotherapist with a private practice near KiezKonnekt. She specializes in issues common among Berlin's international and creative communities: burnout, anxiety, and the challenges of integration. Klara Schmidt started seeing her a few months ago after realizing the stress of running her business was becoming unmanageable. Sofia is empathetic and insightful, helping Klara to navigate her professional and personal pressures with a focus on setting healthier boundaries.",
         "relationships": [
           {
-            "name_surname": "Lars van der Meer",
-            "relationship": "Employer"
+            "name_surname": "Klara Schmidt",
+            "relationship": "patient"
           }
         ]
       },
@@ -743,194 +1663,80 @@
           "fact_description": "age: 44"
         },
         {
-          "fact_description": "gender: male"
+          "fact_description": "gender: female"
         },
         {
-          "fact_description": "birthplace: Gdańsk, Poland"
+          "fact_description": "birthplace: Lisbon, Portugal"
         },
         {
-          "fact_description": "occupation: Construction Foreman"
+          "fact_description": "occupation: Psychotherapist"
         },
         {
-          "fact_description": "Moved to the Netherlands for work over 15 years ago."
+          "fact_description": "Has a private practice near KiezKonnekt."
         },
         {
-          "fact_description": "Is Lars van der Meer's most trusted foreman."
+          "fact_description": "Specializes in burnout, anxiety, and integration challenges."
         },
         {
-          "fact_description": "Specializes in masonry and foundation work."
+          "fact_description": "Is empathetic and insightful."
         },
         {
-          "fact_description": "Is saving money to buy a house for his family."
+          "fact_description": "Is helping Klara Schmidt to set healthier boundaries."
         },
         {
-          "fact_description": "employee_of(Lars van der Meer)"
+          "fact_description": "patient(Klara Schmidt)"
         }
       ]
     },
     {
       "persona": {
-        "name_surname": "Bram Bakker",
-        "age": 28,
-        "gender": "male",
-        "birthplace": {
-          "city": "Groningen",
-          "country": "Netherlands"
-        },
-        "occupation": "Junior Policy Advisor",
-        "detailed_backstory": "Bram is a young, ambitious policy advisor working directly under Gerda Dijkema. He graduated from RUG with a degree in public administration and sees his current role as a stepping stone to a bigger career, hopefully in national politics in The Hague. He is diligent and efficient, handling much of the paperwork and scheduling for Gerda. He's fascinated by the technical side of the projects and has developed a quiet admiration for Fatima Al-Jamil from Anouk's firm, whom he meets during project briefings.",
-        "relationships": [
-          {
-            "name_surname": "Gerda Dijkema",
-            "relationship": "Supervisor"
-          },
-          {
-            "name_surname": "Fatima Al-Jamil",
-            "relationship": "Professional acquaintance (has a crush on her)"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 28"
-        },
-        {
-          "fact_description": "gender: male"
-        },
-        {
-          "fact_description": "birthplace: Groningen, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Junior Policy Advisor"
-        },
-        {
-          "fact_description": "Works as Gerda Dijkema's assistant."
-        },
-        {
-          "fact_description": "Is ambitious and hopes for a career in national politics."
-        },
-        {
-          "fact_description": "Has a quiet crush on Fatima Al-Jamil."
-        },
-        {
-          "fact_description": "subordinate_of(Gerda Dijkema)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Jelle de Boer",
-        "age": 19,
-        "gender": "male",
-        "birthplace": {
-          "city": "Appingedam",
-          "country": "Netherlands"
-        },
-        "occupation": "Student & Part-time Barista",
-        "detailed_backstory": "Jelle is the son of the activist Klaas de Boer. Growing up in a home defined by the fight against the system has left him feeling weary and cynical. Unlike his father, who channels his anger into activism, Jelle feels a sense of hopelessness about the region's future and dreams of moving to Amsterdam or Berlin. He is taking a gap year after high school and works part-time at Matteo Rossi's cafe to save money. He avoids conversations about earthquakes and politics, which creates a rift between him and his father.",
-        "relationships": [
-          {
-            "name_surname": "Klaas de Boer",
-            "relationship": "Father"
-          },
-          {
-            "name_surname": "Matteo Rossi",
-            "relationship": "Employer"
-          }
-        ]
-      },
-      "facts": [
-        {
-          "fact_description": "age: 19"
-        },
-        {
-          "fact_description": "gender: male"
-        },
-        {
-          "fact_description": "birthplace: Appingedam, Netherlands"
-        },
-        {
-          "fact_description": "occupation: Student & Part-time Barista"
-        },
-        {
-          "fact_description": "Is on a gap year after high school."
-        },
-        {
-          "fact_description": "Feels cynical and hopeless about his home region's future."
-        },
-        {
-          "fact_description": "Dreams of moving to a big city like Amsterdam or Berlin."
-        },
-        {
-          "fact_description": "His avoidance of politics creates a rift with his father."
-        },
-        {
-          "fact_description": "son(Klaas de Boer)"
-        },
-        {
-          "fact_description": "employee_of(Matteo Rossi)"
-        }
-      ]
-    },
-    {
-      "persona": {
-        "name_surname": "Lisa Schmidt",
-        "age": 22,
+        "name_surname": "Jutta Müller",
+        "age": 52,
         "gender": "female",
         "birthplace": {
-          "city": "Hamburg",
+          "city": "Freiburg",
           "country": "Germany"
         },
-        "occupation": "Architecture Intern",
-        "detailed_backstory": "Lisa is a German architecture student on an Erasmus exchange, doing a mandatory internship. She landed a spot at Thomas Janssen's large, well-known firm, thinking it would look good on her CV. However, she finds the corporate environment stifling and has become a quiet admirer of Anouk van der Meer's work, following her projects in the local media. She finds Anouk's community-focused, sustainable approach far more inspiring. She is friends with Sophie de Vries through a university sports club and they often complain about their respective fields.",
+        "occupation": "Biomarkt Manager",
+        "detailed_backstory": "Jutta is the manager of a popular organic supermarket ('Biomarkt') in Schöneberg. Originally from Freiburg, Germany's 'green city', she is a true believer in the organic and local food movement. She runs her store with meticulous care, knowing many of her regular customers by name and taking pride in the quality of her produce. Anja Weber and Ingrid Bauer are among her most loyal customers, and she often engages them in long conversations about new sustainable products or neighborhood gossip.",
         "relationships": [
           {
-            "name_surname": "Thomas Janssen",
-            "relationship": "Internship Supervisor"
+            "name_surname": "Anja Weber",
+            "relationship": "regular customer"
           },
           {
-            "name_surname": "Sophie de Vries",
-            "relationship": "Friend"
-          },
-          {
-            "name_surname": "Anouk van der Meer",
-            "relationship": "Professional Idol (from afar)"
+            "name_surname": "Ingrid Bauer",
+            "relationship": "regular customer"
           }
         ]
       },
       "facts": [
         {
-          "fact_description": "age: 22"
+          "fact_description": "age: 52"
         },
         {
           "fact_description": "gender: female"
         },
         {
-          "fact_description": "birthplace: Hamburg, Germany"
+          "fact_description": "birthplace: Freiburg, Germany"
         },
         {
-          "fact_description": "occupation: Architecture Intern"
+          "fact_description": "occupation: Biomarkt Manager"
         },
         {
-          "fact_description": "Is a German student on an Erasmus exchange."
+          "fact_description": "Manages a popular organic supermarket ('Biomarkt') in Schöneberg."
         },
         {
-          "fact_description": "Is interning at Thomas Janssen's large firm."
+          "fact_description": "Is a true believer in the organic and local food movement."
         },
         {
-          "fact_description": "Finds her corporate internship environment stifling."
+          "fact_description": "Knows many of her regular customers by name."
         },
         {
-          "fact_description": "Is a quiet admirer of Anouk van der Meer's work."
+          "fact_description": "regular_customer(Anja Weber)"
         },
         {
-          "fact_description": "intern_for(Thomas Janssen)"
-        },
-        {
-          "fact_description": "friend(Sophie de Vries)"
-        },
-        {
-          "fact_description": "admirer_of(Anouk van der Meer)"
+          "fact_description": "regular_customer(Ingrid Bauer)"
         }
       ]
     }
