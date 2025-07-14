@@ -62,8 +62,9 @@ def read_jsonl(
             return [UpdateQAEntry(**json.loads(line)) for line in f]
 
 
-MODEL_NAME = "google/gemini-2.5-pro"  # anthropic/claude-sonnet-4 #qwen/qwen3-14b #google/gemma-3-27b-it #google/gemma-3-12b-it #"google/gemini-2.5-pro"
+MODEL_NAME = "qwen/qwen3-8b"  # anthropic/claude-sonnet-4 #qwen/qwen3-14b #google/gemma-3-27b-it #google/gemma-3-12b-it #"google/gemini-2.5-pro"
 JUDGE_NAME = "google/gemini-2.5-pro"
+USE_VLLM = False  # Set to True to use VLLM for the evaluated model (judge will still use regular client)
 TMP_DIR = "tmp_work"
 
 
@@ -95,14 +96,14 @@ async def evaluate_agents():
             if os.path.exists(src_folder_path):
                 shutil.copytree(src_folder_path, tmp_folder_path, dirs_exist_ok=True)
                 shutil.copy2(src_qa_path, tmp_qa_path)
-                agent = Agent(model=MODEL_NAME, memory_path=tmp_folder_path)
+                agent = Agent(model=MODEL_NAME, memory_path=tmp_folder_path, use_vllm=USE_VLLM)
                 qa = read_jsonl(tmp_qa_path, category)
 
                 for entry in tqdm(qa, desc=f"Entries in {folder}", leave=False):
                     if category == "update":
                         agent.chat(entry.update)
                         retrieval_agent = Agent(
-                            model=MODEL_NAME, memory_path=tmp_folder_path
+                            model=MODEL_NAME, memory_path=tmp_folder_path, use_vllm=USE_VLLM
                         )
                         retrieval_agent.chat(entry.question)
                         model_answer = retrieval_agent.messages[-1]
