@@ -87,15 +87,13 @@ def get_model_response(
     if use_vllm:
         completion = client.chat.completions.create(
             model=model,
-            messages=messages,
-            stop=["</reply>", "</python>"]
+            messages=messages
         )
             
         return completion.choices[0].message.content
     else:
         completion = client.chat.completions.create(
             model=model,
-            messages=messages,
-            stop=["</reply>", "</python>"]
+            messages=messages
         )
         return completion.choices[0].message.content

@@ -93,6 +93,6 @@ async def get_model_response(
         return completion.choices[0].message.content
     else:
         completion = await client.chat.completions.create(
-            model=model, messages=messages, stop=["</reply>", "</python>"]
+            model=model, messages=messages
         )
         return completion.choices[0].message.content
