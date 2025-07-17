@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from data.schemas.base import BaseSchema
 
@@ -19,25 +20,46 @@ class StaticMemory(BaseSchema):
         """
         Instantiate the static memory inside the memory path.
         """
-        create_memory_if_not_exists(path)
-        user_md_path = os.path.join(path, "user.md")
-        with open(user_md_path, "w") as f:
-            f.write(self.user_md)
-        for entity in self.entities:
-            entity_file_path = os.path.join(path, entity.entity_file_path)
-            with open(entity_file_path, "w") as f:
-                f.write(entity.entity_file_content)
+        try:
+            # Create the base memory directory
+            create_memory_if_not_exists(path)
+            
+            # Write user.md file
+            user_md_path = os.path.join(path, "user.md")
+            with open(user_md_path, "w") as f:
+                f.write(self.user_md)
+            
+            # Write entity files
+            for entity in self.entities:
+                entity_file_path = os.path.join(path, entity.entity_file_path)
+                
+                # Ensure parent directory exists
+                entity_dir = os.path.dirname(entity_file_path)
+                if entity_dir and not os.path.exists(entity_dir):
+                    os.makedirs(entity_dir, exist_ok=True)
+                
+                # Write the entity file
+                with open(entity_file_path, "w") as f:
+                    f.write(entity.entity_file_content)
+                    
+        except Exception as e:
+            print(f"Error instantiating static memory at {path}: {e}")
+            raise
 
-    def to_json(self):
+    def reset(self, path: str):
         """
-        Return a dictionary representation for JSON serialization.
+        Reset the static memory inside the memory path.
         """
-        return {
-            "guideline": self.guideline,
-            "user_file_path": self.user_file_path,
-            "user_file_content": self.user_file_content,
-        }
+        try:
+            # Delete the memory directory
+            if os.path.exists(path):
+                shutil.rmtree(path)
 
+            # Call the instantiate method
+            self.instantiate(path)
+        except Exception as e:
+            print(f"Error resetting static memory at {path}: {e}")
+            raise
 
 class FactUpdate(BaseSchema):
     initial_fact: str

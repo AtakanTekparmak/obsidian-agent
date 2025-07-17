@@ -1,166 +1,722 @@
 {
   "personas": [
     {
-      "name_surname": "Emma van der Berg",
-      "age": 32,
+      "name_surname": "Annelies de Vries",
+      "age": 52,
       "gender": "female",
       "birthplace": {
         "city": "Groningen",
         "country": "Netherlands"
       },
-      "occupation": "Sustainability Consultant at University of Groningen",
-      "detailed_backstory": "Emma was born and raised in Groningen, witnessing the city's transformation into a leading sustainable urban center. After completing her PhD in Environmental Sciences at the University of Groningen in 2018, she joined the university as a sustainability consultant, helping implement the campus-wide carbon neutrality initiative that was completed in 2024. She lives in a renovated canal house in the Hortusbuurt with her partner Lars and their 3-year-old daughter. Emma is passionate about cycling infrastructure and served on the city council committee that designed Groningen's revolutionary bike-sharing system with solar charging stations.",
+      "occupation": "Professor of Sustainable Energy Systems",
+      "detailed_backstory": "Born and raised in Groningen, Annelies has a deep connection to the city. She is a leading academic at the University of Groningen (RUG), specializing in the socio-technical aspects of the energy transition. Her work is highly relevant as the province continues to move away from natural gas extraction. She is passionate and driven, often spending long hours at the university's Energy Academy Europe. She lives in a modern, energy-neutral house designed by her husband, Sander. In her spare time, she enjoys cycling through the Ommelanden and weekly coffee meetings with her best friend, Ingrid.",
       "relationships": [
         {
-          "name_surname": "Lars Janssen",
-          "relationship": "romantic partner"
+          "name_surname": "Sander Jansen",
+          "relationship": "Husband"
         },
         {
-          "name_surname": "Fatima Al-Hassan",
-          "relationship": "close friend and colleague"
+          "name_surname": "Lotte Jansen",
+          "relationship": "Daughter"
+        },
+        {
+          "name_surname": "Daan Jansen",
+          "relationship": "Son"
+        },
+        {
+          "name_surname": "Prof. Ben Carter",
+          "relationship": "Colleague and Mentor"
+        },
+        {
+          "name_surname": "Dr. Fatima Al-Jamil",
+          "relationship": "Post-doctoral researcher in her team"
+        },
+        {
+          "name_surname": "Ingrid Dijkstra",
+          "relationship": "Best friend"
         }
       ]
     },
     {
-      "name_surname": "Lars Janssen",
-      "age": 35,
+      "name_surname": "Sander Jansen",
+      "age": 54,
       "gender": "male",
       "birthplace": {
-        "city": "Amsterdam",
+        "city": "Rotterdam",
         "country": "Netherlands"
       },
-      "occupation": "Senior Software Developer at Gasunie Digital",
-      "detailed_backstory": "Lars moved to Groningen in 2019 when Gasunie established their digital innovation hub focused on green hydrogen technology. Originally from Amsterdam, he was drawn to Groningen's tech scene and lower cost of living. He specializes in IoT systems for smart energy grids and has been instrumental in developing the city's integrated renewable energy management system. Lars met Emma through a local cycling club and they've been together for four years. He's an avid photographer who documents Groningen's urban development and maintains a popular Instagram account showcasing the city's green transformation.",
+      "occupation": "Architect",
+      "detailed_backstory": "Sander moved to the north to study architecture and fell in love with both Groningen and Annelies. He runs his own small architectural firm, 'Jansen Duurzaam Ontwerp', which focuses on sustainable and earthquake-resistant housing, a direct response to the region's needs. He's proud of the home he designed for his family and often uses it as a showcase for potential clients. He is a calm and steady presence, balancing Annelies' academic intensity. He's currently collaborating with Mark van der Wal on a new co-housing project in the Reitdiep neighborhood.",
       "relationships": [
         {
-          "name_surname": "Emma van der Berg",
-          "relationship": "romantic partner"
+          "name_surname": "Annelies de Vries",
+          "relationship": "Wife"
         },
         {
-          "name_surname": "Ahmed Kone",
-          "relationship": "work colleague and friend"
+          "name_surname": "Lotte Jansen",
+          "relationship": "Daughter"
+        },
+        {
+          "name_surname": "Daan Jansen",
+          "relationship": "Son"
+        },
+        {
+          "name_surname": "Mark van der Wal",
+          "relationship": "Business associate / Lead contractor"
+        },
+        {
+          "name_surname": "Sofia Rossi",
+          "relationship": "Collaborator / Interior Designer"
         }
       ]
     },
     {
-      "name_surname": "Fatima Al-Hassan",
-      "age": 29,
+      "name_surname": "Lotte Jansen",
+      "age": 23,
+      "gender": "female",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Co-founder & CTO of a Tech Startup",
+      "detailed_backstory": "Inheriting her mother's intellect and her father's practical mindset, Lotte excelled in her Computer Science studies at RUG. Instead of taking a safe corporate job, she and her boyfriend, Thomas, co-founded 'ConnectGronn', a platform aimed at connecting international students with local businesses for internships. The startup, backed by angel investor Lars Hendriks, operates out of a bustling co-working space near the Grote Markt. Lotte is ambitious and works tirelessly, often to the concern of her parents.",
+      "relationships": [
+        {
+          "name_surname": "Annelies de Vries",
+          "relationship": "Mother"
+        },
+        {
+          "name_surname": "Sander Jansen",
+          "relationship": "Father"
+        },
+        {
+          "name_surname": "Thomas de Boer",
+          "relationship": "Boyfriend and business partner"
+        },
+        {
+          "name_surname": "Aisha Sharma",
+          "relationship": "Colleague and friend"
+        }
+      ]
+    },
+    {
+      "name_surname": "Daan Jansen",
+      "age": 19,
+      "gender": "male",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "University Student (History)",
+      "detailed_backstory": "Daan is the more artistic and philosophical member of the Jansen family. While proud of his parents and sister, he has no interest in science or business. He is a first-year History student at RUG and loves getting lost in the city's past. He lives in a chaotic student house in the Schilderswijk, managed by a stern landlady, Mevrouw Bakker. He spends his time reading, debating with his roommate Pieter, and exploring the city with his classmate Elena, for whom he harbors a growing affection.",
+      "relationships": [
+        {
+          "name_surname": "Annelies de Vries",
+          "relationship": "Mother"
+        },
+        {
+          "name_surname": "Sander Jansen",
+          "relationship": "Father"
+        },
+        {
+          "name_surname": "Lotte Jansen",
+          "relationship": "Sister"
+        },
+        {
+          "name_surname": "Elena Popescu",
+          "relationship": "Classmate and close friend"
+        },
+        {
+          "name_surname": "Pieter Kramer",
+          "relationship": "Roommate"
+        }
+      ]
+    },
+    {
+      "name_surname": "Prof. Ben Carter",
+      "age": 60,
+      "gender": "male",
+      "birthplace": {
+        "city": "Manchester",
+        "country": "United Kingdom"
+      },
+      "occupation": "Professor of Environmental Science",
+      "detailed_backstory": "An expat who has lived in Groningen for over 30 years, Ben is a respected figure at the university and Annelies de Vries's former PhD supervisor, now a close colleague and friend. He is nearing retirement and has taken on a more advisory role, both at the university and for the local government. He often provides expert commentary for local news on climate issues. He is married to Julia, a retired GP, and lives a quiet life in the suburb of Haren. He frequently consults with council member Wouter Meijer on municipal green policies.",
+      "relationships": [
+        {
+          "name_surname": "Annelies de Vries",
+          "relationship": "Colleague and friend"
+        },
+        {
+          "name_surname": "Julia Carter",
+          "relationship": "Wife"
+        },
+        {
+          "name_surname": "Wouter Meijer",
+          "relationship": "Professional contact"
+        }
+      ]
+    },
+    {
+      "name_surname": "Dr. Fatima Al-Jamil",
+      "age": 34,
       "gender": "female",
       "birthplace": {
         "city": "Damascus",
         "country": "Syria"
       },
-      "occupation": "PhD Researcher in Renewable Energy Engineering",
-      "detailed_backstory": "Fatima arrived in Groningen in 2019 as a refugee, having fled Syria in 2017. After spending two years in Germany learning Dutch and completing preparatory courses, she earned a scholarship to pursue her PhD at the University of Groningen focusing on wind energy optimization. Her research on offshore wind farm efficiency has gained international recognition. She lives in student housing in Paddepoel and serves as a mentor for other refugee students through the university's integration program. Fatima has become deeply involved in Groningen's multicultural community center and organizes Arabic language classes for local families.",
+      "occupation": "Post-doctoral Researcher",
+      "detailed_backstory": "Fatima is a brilliant and resilient researcher. She left Syria before the war to pursue her PhD in Germany and was later hired by Annelies de Vries for a prestigious post-doc position at RUG. She focuses on hydrogen energy storage. She is deeply committed to her work, seeing it as a way to build a stable future for her family. Her husband, Amir, whom she helped bring to the Netherlands, is a chef, and they have a young daughter, Yasmin. Fatima is navigating the challenges of a demanding career while supporting her family's integration into Dutch society.",
       "relationships": [
         {
-          "name_surname": "Emma van der Berg",
-          "relationship": "close friend and colleague"
+          "name_surname": "Annelies de Vries",
+          "relationship": "Supervisor / Mentor"
         },
         {
-          "name_surname": "Pieter Dijkstra",
-          "relationship": "PhD supervisor"
+          "name_surname": "Amir Al-Jamil",
+          "relationship": "Husband"
+        },
+        {
+          "name_surname": "Yasmin Al-Jamil",
+          "relationship": "Daughter"
+        },
+        {
+          "name_surname": "Kenji Tanaka",
+          "relationship": "Colleague in the same research group"
         }
       ]
     },
     {
-      "name_surname": "Pieter Dijkstra",
-      "age": 58,
+      "name_surname": "Kenji Tanaka",
+      "age": 27,
       "gender": "male",
+      "birthplace": {
+        "city": "Tokyo",
+        "country": "Japan"
+      },
+      "occupation": "PhD Student",
+      "detailed_backstory": "Kenji came to Groningen specifically to work with Professor de Vries, whose papers he admired. He is a quiet, meticulous, and incredibly hardworking PhD student, researching smart grid technology. He often feels isolated, struggling with the cultural differences and the directness of the Dutch. He finds camaraderie with his lab partner, Chloe, and his colleague Fatima. He is under immense pressure from his father in Japan, who wanted him to join the family business and sees his academic pursuits as a waste of time.",
+      "relationships": [
+        {
+          "name_surname": "Annelies de Vries",
+          "relationship": "PhD Supervisor"
+        },
+        {
+          "name_surname": "Dr. Fatima Al-Jamil",
+          "relationship": "Colleague"
+        },
+        {
+          "name_surname": "Hiroshi Tanaka",
+          "relationship": "Father"
+        },
+        {
+          "name_surname": "Chloe Dubois",
+          "relationship": "Friend and lab partner"
+        }
+      ]
+    },
+    {
+      "name_surname": "Ingrid Dijkstra",
+      "age": 51,
+      "gender": "female",
       "birthplace": {
         "city": "Leeuwarden",
         "country": "Netherlands"
       },
-      "occupation": "Professor of Renewable Energy Engineering at University of Groningen",
-      "detailed_backstory": "Professor Dijkstra has been at the University of Groningen for over 25 years, becoming a leading voice in Northern Netherlands' transition to renewable energy. Born in nearby Leeuwarden, he has deep roots in Frisian culture and often incorporates traditional Frisian problem-solving approaches into his engineering methodology. He leads the university's partnership with local wind energy companies and has supervised over 50 PhD students. Pieter lives in a sustainable home in Haren that serves as a living laboratory for his research. He's married with two adult children who have moved to other Dutch cities, and he's known for his traditional Friday afternoon borrels with his research team.",
+      "occupation": "Bookstore Owner",
+      "detailed_backstory": "Ingrid is Annelies's oldest and closest friend, having met during their first week as students at RUG. While Annelies pursued academia, Ingrid followed her passion for literature and now owns 'Boekhandel Dijkstra', a beloved independent bookstore in the Oude Kijk in 't Jatstraat. The store is a haven for book lovers and a central meeting point for many. Ingrid is warm, witty, and a great listener, acting as Annelies's non-academic sounding board. She employs a part-time student, Tessa, and knows her regular customers, like Herman Visser, by name.",
       "relationships": [
         {
-          "name_surname": "Fatima Al-Hassan",
-          "relationship": "PhD student"
+          "name_surname": "Annelies de Vries",
+          "relationship": "Best friend"
         },
         {
-          "name_surname": "Inge Bakker",
-          "relationship": "departmental colleague"
+          "name_surname": "Tessa Boom",
+          "relationship": "Employee"
+        },
+        {
+          "name_surname": "Herman Visser",
+          "relationship": "Loyal customer"
         }
       ]
     },
     {
-      "name_surname": "Ahmed Kone",
-      "age": 27,
+      "name_surname": "Mark van der Wal",
+      "age": 45,
       "gender": "male",
       "birthplace": {
-        "city": "Bamako",
-        "country": "Mali"
+        "city": "Delfzijl",
+        "country": "Netherlands"
       },
-      "occupation": "Junior Data Analyst at Gasunie Digital",
-      "detailed_backstory": "Ahmed came to Groningen in 2020 after completing his master's degree in Data Science at the University of Twente. Originally from Mali, he was recruited by Gasunie Digital for their diversity initiative and his expertise in machine learning applications for energy systems. He works closely with Lars on predictive maintenance algorithms for gas infrastructure transitioning to hydrogen. Ahmed lives in a shared apartment in Selwerd and is active in the African Student Association. He's passionate about football and plays for a local amateur team that represents Groningen's international community in regional tournaments.",
+      "occupation": "Construction Contractor",
+      "detailed_backstory": "Mark is a no-nonsense contractor from a family of builders in the province. He runs a successful construction company that has adapted to the region's changing needs, specializing in renovating older buildings to be more energy-efficient and reinforcing them against potential earthquakes. He respects Sander Jansen's visionary designs and they have a strong working relationship built on mutual trust. Mark is a pragmatist who values hard work over talk. He manages a dedicated crew, including his top carpenter, Rick de Jong.",
       "relationships": [
         {
-          "name_surname": "Lars Janssen",
-          "relationship": "work colleague and friend"
+          "name_surname": "Sander Jansen",
+          "relationship": "Business associate / Architect"
         },
         {
-          "name_surname": "Sophie Hendriks",
-          "relationship": "romantic interest"
+          "name_surname": "Rick de Jong",
+          "relationship": "Employee"
         }
       ]
     },
     {
-      "name_surname": "Sophie Hendriks",
+      "name_surname": "Sofia Rossi",
+      "age": 38,
+      "gender": "female",
+      "birthplace": {
+        "city": "Florence",
+        "country": "Italy"
+      },
+      "occupation": "Interior Designer",
+      "detailed_backstory": "Sofia moved to the Netherlands for a job with a large design firm in Amsterdam but grew tired of the frantic pace. She relocated to Groningen for its more relaxed atmosphere and started her own studio. She brings a touch of Italian elegance to the often-functional Dutch design aesthetic. She has recently started collaborating with Sander Jansen, bringing her unique style to his sustainable building projects, creating spaces that are both eco-friendly and beautiful. She is currently single and enjoys exploring the Groninger art scene.",
+      "relationships": [
+        {
+          "name_surname": "Sander Jansen",
+          "relationship": "Collaborator"
+        }
+      ]
+    },
+    {
+      "name_surname": "Thomas de Boer",
+      "age": 24,
+      "gender": "male",
+      "birthplace": {
+        "city": "Zwolle",
+        "country": "Netherlands"
+      },
+      "occupation": "Co-founder & CEO of a Tech Startup",
+      "detailed_backstory": "Thomas is the charismatic and business-minded half of the 'ConnectGronn' startup. He met Lotte Jansen during a university hackathon, and their skills complemented each other perfectly. Thomas handles the business development, pitching to investors like Lars Hendriks, and networking, while Lotte manages the tech. He is driven by a desire to make an impact and is fiercely protective of their company's vision. His mother, Eva, is a nurse at UMCG and worries about the long hours he and Lotte are putting in.",
+      "relationships": [
+        {
+          "name_surname": "Lotte Jansen",
+          "relationship": "Girlfriend and business partner"
+        },
+        {
+          "name_surname": "Lars Hendriks",
+          "relationship": "Investor"
+        },
+        {
+          "name_surname": "Eva de Boer",
+          "relationship": "Mother"
+        }
+      ]
+    },
+    {
+      "name_surname": "Aisha Sharma",
       "age": 25,
+      "gender": "female",
+      "birthplace": {
+        "city": "Mumbai",
+        "country": "India"
+      },
+      "occupation": "Marketing Manager",
+      "detailed_backstory": "Aisha came to Groningen as an international student to get her Master's in Marketing Management. After graduating, she was one of the first people hired by Lotte and Thomas for 'ConnectGronn'. Her own experience as an international student makes her passionate about the company's mission. She is creative, tech-savvy, and has been instrumental in growing the platform's user base. She is a close friend to Lotte, and they often unwind together after a stressful week at the startup.",
+      "relationships": [
+        {
+          "name_surname": "Lotte Jansen",
+          "relationship": "Friend and employer"
+        },
+        {
+          "name_surname": "Thomas de Boer",
+          "relationship": "Employer"
+        }
+      ]
+    },
+    {
+      "name_surname": "Lars Hendriks",
+      "age": 50,
+      "gender": "male",
+      "birthplace": {
+        "city": "Eindhoven",
+        "country": "Netherlands"
+      },
+      "occupation": "Angel Investor",
+      "detailed_backstory": "Lars made his fortune in the early 2000s tech boom and now enjoys a semi-retired life as an angel investor. He moved to Groningen for its burgeoning startup scene and quality of life. He is shrewd and analytical, but he saw genuine potential in Lotte and Thomas's 'ConnectGronn' and provided their crucial seed funding. He now serves as a mentor, offering tough but valuable advice. He has a strained relationship with his daughter, Isabella, whose influencer career he doesn't understand or approve of.",
+      "relationships": [
+        {
+          "name_surname": "Lotte Jansen",
+          "relationship": "Investee"
+        },
+        {
+          "name_surname": "Thomas de Boer",
+          "relationship": "Investee / Mentee"
+        },
+        {
+          "name_surname": "Isabella Hendriks",
+          "relationship": "Daughter"
+        }
+      ]
+    },
+    {
+      "name_surname": "Elena Popescu",
+      "age": 19,
+      "gender": "female",
+      "birthplace": {
+        "city": "Cluj-Napoca",
+        "country": "Romania"
+      },
+      "occupation": "University Student (History)",
+      "detailed_backstory": "Elena is a bright international student who chose the University of Groningen for its excellent reputation in History and its vibrant student life. She is fascinated by Dutch history, particularly the Hanseatic League. She quickly befriended her classmate, Daan Jansen, appreciating his thoughtful nature and their shared passion for the subject. She is independent and adaptable but sometimes feels a pang of homesickness. She rents a small studio in the city, finding Daan's student house a bit too chaotic for her taste.",
+      "relationships": [
+        {
+          "name_surname": "Daan Jansen",
+          "relationship": "Classmate and close friend"
+        }
+      ]
+    },
+    {
+      "name_surname": "Pieter Kramer",
+      "age": 20,
+      "gender": "male",
+      "birthplace": {
+        "city": "The Hague",
+        "country": "Netherlands"
+      },
+      "occupation": "University Student (Law)",
+      "detailed_backstory": "Pieter is Daan's roommate and a sharp, ambitious law student. He is a member of the Vindicat student corps, and his life revolves around his studies and the social obligations of his fraternity. He is extroverted and often teases Daan for being too introspective. Despite their differences, they have a solid friendship built on late-night talks and shared frustrations with their landlady, Greetje Bakker. Pieter plans to go into corporate law in the Randstad after graduation.",
+      "relationships": [
+        {
+          "name_surname": "Daan Jansen",
+          "relationship": "Roommate"
+        },
+        {
+          "name_surname": "Greetje Bakker",
+          "relationship": "Tenant"
+        }
+      ]
+    },
+    {
+      "name_surname": "Greetje Bakker",
+      "age": 72,
       "gender": "female",
       "birthplace": {
         "city": "Groningen",
         "country": "Netherlands"
       },
-      "occupation": "Marketing Coordinator at Groningen Tourism Board",
-      "detailed_backstory": "Sophie is a Groningen native who returned to her hometown after studying International Business in Rotterdam. She joined the tourism board in 2023, specializing in promoting Groningen as a sustainable travel destination. Her work involves developing digital campaigns showcasing the city's green initiatives, from its car-free city center to its innovative urban farming projects. Sophie lives in a modern apartment in the Europapark district and is passionate about local food culture, often collaborating with sustainable restaurants for tourism promotions. She met Ahmed through the international expat social scene and they've been dating for six months.",
+      "occupation": "Retired / Landlady",
+      "detailed_backstory": "Greetje is a lifelong resident of the Schilderswijk and a classic Groninger 'hospita' (landlady). She lives on the ground floor of her large, slightly ramshackle house and rents out the top floors to students like Daan and Pieter. She is a stern woman with a sharp tongue and a long list of house rules, but underneath her gruff exterior, she has a soft spot for her tenants. Her son, Kees, a local police officer, occasionally has to step in to mediate disputes or deal with overly rowdy parties.",
       "relationships": [
         {
-          "name_surname": "Ahmed Kone",
-          "relationship": "romantic interest"
+          "name_surname": "Daan Jansen",
+          "relationship": "Landlady"
         },
         {
-          "name_surname": "Inge Bakker",
-          "relationship": "former university classmate"
+          "name_surname": "Pieter Kramer",
+          "relationship": "Landlady"
+        },
+        {
+          "name_surname": "Kees Bakker",
+          "relationship": "Son"
         }
       ]
     },
     {
-      "name_surname": "Inge Bakker",
-      "age": 42,
+      "name_surname": "Julia Carter",
+      "age": 58,
       "gender": "female",
+      "birthplace": {
+        "city": "Bristol",
+        "country": "United Kingdom"
+      },
+      "occupation": "Retired General Practitioner",
+      "detailed_backstory": "Julia moved to the Netherlands with her husband, Ben, in the 90s. She worked as a beloved GP in a local practice in Haren for over 25 years before retiring recently. She found retirement didn't suit her, so she now fills her days with volunteering at the Groninger Museum, taking art history classes, and tending to her magnificent garden. She is the social anchor for her husband, often organizing dinners with friends like Annelies de Vries and Sander Jansen. She is a warm, empathetic person with a dry English wit.",
+      "relationships": [
+        {
+          "name_surname": "Prof. Ben Carter",
+          "relationship": "Husband"
+        },
+        {
+          "name_surname": "Annelies de Vries",
+          "relationship": "Friend"
+        }
+      ]
+    },
+    {
+      "name_surname": "Wouter Meijer",
+      "age": 48,
+      "gender": "male",
       "birthplace": {
         "city": "Assen",
         "country": "Netherlands"
       },
-      "occupation": "Associate Professor of Urban Planning at University of Groningen",
-      "detailed_backstory": "Inge joined the University of Groningen in 2021 after working for the municipality of Amsterdam on smart city initiatives. Born in nearby Assen, she was excited to return to the northern region and contribute to Groningen's reputation as a model sustainable city. Her research focuses on the integration of green spaces with urban density, and she was a key advisor for Groningen's 2024 'Park Connector' project that linked all major green spaces with dedicated cycling and walking paths. Inge is divorced with a 12-year-old son who lives with her part-time. She's known for her practical approach to urban challenges and frequently appears in local media discussing city development.",
+      "occupation": "City Council Member (GroenLinks)",
+      "detailed_backstory": "Wouter is a passionate and idealistic politician serving on the Groningen city council for the GroenLinks (GreenLeft) party. He is the city's alderman for Climate and Energy, making him a key figure in realizing the city's ambitious sustainability goals. He highly values the expertise of academics and frequently consults with experts like Professor Ben Carter from the RUG for policy advice. He is a skilled debater but often finds himself in heated political battles with his rival, Simone Postma, from the more economically-focused VVD party.",
       "relationships": [
         {
-          "name_surname": "Pieter Dijkstra",
-          "relationship": "departmental colleague"
+          "name_surname": "Prof. Ben Carter",
+          "relationship": "Policy advisor / Consultant"
         },
         {
-          "name_surname": "Sophie Hendriks",
-          "relationship": "former university classmate"
+          "name_surname": "Simone Postma",
+          "relationship": "Political rival"
         }
       ]
     },
     {
-      "name_surname": "Marco Visser",
-      "age": 39,
+      "name_surname": "Amir Al-Jamil",
+      "age": 36,
+      "gender": "male",
+      "birthplace": {
+        "city": "Aleppo",
+        "country": "Syria"
+      },
+      "occupation": "Chef",
+      "detailed_backstory": "Amir was a successful sous-chef in a renowned restaurant in Aleppo before the war forced him to flee. After a difficult journey, he was granted asylum in the Netherlands and was eventually reunited with his wife, Fatima. He channeled his passion and skill for cooking into a new start, and after working in several kitchens, he is now a respected chef at 'Voila', one of Groningen's top restaurants, run by Joris van Houten. He is proud of his work but still carries the quiet trauma of his past. His greatest joy is his daughter, Yasmin, and building a peaceful life with Fatima.",
+      "relationships": [
+        {
+          "name_surname": "Dr. Fatima Al-Jamil",
+          "relationship": "Wife"
+        },
+        {
+          "name_surname": "Yasmin Al-Jamil",
+          "relationship": "Daughter"
+        },
+        {
+          "name_surname": "Joris van Houten",
+          "relationship": "Employer"
+        }
+      ]
+    },
+    {
+      "name_surname": "Yasmin Al-Jamil",
+      "age": 6,
+      "gender": "female",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Primary School Student",
+      "detailed_backstory": "Yasmin is a bright and happy first-grader at a local primary school. Born in Groningen, she is fluent in both Dutch and Arabic. She is a symbol of hope and the future for her parents, Fatima and Amir. She loves drawing, playing in the Noorderplantsoen park, and listening to her mother explain 'science magic'. She is unaware of the hardships her parents faced and lives a joyful, carefree childhood in their loving home.",
+      "relationships": [
+        {
+          "name_surname": "Dr. Fatima Al-Jamil",
+          "relationship": "Mother"
+        },
+        {
+          "name_surname": "Amir Al-Jamil",
+          "relationship": "Father"
+        }
+      ]
+    },
+    {
+      "name_surname": "Hiroshi Tanaka",
+      "age": 58,
+      "gender": "male",
+      "birthplace": {
+        "city": "Tokyo",
+        "country": "Japan"
+      },
+      "occupation": "Businessman",
+      "detailed_backstory": "Hiroshi is a traditional and successful businessman in Tokyo, heading a family-owned manufacturing company. He is a firm believer in duty and legacy. He cannot comprehend why his brilliant son, Kenji, would choose to move to a small city in Europe for a PhD instead of taking his rightful place in the company. Their relationship is strained, conducted over tense video calls where Hiroshi pressures Kenji to return home. He loves his son but expresses it through a rigid set of expectations.",
+      "relationships": [
+        {
+          "name_surname": "Kenji Tanaka",
+          "relationship": "Son"
+        }
+      ]
+    },
+    {
+      "name_surname": "Chloe Dubois",
+      "age": 26,
+      "gender": "female",
+      "birthplace": {
+        "city": "Lyon",
+        "country": "France"
+      },
+      "occupation": "Master's Student (Exchange)",
+      "detailed_backstory": "Chloe is an energetic and outgoing engineering student from France, doing a one-year Master's exchange at RUG. She was assigned to the same lab as Kenji Tanaka and was initially intrigued by his quiet intensity. Her friendly and direct nature helped break through his reserve, and they've become good friends and effective lab partners. She loves the Dutch student culture, the cycling, and the Borrels (after-work drinks). She often tries to drag Kenji out to be more social.",
+      "relationships": [
+        {
+          "name_surname": "Kenji Tanaka",
+          "relationship": "Friend and lab partner"
+        }
+      ]
+    },
+    {
+      "name_surname": "Tessa Boom",
+      "age": 22,
+      "gender": "female",
+      "birthplace": {
+        "city": "Utrecht",
+        "country": "Netherlands"
+      },
+      "occupation": "Student / Bookstore Clerk",
+      "detailed_backstory": "Tessa is a final-year Dutch Literature student at RUG. She works part-time at Ingrid Dijkstra's bookstore, a job she absolutely loves. She is an aspiring poet and feels at home surrounded by books and the quiet intellectual atmosphere of the store. Ingrid has become a mentor to her, offering advice on both life and literary matters. Tessa is saving up to travel after she graduates and is a well-known face to the store's regulars, like Herman Visser.",
+      "relationships": [
+        {
+          "name_surname": "Ingrid Dijkstra",
+          "relationship": "Employer / Mentor"
+        },
+        {
+          "name_surname": "Herman Visser",
+          "relationship": "Acquaintance / Regular customer"
+        }
+      ]
+    },
+    {
+      "name_surname": "Herman Visser",
+      "age": 65,
       "gender": "male",
       "birthplace": {
         "city": "Groningen",
         "country": "Netherlands"
       },
-      "occupation": "Owner of Visser Sustainable Construction",
-      "detailed_backstory": "Marco took over his family's construction business in 2018 and pivoted it entirely toward sustainable building practices. His company specializes in renovating historic Groningen buildings with modern energy-efficient systems while preserving their cultural heritage. Born and raised in Groningen, Marco has seen the city evolve and takes pride in contributing to its sustainable transformation. His projects include the renovation of several canal houses and the construction of the city's first carbon-positive residential complex completed in 2024. Marco is recently divorced and shares custody of his two teenage children. He's passionate about preserving Groningen's architectural heritage while meeting climate goals.",
+      "occupation": "Retired History Teacher",
+      "detailed_backstory": "Herman is a retired high school history teacher who has lived in Groningen his entire life. He is a man of routine and immense knowledge about local history. One of his weekly rituals is a visit to 'Boekhandel Dijkstra' to chat with Ingrid and browse the new history section. He is a kind, somewhat lonely man since his wife passed away a few years ago. He enjoys striking up conversations with the staff, like Tessa, and other customers about books and the 'old days'.",
       "relationships": [
         {
-          "name_surname": "Emma van der Berg",
-          "relationship": "professional acquaintance through sustainability network"
+          "name_surname": "Ingrid Dijkstra",
+          "relationship": "Acquaintance / Bookstore owner"
+        },
+        {
+          "name_surname": "Tessa Boom",
+          "relationship": "Acquaintance"
+        }
+      ]
+    },
+    {
+      "name_surname": "Rick de Jong",
+      "age": 28,
+      "gender": "male",
+      "birthplace": {
+        "city": "Hoogezand",
+        "country": "Netherlands"
+      },
+      "occupation": "Carpenter",
+      "detailed_backstory": "Rick is a highly skilled and reliable carpenter, the best on Mark van der Wal's construction crew. He takes immense pride in his craftsmanship, whether he's restoring a 17th-century beam or framing a modern energy-neutral home. He is a man of few words but his work speaks for itself. He is saving up to buy a house with his girlfriend and is a passionate supporter of FC Groningen, never missing a home game.",
+      "relationships": [
+        {
+          "name_surname": "Mark van der Wal",
+          "relationship": "Employer"
+        }
+      ]
+    },
+    {
+      "name_surname": "Eva de Boer",
+      "age": 49,
+      "gender": "female",
+      "birthplace": {
+        "city": "Meppel",
+        "country": "Netherlands"
+      },
+      "occupation": "Nurse",
+      "detailed_backstory": "Eva is a dedicated and compassionate nurse in the cardiology department at the UMCG (University Medical Center Groningen). She's a single mother who raised her son, Thomas, to be independent and ambitious, though she now worries he's working himself too hard at his startup. Her job is stressful, but she finds fulfillment in caring for her patients. She has a strong professional bond with her colleagues, like Dr. Maria Flores, relying on each other during long, demanding shifts.",
+      "relationships": [
+        {
+          "name_surname": "Thomas de Boer",
+          "relationship": "Son"
+        },
+        {
+          "name_surname": "Dr. Maria Flores",
+          "relationship": "Colleague"
+        }
+      ]
+    },
+    {
+      "name_surname": "Isabella Hendriks",
+      "age": 22,
+      "gender": "female",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Social Media Influencer",
+      "detailed_backstory": "Isabella is the daughter of wealthy investor Lars Hendriks. Rejecting the world of business and finance, she has carved out a successful career as a fashion and lifestyle influencer on Instagram and TikTok. Her brand is built on an image of effortless luxury, which is at odds with her father's practical, results-driven mindset, causing friction between them. She lives in a stylish apartment in the city center and is a regular at all the trendiest cafes and boutiques.",
+      "relationships": [
+        {
+          "name_surname": "Lars Hendriks",
+          "relationship": "Father"
+        }
+      ]
+    },
+    {
+      "name_surname": "Kees Bakker",
+      "age": 45,
+      "gender": "male",
+      "birthplace": {
+        "city": "Groningen",
+        "country": "Netherlands"
+      },
+      "occupation": "Police Officer",
+      "detailed_backstory": "Kees is a seasoned, level-headed police officer who knows the streets of Groningen like the back of his hand. He is a community-focused officer, preferring to de-escalate situations rather than resort to force. He is protective of his aging mother, Greetje, and often stops by her house to check on her and her student tenants. He is currently partnered with Bram van Dam, a rookie he is mentoring, trying to instill in him a sense of calm and patience.",
+      "relationships": [
+        {
+          "name_surname": "Greetje Bakker",
+          "relationship": "Mother"
+        },
+        {
+          "name_surname": "Bram van Dam",
+          "relationship": "Partner / Mentee"
+        }
+      ]
+    },
+    {
+      "name_surname": "Simone Postma",
+      "age": 42,
+      "gender": "female",
+      "birthplace": {
+        "city": "Hilversum",
+        "country": "Netherlands"
+      },
+      "occupation": "City Council Member (VVD)",
+      "detailed_backstory": "A sharp and pragmatic politician, Simone Postma is a prominent member of the center-right VVD party on the Groningen city council. As the spokesperson for Economic Affairs, she often clashes with Wouter Meijer of GroenLinks. While she agrees on the need for sustainability, she argues that economic growth and business interests must come first, leading to fiery debates in the council chambers. She is a formidable opponent, always well-prepared and articulate.",
+      "relationships": [
+        {
+          "name_surname": "Wouter Meijer",
+          "relationship": "Political rival"
+        }
+      ]
+    },
+    {
+      "name_surname": "Joris van Houten",
+      "age": 40,
+      "gender": "male",
+      "birthplace": {
+        "city": "Maastricht",
+        "country": "Netherlands"
+      },
+      "occupation": "Restaurateur",
+      "detailed_backstory": "Joris is the owner and manager of 'Voila', a fine-dining restaurant known for its innovative cuisine and impeccable service. He is a perfectionist and a demanding boss, but he recognizes and rewards talent. He saw the potential in Amir Al-Jamil and gave him a chance to shine, promoting him to chef. Joris is always stressed, constantly juggling suppliers, staff, and the high expectations of his clientele, but he thrives on the pressure of running one of the city's best restaurants.",
+      "relationships": [
+        {
+          "name_surname": "Amir Al-Jamil",
+          "relationship": "Employee"
+        }
+      ]
+    },
+    {
+      "name_surname": "Dr. Maria Flores",
+      "age": 39,
+      "gender": "female",
+      "birthplace": {
+        "city": "Madrid",
+        "country": "Spain"
+      },
+      "occupation": "Cardiologist",
+      "detailed_backstory": "An experienced cardiologist, Dr. Flores was recruited by the UMCG for her expertise in a specialized cardiac procedure. She is a highly focused and professional doctor, known for her calm demeanor in high-stress situations. She works closely with nurses on her ward, including Eva de Boer, whom she relies on for her experience and excellent patient care. Outside of the hospital, she is still adapting to life in Groningen and misses the warmth of her native Spain.",
+      "relationships": [
+        {
+          "name_surname": "Eva de Boer",
+          "relationship": "Colleague"
+        }
+      ]
+    },
+    {
+      "name_surname": "Bram van Dam",
+      "age": 25,
+      "gender": "male",
+      "birthplace": {
+        "city": "Emmen",
+        "country": "Netherlands"
+      },
+      "occupation": "Police Officer",
+      "detailed_backstory": "Bram is a rookie police officer, fresh out of the academy and full of enthusiasm. He is eager to prove himself but his inexperience sometimes makes him act impulsively. He has been partnered with the veteran officer Kees Bakker, which is a perfect match. Bram brings the energy, while Kees provides the wisdom and restraint. Bram is learning a lot from his partner about the nuances of policing in a city with a massive student population.",
+      "relationships": [
+        {
+          "name_surname": "Kees Bakker",
+          "relationship": "Partner / Mentor"
         }
       ]
     }

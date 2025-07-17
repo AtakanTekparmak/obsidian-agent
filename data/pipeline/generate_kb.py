@@ -1,7 +1,7 @@
 import os
 
 from data.model import get_model_response
-from data.settings import OUTPUT_PATH, KB_PATH, OPENROUTER_SONNET
+from data.settings import OUTPUT_PATH, KB_PATH, OPENROUTER_GEMINI
 from data.utils import save_pydantic_to_json
 from data.schemas.personas import Personas
 from data.schemas.kb import (

@@ -71,7 +71,6 @@ def create_dir(dir_path: str) -> bool:
     except Exception:
         return False
 
-
 def write_to_file(file_path: str, diff: str) -> bool:
     """
     Try to apply a unified git-style diff to `file_path`.
@@ -119,8 +118,7 @@ def write_to_file(file_path: str, diff: str) -> bool:
         return apply.returncode == 0
     finally:
         os.remove(patch_file)
-
-
+        
 def read_file(file_path: str) -> str:
     """
     Read a file in the memory.

@@ -46,10 +46,9 @@ def default_fact_validation(
     Returns:
         bool: True if validation passes, False otherwise
     """
-    from training.reward import dump_folder, get_reward
-
+    from training.reward import dump_folder, get_folder_reward
     folder_dump_str = dump_folder(memory_path)
-    reward = get_reward(folder_dump_str=folder_dump_str, facts_to_check=facts_to_check)
+    reward = get_folder_reward(folder_dump_str=folder_dump_str, facts_to_check=facts_to_check)
     return reward >= 0.99
 
 

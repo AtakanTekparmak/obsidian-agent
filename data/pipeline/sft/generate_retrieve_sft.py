@@ -8,7 +8,7 @@ from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
 from agent.async_agent import AsyncAgent
 from agent.utils import delete_memory, create_memory_if_not_exists
 
-from training.reward import get_reward
+from training.reward import get_folder_reward
 
 from .base import BaseSFTModel, generate_sft_for_kb
 from .generate_update_sft import generate_static_memory
@@ -60,10 +60,9 @@ def retrieval_validation(facts_to_check: List[Fact], agent_replies: List[str]) -
     """
     # Combine all agent replies as the "folder dump" for validation
     combined_replies = "\n\n".join(agent_replies)
-
-    # Use the get_reward function to check if facts are present in replies
-    reward = get_reward(folder_dump_str=combined_replies, facts_to_check=facts_to_check)
-
+    
+    # Use the get_folder_reward function to check if facts are present in replies
+    reward = get_folder_reward(folder_dump_str=combined_replies, facts_to_check=facts_to_check)
     return reward >= 0.99
 
 
