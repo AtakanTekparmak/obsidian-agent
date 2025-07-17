@@ -4,9 +4,10 @@ from pathlib import Path
 from datasets import Dataset, concatenate_datasets, load_dataset
 from huggingface_hub import HfApi
 
-ID_RE   = re.compile(r"convo_(.+)\.json")     # captures the unique id
+ID_RE = re.compile(r"convo_(.+)\.json")  # captures the unique id
 COLUMNS = ["conversations", "task_type", "id"]
 DATASET_NAME = "AtakanTekparmak/obsidian-agent-sft-xml"
+
 
 def scan_data(root: Path) -> Dataset:
     """Walk sub-folders and return a Dataset with the mandatory columns."""
@@ -17,7 +18,7 @@ def scan_data(root: Path) -> Dataset:
             if not uid_match:
                 continue
             with fp.open(encoding="utf-8") as f:
-                payload = json.load(f)                 # list[dict[…]]
+                payload = json.load(f)  # list[dict[…]]
             rows.append(
                 {
                     "conversations": payload,
@@ -25,7 +26,8 @@ def scan_data(root: Path) -> Dataset:
                     "id": uid_match.group(1),
                 }
             )
-    return Dataset.from_list(rows)                  
+    return Dataset.from_list(rows)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -36,13 +38,17 @@ def main():
     local_ds = scan_data(args.data_dir)
 
     api = HfApi()
-    repo_exists = api.repo_exists(args.repo_id, repo_type="dataset")      # ≈ HEAD request
+    repo_exists = api.repo_exists(args.repo_id, repo_type="dataset")  # ≈ HEAD request
 
     if repo_exists:
         # Load the current remote split and merge while de-duplicating on `id`
         remote_ds = load_dataset(args.repo_id, split="train", trust_remote_code=True)
         concatenated = concatenate_datasets([remote_ds, local_ds])
-        merged = concatenated.to_pandas().drop_duplicates(subset=['id']).reset_index(drop=True)
+        merged = (
+            concatenated.to_pandas()
+            .drop_duplicates(subset=["id"])
+            .reset_index(drop=True)
+        )
         merged = Dataset.from_pandas(merged)
     else:
         merged = local_ds
@@ -51,6 +57,7 @@ def main():
         args.repo_id,
         commit_message="Add new conversations",
     )
+
 
 if __name__ == "__main__":
     main()

@@ -50,4 +50,3 @@ def construct_reply_judge_prompt(
     """
     judge_prompt = load_reply_judge_prompt()
     return judge_prompt.replace("{{reply}}", reply).replace("{{ground_truth}}", ground_truth)
-    

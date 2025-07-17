@@ -5,10 +5,12 @@ from data.schemas.base import BaseSchema
 
 from agent.utils import create_memory_if_not_exists
 
+
 class EntityFile(BaseSchema):
     entity_name: str
     entity_file_path: str
     entity_file_content: str
+
 
 class StaticMemory(BaseSchema):
     user_md: str

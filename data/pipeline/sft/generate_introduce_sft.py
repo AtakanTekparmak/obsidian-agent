@@ -3,10 +3,10 @@ from data.settings import MAX_CONCURRENT_PERSONAS, MAX_CONCURRENT_FACTS
 from agent.async_agent import AsyncAgent
 
 from .base import (
-    BaseSFTModel, 
-    generate_conversation_for_persona, 
+    BaseSFTModel,
+    generate_conversation_for_persona,
     generate_sft_for_kb,
-    default_fact_validation
+    default_fact_validation,
 )
 
 PERSONA_PROMPT = """
@@ -23,30 +23,31 @@ You will be conversing with an LLM assistant that has a self managed, Obsidian-l
 You should start the conversation now. Don't be verbose, don't forget the LLM assistant is an AI assistant. Don't say more than 2 sentences at a time, that number is absolute. The conversation HAS to be in English, no matter which persona you are.
 """
 
+
 class PersonaModel(BaseSFTModel):
     """
     Utility class for an LLM assuming the role of a persona.
     It is used to generate a conversation for a persona and a fact.
     """
+
     def __init__(self, persona: Persona, fact: str, num_turns: int):
         self.fact = fact
         super().__init__(persona, num_turns)
-    
+
     def _get_system_prompt(self, persona: Persona, num_turns: int) -> str:
         return PERSONA_PROMPT.format(
-            persona=persona, 
-            fact=self.fact, 
-            num_turns=num_turns
+            persona=persona, fact=self.fact, num_turns=num_turns
         )
 
+
 async def generate_convo_for_persona_and_fact(
-        persona: Persona,
-        fact: Fact,
-        num_turns: int,
-        validation_func=default_fact_validation,
-        memory_path: str = None,
-        save_folder: str = None
-    ) -> bool:
+    persona: Persona,
+    fact: Fact,
+    num_turns: int,
+    validation_func=default_fact_validation,
+    memory_path: str = None,
+    save_folder: str = None,
+) -> bool:
     """
     Generate a conversation for a persona and a fact.
 
@@ -62,9 +63,7 @@ async def generate_convo_for_persona_and_fact(
         bool: True if the conversation was generated successfully, False otherwise
     """
     persona_model = PersonaModel(
-        persona=persona, 
-        fact=fact.fact_description, 
-        num_turns=num_turns
+        persona=persona, fact=fact.fact_description, num_turns=num_turns
     )
     agent = AsyncAgent(memory_path=memory_path)
 
@@ -74,22 +73,22 @@ async def generate_convo_for_persona_and_fact(
         num_turns=num_turns,
         facts_to_check=[fact],
         validation_func=validation_func,
-        save_folder=save_folder
+        save_folder=save_folder,
     )
 
 
 async def generate_introduce_sft(
-        kb: KnowledgeBase,
-        num_turns: int = 4,
-        max_retries: int = 3,
-        validation_func=default_fact_validation,
-        save_folder: str = "introduce",
-        max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
-        max_concurrent_facts: int = MAX_CONCURRENT_FACTS
-    ) -> None:
+    kb: KnowledgeBase,
+    num_turns: int = 4,
+    max_retries: int = 3,
+    validation_func=default_fact_validation,
+    save_folder: str = "introduce",
+    max_concurrent_personas: int = MAX_CONCURRENT_PERSONAS,
+    max_concurrent_facts: int = MAX_CONCURRENT_FACTS,
+) -> None:
     """
     Generate a SFT dataset by the agent interacting
-    with the user in a multiturn conversations  
+    with the user in a multiturn conversations
 
     Args:
         kb: The knowledge base
@@ -112,6 +111,5 @@ async def generate_introduce_sft(
         save_folder=save_folder,
         task_name="introduce",
         max_concurrent_personas=max_concurrent_personas,
-        max_concurrent_facts=max_concurrent_facts
+        max_concurrent_facts=max_concurrent_facts,
     )
-    

@@ -3,13 +3,10 @@ import os
 from data.model import get_model_response
 from data.settings import OUTPUT_PATH, PERSONAS_PATH, OPENROUTER_GEMINI
 from data.utils import save_pydantic_to_json
-from data.schemas.personas import Personas  
+from data.schemas.personas import Personas
 
-def generate_personas(
-        num_personas: int, 
-        scenario: str,
-        save: bool = True
-    ) -> Personas:
+
+def generate_personas(num_personas: int, scenario: str, save: bool = True) -> Personas:
     """
     Generate a list of personas.
 
@@ -26,9 +23,7 @@ def generate_personas(
     # Generate personas
     print("Generating personas...")
     response = get_model_response(
-        schema=Personas,
-        prompt=prompt,
-        model=OPENROUTER_GEMINI
+        schema=Personas, prompt=prompt, model=OPENROUTER_SONNET
     )
 
     if save:

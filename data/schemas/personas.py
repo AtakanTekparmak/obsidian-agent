@@ -30,4 +30,4 @@ class Persona(BaseSchema):
 
 
 class Personas(BaseSchema):
-    personas: List[Persona] 
+    personas: List[Persona]

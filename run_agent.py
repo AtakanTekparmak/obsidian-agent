@@ -3,6 +3,7 @@ import uuid
 
 MODEL_NAME = "google/gemini-2.5-flash"
 
+
 def run_agent():
     agent = Agent(
         model=MODEL_NAME,

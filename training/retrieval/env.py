@@ -7,7 +7,12 @@ from enum import Enum
 from skyrl_gym.envs.base_text_env import BaseTextEnv, BaseTextEnvStepOutput
 from pydantic import BaseModel
 
-from agent.utils import extract_reply, extract_python_code, format_results, delete_memory
+from agent.utils import (
+    extract_reply,
+    extract_python_code,
+    format_results,
+    delete_memory,
+)
 from agent.engine import execute_sandboxed_code
 from agent.settings import MAX_TOOL_TURNS
 from agent.tools import create_memory_if_not_exists
@@ -45,7 +50,9 @@ class RetrievalEnv(BaseTextEnv):
         self.extras = extras
 
         assert "reward_spec" in extras, "reward_spec field is required"
-        assert "ground_truth" in extras["reward_spec"], "ground_truth is required in reward_spec field"
+        assert (
+            "ground_truth" in extras["reward_spec"]
+        ), "ground_truth is required in reward_spec field"
         self.ground_truth = extras["reward_spec"]["ground_truth"]
 
         self.max_turns = extras["max_turns"] if "max_turns" in extras else MAX_TOOL_TURNS
@@ -147,7 +154,7 @@ class RetrievalEnv(BaseTextEnv):
         reply = extract_reply(action)
         python_code = extract_python_code(action)
         return reply, python_code
-    
+
     def is_done(self, action: str) -> bool:
         """Determine if the episode should terminate."""
         reply, python_code = self.parse_response(action)
@@ -182,7 +189,7 @@ class RetrievalEnv(BaseTextEnv):
             local_vars, error_msg = execute_sandboxed_code(
                 code=python_code,
                 allowed_path=self.memory_path,
-                import_module="agent.tools"
+                import_module="agent.tools",
             )
             # Add environment response to messages
             env_response = format_results(local_vars, error_msg)

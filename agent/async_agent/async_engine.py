@@ -4,24 +4,25 @@ from typing import Optional, Tuple, Dict
 from agent.engine import execute_sandboxed_code as sync_execute_sandboxed_code
 from agent.settings import SANDBOX_TIMEOUT
 
+
 async def execute_sandboxed_code(
-        code: str,
-        timeout: int = SANDBOX_TIMEOUT,
-        allow_installs: bool = False,
-        requirements_path: str = None,
-        allowed_path: str = None,
-        blacklist: list = None,
-        available_functions: dict = None,
-        import_module: str = None,
-        log: bool = False
-    ) -> Tuple[Optional[Dict], str]:
+    code: str,
+    timeout: int = SANDBOX_TIMEOUT,
+    allow_installs: bool = False,
+    requirements_path: str = None,
+    allowed_path: str = None,
+    blacklist: list = None,
+    available_functions: dict = None,
+    import_module: str = None,
+    log: bool = False,
+) -> Tuple[Optional[Dict], str]:
     """
     Async wrapper for executing Python code in a sandboxed subprocess.
-    
+
     This wraps the synchronous execute_sandboxed_code function to work with async/await.
     Since the underlying implementation uses multiprocessing (which is already non-blocking),
     we run it in a thread executor to avoid blocking the event loop.
-    
+
     Parameters:
         code (str): The Python code to execute.
         timeout (int): Maximum execution time in seconds for the sandboxed code.
@@ -32,7 +33,7 @@ async def execute_sandboxed_code(
         available_functions (dict): Dictionary of functions to make available in the sandbox.
         import_module (str): Name of a Python module to import and make available.
         log (bool): Whether to enable logging.
-    
+
     Returns:
         (dict, str): A tuple containing the dictionary of local variables and error message.
     """
@@ -49,6 +50,6 @@ async def execute_sandboxed_code(
         blacklist,
         available_functions,
         import_module,
-        log
+        log,
     )
-    return result 
+    return result

@@ -5,16 +5,14 @@ from data.settings import OUTPUT_PATH, KB_PATH, OPENROUTER_GEMINI
 from data.utils import save_pydantic_to_json
 from data.schemas.personas import Personas
 from data.schemas.kb import (
-    PersonalFact, 
-    PersonalFacts, 
-    KnowledgeBaseItem, 
-    KnowledgeBase
+    PersonalFact,
+    PersonalFacts,
+    KnowledgeBaseItem,
+    KnowledgeBase,
 )
-    
-def generate_kb(
-        personas: Personas,
-        save: bool = True
-    ) -> KnowledgeBase:
+
+
+def generate_kb(personas: Personas, save: bool = True) -> KnowledgeBase:
     """
     Generate a Knowledge Base (KB) from personas.
 
@@ -30,18 +28,14 @@ def generate_kb(
 
     print("Generating personal facts...")
     personal_facts = get_model_response(
-        schema=PersonalFacts,
-        prompt=prompt,
-        model=OPENROUTER_GEMINI
+        schema=PersonalFacts, prompt=prompt, model=OPENROUTER_SONNET
     )
 
     persona_map = {persona.name_surname: persona for persona in personas.personas}
 
     kb_items = [
-        KnowledgeBaseItem(
-            persona=persona_map[fact.name_surname],
-            facts=fact.facts
-        ) for fact in personal_facts.facts
+        KnowledgeBaseItem(persona=persona_map[fact.name_surname], facts=fact.facts)
+        for fact in personal_facts.facts
     ]
 
     kb = KnowledgeBase(items=kb_items)
@@ -53,4 +47,3 @@ def generate_kb(
         print(f"Knowledge base saved to {file_path}")
 
     return kb
-    

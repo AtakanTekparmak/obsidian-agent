@@ -124,7 +124,7 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         question_task = asyncio.create_task(
             asyncio.to_thread(generate_question_prompt, persona, fact.fact_description, kb)
         )
-        
+
         # Wait for both tasks to complete
         question = await asyncio.gather(question_task)
 
@@ -132,7 +132,7 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
             "question": question,
             "answer": fact.fact_description
         }
-    
+
     # Create tasks for all facts in all personas
     tasks = []
     new_kb = KnowledgeBase(items=kb.items[1:])
@@ -140,11 +140,11 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
         persona = item.persona
         for fact in item.facts:
             tasks.append(process_fact(persona, fact))
-    
+
     # Run all tasks concurrently and collect results
     async def gather_all():
         return await asyncio.gather(*tasks)
-    
+
     results = asyncio.run(gather_all())
     dataset.extend(results)
     
@@ -166,17 +166,17 @@ def build_base_dataset(kb: KnowledgeBase, save: bool = False) -> List[Dict]:
 def main():
     scenario = "Groningen, Netherlands in 2025"
     print(f"Generating knowledge base for scenario: {scenario}")
-    
+
     # Create KB with personas and save to file
     personas = generate_personas(32, scenario, save=True)
     kb = generate_kb(personas, save=True)
     #kb = load_kb_from_json()
-    
     print(f"Knowledge base generated successfully with {len(kb.items)} personas.")
 
     print("Building base dataset...")
     dataset = build_base_dataset(kb, save=True)
     print(f"Base dataset built successfully with {len(dataset)} items.")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

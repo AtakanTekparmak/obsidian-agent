@@ -1,7 +1,25 @@
 from agent.async_agent.async_engine import execute_sandboxed_code
-from agent.async_agent.async_model import get_model_response, create_async_openai_client, create_async_vllm_client
-from agent.utils import load_system_prompt, create_memory_if_not_exists, extract_python_code, format_results, extract_reply, extract_thoughts
-from agent.settings import MEMORY_PATH, SAVE_CONVERSATION_PATH, MAX_TOOL_TURNS, VLLM_HOST, VLLM_PORT, OPENROUTER_STRONG_MODEL
+from agent.async_agent.async_model import (
+    get_model_response,
+    create_async_openai_client,
+    create_async_vllm_client,
+)
+from agent.utils import (
+    load_system_prompt,
+    create_memory_if_not_exists,
+    extract_python_code,
+    format_results,
+    extract_reply,
+    extract_thoughts,
+)
+from agent.settings import (
+    MEMORY_PATH,
+    SAVE_CONVERSATION_PATH,
+    MAX_TOOL_TURNS,
+    VLLM_HOST,
+    VLLM_PORT,
+    OPENROUTER_STRONG_MODEL,
+)
 from agent.schemas import ChatMessage, Role, AgentResponse
 
 from typing import Union, Tuple
@@ -10,15 +28,16 @@ import json
 import os
 import uuid
 
+
 class AsyncAgent:
     """Async version of the Agent class supporting concurrent operations."""
-    
+
     def __init__(
-        self, 
-        max_tool_turns: int = MAX_TOOL_TURNS, 
+        self,
+        max_tool_turns: int = MAX_TOOL_TURNS,
         memory_path: str = None,
         use_vllm: bool = False,
-        model: str = None
+        model: str = None,
     ):
         # Load the system prompt and add it to the conversation history
         self.system_prompt = load_system_prompt()
@@ -29,19 +48,19 @@ class AsyncAgent:
         # Set the maximum number of tool turns and use_vllm flag
         self.max_tool_turns = max_tool_turns
         self.use_vllm = use_vllm
-        
+
         # Set model: use provided model, or fallback to OPENROUTER_STRONG_MODEL
         if model:
             self.model = model
         else:
             self.model = OPENROUTER_STRONG_MODEL
-            
+
         # Each AsyncAgent instance gets its own clients to avoid bottlenecks
         if use_vllm:
             self._client = create_async_vllm_client(host=VLLM_HOST, port=VLLM_PORT)
         else:
             self._client = create_async_openai_client()
-        
+
         # Set memory_path: use provided path or fall back to default MEMORY_PATH
         if memory_path is not None:
             # Always place custom memory paths inside a "memory/" folder
@@ -49,7 +68,7 @@ class AsyncAgent:
         else:
             # Use default MEMORY_PATH but also place it inside "memory/" folder
             self.memory_path = os.path.join("memory", MEMORY_PATH)
-            
+
         # Ensure memory_path is absolute for consistency
         self.memory_path = os.path.abspath(self.memory_path)
 
@@ -61,7 +80,7 @@ class AsyncAgent:
             self.messages.append(message)
         else:
             raise ValueError("Invalid message type")
-        
+
     def extract_response_parts(self, response: str) -> Tuple[str, str, str]:
         """
         Extract the thoughts, reply and python code from the response.
@@ -96,7 +115,7 @@ class AsyncAgent:
             messages=self.messages,
             model=self.model,  # Pass the model if specified
             client=self._client,
-            use_vllm=self.use_vllm
+            use_vllm=self.use_vllm,
         )
 
         # Extract the thoughts, reply and python code from the response
@@ -109,7 +128,7 @@ class AsyncAgent:
             result = await execute_sandboxed_code(
                 code=python_code,
                 allowed_path=self.memory_path,
-                import_module="agent.tools"
+                import_module="agent.tools",
             )
 
         # Add the agent's response to the conversation history
@@ -117,12 +136,14 @@ class AsyncAgent:
 
         remaining_tool_turns = self.max_tool_turns
         while remaining_tool_turns > 0 and not reply:
-            self._add_message(ChatMessage(role=Role.USER, content=format_results(result)))
+            self._add_message(
+                ChatMessage(role=Role.USER, content=format_results(result))
+            )
             response = await get_model_response(
                 messages=self.messages,
                 model=self.model,  # Pass the model if specified
                 client=self._client,
-                use_vllm=self.use_vllm
+                use_vllm=self.use_vllm,
             )
 
             # Extract the thoughts, reply and python code from the response
@@ -134,21 +155,13 @@ class AsyncAgent:
                 result = await execute_sandboxed_code(
                     code=python_code,
                     allowed_path=self.memory_path,
-                    import_module="agent.tools"
+                    import_module="agent.tools",
                 )
             remaining_tool_turns -= 1
 
-        return AgentResponse(
-            thoughts=thoughts,
-            reply=reply,
-            python_block=python_code
-        )
+        return AgentResponse(thoughts=thoughts, reply=reply, python_block=python_code)
 
-    async def save_conversation(
-            self, 
-            log: bool = False,
-            save_folder: str = None
-        ):
+    async def save_conversation(self, log: bool = False, save_folder: str = None):
         """
         Save the conversation messages to a JSON file asynchronously in
         the output/conversations directory.
@@ -167,16 +180,24 @@ class AsyncAgent:
 
         # Convert the execution result messages to tool role
         messages = [
-            ChatMessage(role=Role.TOOL, content=message.content) if message.content.startswith("<result>") else ChatMessage(role=message.role, content=message.content)
-            for message in self.messages 
+            (
+                ChatMessage(role=Role.TOOL, content=message.content)
+                if message.content.startswith("<result>")
+                else ChatMessage(role=message.role, content=message.content)
+            )
+            for message in self.messages
         ]
-        
+
         # Use asyncio to write file without blocking
         loop = asyncio.get_event_loop()
         try:
             await loop.run_in_executor(
                 None,
-                lambda: json.dump([message.model_dump() for message in messages], open(file_path, "w"), indent=4)
+                lambda: json.dump(
+                    [message.model_dump() for message in messages],
+                    open(file_path, "w"),
+                    indent=4,
+                ),
             )
         except Exception as e:
             if log:
@@ -186,19 +207,21 @@ class AsyncAgent:
 
 
 # Helper function for concurrent agent operations
-async def run_agents_concurrently(agents: list[AsyncAgent], messages: list[str]) -> list[AgentResponse]:
+async def run_agents_concurrently(
+    agents: list[AsyncAgent], messages: list[str]
+) -> list[AgentResponse]:
     """
     Run multiple agents concurrently with their respective messages.
-    
+
     Args:
         agents: List of AsyncAgent instances
         messages: List of messages (one per agent)
-        
+
     Returns:
         List of AgentResponse objects
     """
     if len(agents) != len(messages):
         raise ValueError("Number of agents must match number of messages")
-    
+
     tasks = [agent.chat(message) for agent, message in zip(agents, messages)]
-    return await asyncio.gather(*tasks) 
+    return await asyncio.gather(*tasks)

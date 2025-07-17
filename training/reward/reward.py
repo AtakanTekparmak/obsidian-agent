@@ -54,9 +54,7 @@ def get_folder_reward(
     """
     judge_prompt = construct_folder_judge_prompt(folder_dump_str, facts_to_check)
     judge_response = get_model_response(
-        schema=JudgeResponse,
-        prompt=judge_prompt,
-        model=GPT_O3
+        schema=JudgeResponse, prompt=judge_prompt, model=GPT_O3
     )
     return judge_response.ratio_of_facts_present
 
