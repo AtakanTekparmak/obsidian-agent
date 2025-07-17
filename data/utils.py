@@ -8,6 +8,7 @@ from data.settings import OUTPUT_PATH, KB_PATH, PERSONAS_PATH
 from data.schemas.kb import KnowledgeBase
 from data.schemas.personas import Personas
 
+
 def save_pydantic_to_json(model: BaseModel, filepath: str) -> None:
     """
     Save a Pydantic model to a JSON file.
@@ -26,7 +27,10 @@ def save_pydantic_to_json(model: BaseModel, filepath: str) -> None:
         print(f"Error saving file {filepath}: {e}")
         raise
 
-def load_personas_from_json(filepath: str = os.path.join(OUTPUT_PATH, PERSONAS_PATH, "personas.json")) -> Personas:
+
+def load_personas_from_json(
+    filepath: str = os.path.join(OUTPUT_PATH, PERSONAS_PATH, "personas.json")
+) -> Personas:
     """
     Load a Personas object from a JSON file.
     """
@@ -38,7 +42,10 @@ def load_personas_from_json(filepath: str = os.path.join(OUTPUT_PATH, PERSONAS_P
         print(f"Error loading file {filepath}: {e}")
         raise
 
-def load_kb_from_json(filepath: str = os.path.join(OUTPUT_PATH, KB_PATH, "kb.json")) -> KnowledgeBase:
+
+def load_kb_from_json(
+    filepath: str = os.path.join(OUTPUT_PATH, KB_PATH, "kb.json")
+) -> KnowledgeBase:
     """
     Load a KnowledgeBase object from a JSON file.
 
