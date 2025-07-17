@@ -28,7 +28,7 @@ def generate_kb(personas: Personas, save: bool = True) -> KnowledgeBase:
 
     print("Generating personal facts...")
     personal_facts = get_model_response(
-        schema=PersonalFacts, prompt=prompt, model=OPENROUTER_SONNET
+        schema=PersonalFacts, prompt=prompt, model=OPENROUTER_GEMINI
     )
 
     persona_map = {persona.name_surname: persona for persona in personas.personas}
