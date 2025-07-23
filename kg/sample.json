@@ -1,0 +1,243 @@
+{
+  "nodes": [
+    {
+      "id": "person_1",
+      "name": "Amina Amrani",
+      "type": "Person",
+      "profession": "Archaeologist",
+      "hobby": "Pottery",
+      "birth_year": 1980,
+      "favorite_food": "Tagine",
+      "education": "Masters in Anthropology",
+      "languages_spoken": "Arabic, French, English",
+      "volunteer_work": "Local Historical Society",
+      "pets": "Two cats named Shaima and Fatin",
+      "birthplace": "Marrakech"
+    },
+    {
+      "id": "person_2",
+      "name": "Hassan Amrani",
+      "type": "Person",
+      "full_name": "Hassan Amrani",
+      "profession": "Geologist",
+      "hobby": "Gardening",
+      "birth_year": 1975,
+      "favorite_food": "Couscous",
+      "education": "PhD in Geology",
+      "languages_spoken": "Arabic, French",
+      "volunteer_work": "Environmental Conservation Group",
+      "pets": "One dog named Bruno",
+      "birthplace": "Fez",
+      "favorite_trail": "Atlas Mountain Path"
+    },
+    {
+      "id": "person_3",
+      "name": "Sara Amrani",
+      "type": "Person",
+      "full_name": "Sara Amrani",
+      "birth_year": 2005,
+      "hobby": "Photography",
+      "education": "High School Student",
+      "languages_spoken": "Arabic",
+      "favorite_food": "Kebabs",
+      "ambition": "Environmental Scientist",
+      "pet": "Parrot named Mango",
+      "favorite_subject": "Biology",
+      "music_interest": "Traditional Berber Music"
+    },
+    {
+      "id": "person_4",
+      "name": "Fatima Khatib",
+      "type": "Person",
+      "full_name": "Fatima Abdel Kadir Khatib",
+      "birthdate": "1976-03-14",
+      "occupation": "Local Artisan",
+      "hobby": "Traditional Cooking",
+      "favorite_flower": "Jasmine",
+      "languages_spoken": "Arabic, French, Amazigh",
+      "favorite_dish_to_prepare": "Tagine with prunes",
+      "birthplace": "Marrakech, Morocco",
+      "married_since": "1995",
+      "education": "Diploma in Traditional Crafts"
+    },
+    {
+      "id": "person_5",
+      "name": "Youssef Khatib",
+      "type": "Person",
+      "full_name": "Youssef Khatib",
+      "birth_year": 1974,
+      "occupation": "Organic Farmer",
+      "hobby": "Birdwatching",
+      "favorite_color": "Olive Green",
+      "languages_spoken": "Arabic, French, Spanish",
+      "favorite_food": "Pastilla",
+      "education": "Bachelor's in Agricultural Science",
+      "volunteer_work": "Local Youth Sports Coach",
+      "pets": "Two cats named Luna and Leo",
+      "birthplace": "Rabat, Morocco",
+      "favorite_activity": "Hiking in the Ourika Valley"
+    },
+    {
+      "id": "entity_1",
+      "name": "Amrani Family House",
+      "entity_type": "Residential Building",
+      "type": "Entity",
+      "year_built": 1985,
+      "architectural_style": "Riad",
+      "number_of_Floors": 2,
+      "garden_size_square_meters": 150,
+      "roof_material": "Clay tiles",
+      "total_rooms": 8,
+      "has_courtyard": true,
+      "main_construction_material": "Adobe"
+    },
+    {
+      "id": "entity_2",
+      "name": "Khatib Family Garden",
+      "entity_type": "Garden",
+      "type": "Entity",
+      "area_in_square_meters": 100,
+      "has_traditional_irrigation_system": true,
+      "primary_vegetation": "Herbs and fruit trees",
+      "common_fruit_grown": "Oranges and olives",
+      "decorative_feature": "Fountain",
+      "seasonal_maintenance_events": "Weekly pruning in spring",
+      "notable_event": "Annual spring festival",
+      "contains_historical_tree": true,
+      "location_feature": "Adjacent to the northern courtyard wall"
+    },
+    {
+      "id": "entity_3",
+      "name": "Oasis Market",
+      "entity_type": "Marketplace",
+      "type": "Entity",
+      "location": "Central Square, Marrakech",
+      "famous_for": "Authentic Moroccan Spices",
+      "weekly_event": "Sunday Market Gathering",
+      "established_year": 1964,
+      "number_of_stalls": 45
+    },
+    {
+      "id": "entity_4",
+      "name": "Fes Cultural Center",
+      "entity_type": "Cultural Center",
+      "type": "Entity",
+      "location": "Fes, Morocco",
+      "famous_for": "Hosting Annual Fes Festival of World Sacred Music",
+      "established_year": 1989,
+      "architectural_style": "Moorish Revival",
+      "director": "Amina Zafiri",
+      "visitor_capacity": 1200,
+      "annual_visitors": 50000,
+      "number_of_staff": 30,
+      "cultural_programs_offered": "Workshops, Performances, Exhibitions",
+      "language_support": "Arabic, French, English"
+    },
+    {
+      "id": "entity_5",
+      "name": "Rif Mountain Trail",
+      "entity_type": "Nature Trail",
+      "type": "Entity",
+      "location": "Rif Mountains, Morocco",
+      "difficulty_level": "Moderate",
+      "distance": 15,
+      "wildlife_sightings": "Barbary macaques, Golden Jackal",
+      "best_season_to_visit": "Spring and Autumn",
+      "trail_duration_hours": 5,
+      "scenic_views": "Cedar forests and panoramic mountain vistas",
+      "local_guide_available": true
+    }
+  ],
+  "edges": [
+    {
+      "s": "person_1",
+      "p": "is married to",
+      "o": "person_2"
+    },
+    {
+      "s": "person_1",
+      "p": "is parent of",
+      "o": "person_3"
+    },
+    {
+      "s": "person_1",
+      "p": "shops at",
+      "o": "entity_3"
+    },
+    {
+      "s": "person_2",
+      "p": "is parent of",
+      "o": "person_3"
+    },
+    {
+      "s": "person_2",
+      "p": "hikes on",
+      "o": "entity_5"
+    },
+    {
+      "s": "person_3",
+      "p": "friends with",
+      "o": "person_5"
+    },
+    {
+      "s": "person_3",
+      "p": "visits",
+      "o": "entity_4"
+    },
+    {
+      "s": "person_3",
+      "p": "hikes on",
+      "o": "entity_5"
+    },
+    {
+      "s": "person_4",
+      "p": "is married to",
+      "o": "person_5"
+    },
+    {
+      "s": "person_4",
+      "p": "is parent of",
+      "o": "person_5"
+    },
+    {
+      "s": "person_4",
+      "p": "shops at",
+      "o": "entity_3"
+    },
+    {
+      "s": "person_5",
+      "p": "is sibling of",
+      "o": "person_2"
+    },
+    {
+      "s": "entity_1",
+      "p": "belongs to",
+      "o": "person_1"
+    },
+    {
+      "s": "entity_1",
+      "p": "belongs to",
+      "o": "person_2"
+    },
+    {
+      "s": "entity_1",
+      "p": "is next to",
+      "o": "entity_2"
+    },
+    {
+      "s": "entity_2",
+      "p": "belongs to",
+      "o": "person_4"
+    },
+    {
+      "s": "entity_2",
+      "p": "belongs to",
+      "o": "person_5"
+    },
+    {
+      "s": "entity_3",
+      "p": "is near",
+      "o": "entity_4"
+    }
+  ]
+}

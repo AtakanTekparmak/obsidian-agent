@@ -1,0 +1,294 @@
+{
+  "nodes": [
+    {
+      "id": "P1",
+      "name": "Giovanni Pangorio",
+      "type": "Person",
+      "birth_date": "March 15, 1985",
+      "profession": "Chef",
+      "specialty_dish": "Fettuccine Alfredo",
+      "nickname": "Gio",
+      "hobbies": "Playing the harmonica",
+      "favorite_movie": "Goodfellas",
+      "education": "Culinary Institute of America",
+      "marital_status": "Single"
+    },
+    {
+      "id": "P2",
+      "name": "Maria Pangorio",
+      "type": "Person",
+      "birth_date": "September 17, 1960",
+      "profession": "Restaurateur",
+      "favorite_cuisine": "Sicilian",
+      "hobbies": "Gardening",
+      "special_skill": "Fluent in Italian",
+      "favorite_book": "The Godfather by Mario Puzo",
+      "education": "New York University, Business Degree",
+      "marital_status": "Widowed"
+    },
+    {
+      "id": "P3",
+      "name": "Luigi Pangorio",
+      "type": "Person",
+      "age": 43,
+      "favorite_dish": "Osso Buco",
+      "role_in_restaurant": "Head Chef",
+      "hobby": "Fishing",
+      "distinctive_feature": "Thick mustache",
+      "education": "Culinary Arts degree from the Culinary Institute of America",
+      "accent": "Strong New Jersey accent",
+      "favorite_music_genre": "Opera",
+      "volunteer_work": "Local food bank supporter",
+      "nickname": "Gigi"
+    },
+    {
+      "id": "P4",
+      "name": "Alessandra Pangorio",
+      "type": "Person",
+      "age": 28,
+      "occupation": "Pastry Chef at Pangorio",
+      "specialty": "Traditional Sicilian Desserts",
+      "hobbies": "hiking, painting, and photography",
+      "favorite_color": "emerald green",
+      "education": "Culinary Arts Degree from Le Cordon Bleu",
+      "personality_traits": "creative, meticulous, and friendly"
+    },
+    {
+      "id": "P5",
+      "name": "Carlo Pangorio",
+      "type": "Person",
+      "age": 32,
+      "occupation": "General Manager at Pangorio",
+      "hobbies": "soccer, guitar playing, and gardening",
+      "favorite_dish": "Fettuccine Alfredo",
+      "education": "Bachelor's Degree in Business Management from Rutgers University",
+      "personality_traits": "ambitious, charismatic, and organized",
+      "birthplace": "Newark, New Jersey",
+      "favorite_movie": "The Godfather",
+      "pet": "Golden Retriever named Bella"
+    },
+    {
+      "id": "P6",
+      "name": "Isabella Pangorio",
+      "type": "Person",
+      "age": 24,
+      "occupation": "Pastry Chef",
+      "hobbies": "painting",
+      "favorite_dish": "Cannoli",
+      "education": "Culinary Arts Degree",
+      "city_of_residence": "Jersey City, NJ",
+      "speaks_italian": true,
+      "pets": "Two cats named Romeo and Juliet",
+      "has_drivers_license": true
+    },
+    {
+      "id": "P7",
+      "name": "Francesco Pangorio",
+      "type": "Person",
+      "age": 30,
+      "occupation": "Restaurant Manager",
+      "hobbies": "fishing, guitar playing",
+      "favorite_dish": "Lobster Risotto",
+      "education": "Hospitality Management Degree",
+      "city_of_residence": "Hoboken, NJ",
+      "speaks_italian": true,
+      "pet": "A dog named Max",
+      "has_drivers_license": true
+    },
+    {
+      "id": "P8",
+      "name": "Giulia Pangorio",
+      "type": "Person",
+      "date_of_birth": "1992-06-14",
+      "favorite_dish": "Eggplant Parmesan",
+      "role_in_restaurant": "Pastry Chef",
+      "education": "Culinary Institute of America",
+      "hobbies": "Painting",
+      "languages_spoken": "Italian, English",
+      "pet": "Golden Retriever named Bella"
+    },
+    {
+      "id": "P9",
+      "name": "Antonio Pangorio",
+      "type": "Person",
+      "age": 28,
+      "occupation": "Sous Chef at Pangorio",
+      "hobbies": "cycling, playing the drums, photography",
+      "favorite_dish": "Mushroom Risotto",
+      "education": "Certificate in Culinary Arts from the International Culinary Center",
+      "personality_traits": "creative, meticulous, friendly",
+      "birthplace": "Hoboken, New Jersey",
+      "favorite_movie": "Ratatouille",
+      "languages_spoken": "Italian, English, French",
+      "pet": "Siamese cat named Luna"
+    },
+    {
+      "id": "P10",
+      "name": "Sofia Pangorio",
+      "type": "Person",
+      "age": 48,
+      "occupation": "Florist",
+      "favorite_flower": "Peony",
+      "hobbies": "Gardening, Knitting, Hiking",
+      "education": "Botany Degree",
+      "city_of_residence": "Hoboken, NJ",
+      "speaks_italian": true,
+      "pets": "Parrot named Mango",
+      "has_drivers_license": true,
+      "favorite_cuisine": "Mediterranean",
+      "volunteer_work": "Local Community Garden",
+      "has_been_to_italy": true
+    },
+    {
+      "id": "E1",
+      "name": "Pangorio's Italian Restaurant",
+      "entity_type": "Business",
+      "type": "Entity",
+      "established_year": 1982,
+      "cuisine_style": "Traditional Italian",
+      "seating_capacity": 120,
+      "signature_dish": "Eggplant Parmesan",
+      "owner_history": "Pangorio Family",
+      "awards": "Best Italian Restaurant in New Jersey 2022",
+      "located_in": "Little Italy district, Newark",
+      "popular_event": "Annual Italian Wine Tasting",
+      "peak_hours": "Friday and Saturday evenings"
+    },
+    {
+      "id": "E2",
+      "name": "New Jersey",
+      "entity_type": "Location",
+      "type": "Entity",
+      "state": "New Jersey",
+      "population": 9000000,
+      "nickname": "The Garden State",
+      "capital": "Trenton",
+      "largest_city": "Newark",
+      "famous_attractions": "Atlantic City, Jersey Shore, Liberty State Park",
+      "founded_year": 1787,
+      "cuisine_speciality": "Tomato Pie and Taylor Ham/Pork Roll"
+    },
+    {
+      "id": "E3",
+      "name": "Pangorio Family",
+      "entity_type": "Family",
+      "type": "Entity",
+      "heritage": "Italian-American",
+      "origin_location": "New Jersey",
+      "family_business": "Pangorio Italian Restaurant",
+      "annual_family_reunion_location": "Jersey Shore, NJ",
+      "family_tradition": "Sunday family dinners",
+      "family_motto": "Strength in Unity",
+      "unofficial_family_historian": "Luigi Pangorio",
+      "most_common_occupation": "Chef",
+      "favorite_family_dish": "Fettuccine Alfredo"
+    }
+  ],
+  "edges": [
+    {
+      "s": "P1",
+      "p": "works_at",
+      "o": "E1"
+    },
+    {
+      "s": "P2",
+      "p": "owns",
+      "o": "E1"
+    },
+    {
+      "s": "P2",
+      "p": "is_parent_of",
+      "o": "P1"
+    },
+    {
+      "s": "P3",
+      "p": "works_at",
+      "o": "E1"
+    },
+    {
+      "s": "P4",
+      "p": "is_sibling_of",
+      "o": "P5"
+    },
+    {
+      "s": "P4",
+      "p": "lives_in",
+      "o": "E2"
+    },
+    {
+      "s": "P5",
+      "p": "is_sibling_of",
+      "o": "P9"
+    },
+    {
+      "s": "P6",
+      "p": "is_cousin_of",
+      "o": "P7"
+    },
+    {
+      "s": "P8",
+      "p": "is_sibling_of",
+      "o": "P9"
+    },
+    {
+      "s": "P10",
+      "p": "is_aunt_of",
+      "o": "P6"
+    },
+    {
+      "s": "E1",
+      "p": "located_in",
+      "o": "E2"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P1"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P2"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P3"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P4"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P5"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P6"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P7"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P8"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P9"
+    },
+    {
+      "s": "E3",
+      "p": "includes",
+      "o": "P10"
+    }
+  ]
+}

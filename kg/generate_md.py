@@ -1,0 +1,79 @@
+from typing import Dict, Any, List
+import json
+
+
+def generate_markdown_kb_json(g, node_id: str) -> Dict[str, Any]:
+    """
+    Export the selected node and its 1-hop neighbors into markdown content:
+      - user_md           (for the selected node)
+      - entities          (list of neighbors with file paths and contents)
+    """
+    if node_id not in g:
+        raise ValueError(f"Node {node_id} not found")
+
+    def slug(name: str) -> str:
+        return name.lower().replace(" ", "_")
+
+    def render_md(data: Dict[str, Any], relations: Dict[str, str]) -> str:
+        lines = [f"# {data.get('full_name', data['name'])}", "", "## Basic Information"]
+        for k, v in data.items():
+            if k in ("id", "name", "full_name"):
+                continue
+            lines.append(f"- **{k.replace('_', ' ').title()}**: {v}")
+        if relations:
+            lines += ["", "## Relationships"]
+            for rel, target in relations.items():
+                lines.append(f"- **{rel.title()}**: [[{slug(target)}.md]]")
+        return "\n".join(lines)
+
+    # collect 1-hop neighbors and their relation labels
+    in_edges = g.in_edges(node_id, data=True, keys=True)
+    out_edges = g.out_edges(node_id, data=True, keys=True)
+    neighbors = {}
+    for src, _, rel, _ in in_edges:
+        neighbors[src] = neighbors.get(src, []) + [rel]
+    for _, dst, rel, _ in out_edges:
+        neighbors[dst] = neighbors.get(dst, []) + [rel]
+
+    # main user markdown content
+    main_data = g.nodes[node_id]
+    # actually relations from main are out_edges
+    main_rel = {
+        rel: g.nodes[n]["name"] for n, rels in neighbors.items() for rel in rels
+    }
+    user_md = render_md(main_data, main_rel)
+
+    # build entities list
+    entities: List[Dict[str, Any]] = []
+    for nbr_id, rels in neighbors.items():
+        data = g.nodes[nbr_id]
+        rel_map = {}
+        # point back to main node
+        for rel in rels:
+            rel_map[rel] = main_data.get("name")
+        md_content = render_md(data, rel_map)
+        slug_name = slug(data["name"])
+        entities.append(
+            {
+                "entity_name": slug_name,
+                "entity_file_path": f"entities/{slug_name}.md",
+                "entity_file_content": md_content,
+            }
+        )
+
+    return {"user_md": user_md, "entities": entities}
+
+
+if __name__ == "__main__":
+    # Example usage
+    from kg.graph import KG  # Assuming KG is defined in kg/graph.py
+
+    with open("sample.json", "r", encoding="utf-8") as f:
+        json_data = f.read()
+    kg = KG()
+    kg = kg.from_json(json_data)
+
+    # Generate markdown for a specific node
+    result = generate_markdown_kb_json(kg.g, node_id="person_1")
+    # result now contains the markdown content in-memory without any file I/O.
+    print(json.dumps(result, indent=2))
