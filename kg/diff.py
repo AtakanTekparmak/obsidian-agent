@@ -28,10 +28,7 @@ def diff_files(path_a: str, path_b: str) -> str:
 
 
 # Example usage:
-old = """# Aisha Sharma
-- age: 25
-- gender: female
-"""
+old = """"""
 new = """# Aisha Sharma
 - age: 26
 - gender: female
