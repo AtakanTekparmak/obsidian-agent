@@ -125,7 +125,7 @@ def generate_retrieval_attr_qas(
                     }
                 )
 
-    return {"zero_hop": zero_hop, "one_hop": one_hop, "two_hop": two_hop}
+    return {"0_hop": zero_hop, "1_hop": one_hop, "2_hop": two_hop}
 
 
 if __name__ == "__main__":

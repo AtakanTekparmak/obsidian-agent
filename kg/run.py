@@ -8,7 +8,7 @@ import networkx as nx
 from dotenv import load_dotenv
 
 # Assuming these are your custom library imports
-from kg.llm import LLM, QuestionReformat
+from kg.llm import QuestionReformat
 from kg.generate_graph import KGBuildDriver, ConsistencyChecker
 from kg.generate_md import generate_markdown_kb_json
 from kg.generate_qa import generate_retrieval_attr_qas
@@ -18,7 +18,7 @@ from kg.configs import CONFIGS
 
 # --- Constants ---
 NODE_TYPE_PERSON = "person"
-HOP_LEVELS = ["zero_hop", "one_hop", "two_hop"]
+HOP_LEVELS = ["0_hop", "1_hop", "2_hop"]
 
 
 def create_and_validate_graph(world: str, n_people: int, n_entities: int) -> KGBuildDriver:
@@ -76,7 +76,7 @@ def generate_retrieval_data(graph: nx.MultiDiGraph, reformatter: QuestionReforma
     retrieval_questions = {}
 
     for hop in HOP_LEVELS:
-        is_zero_hop = (hop == "zero_hop")
+        is_zero_hop = (hop == "0_hop")
         questions = raw_qas.get(hop, [])
         if not is_zero_hop:
             questions = questions[:num_qa]
@@ -100,7 +100,7 @@ def _calculate_update_diff(original_graph: nx.MultiDiGraph, updated_graph: nx.Mu
 
     # Case 1: A simple attribute was changed on a node.
     if "attribute_name" in update_info:
-        return diff_strings(original_md_bundle["user_md"], updated_md_bundle["user_md"])
+        return f"==='user.md'===\n" + diff_strings(original_md_bundle["user_md"], updated_md_bundle["user_md"])
 
     # Case 2: A relationship was changed, involving adding/removing nodes/edges.
     elif "name" in update_info:
@@ -114,7 +114,13 @@ def _calculate_update_diff(original_graph: nx.MultiDiGraph, updated_graph: nx.Mu
 
         # Diff for the file of the node whose relationship changed
         old_content1 = old_entity_files.get(changed_node_slug, {}).get("entity_file_content", "")
+        if len(old_content1) == 0:
+            # Fallback to user.md if the entity file is not found
+            old_content1 = original_md_bundle["user_md"]
         new_content1 = new_entity_files.get(changed_node_slug, {}).get("entity_file_content", "")
+        if len(new_content1) == 0:
+            # Fallback to user.md if the entity file is not found
+            new_content1 = updated_md_bundle["user_md"]
         file_path1 = old_entity_files.get(changed_node_slug, {}).get("entity_file_path",
                                                                      "user.md")  # Fallback to user.md
         diff1 = diff_strings(old_content1, new_content1)
@@ -146,27 +152,30 @@ def generate_update_data(driver: KGBuildDriver, reformatter: QuestionReformat, b
     original_graph = driver.kg.g
 
     # Note: The original script used [1, 0, 2]. Preserving that order.
-    for hop_num in [0, 1, 2]:
+    for hop_num in [0, 0, 0, 1, 1, 2]:
         try:
             path_info = select_random_path_attrs(original_graph, base_node_id, hops=hop_num)
 
             # Reformat into natural language update queries
             reformatted_data = reformatter.reformat_update(user=path_info["path"][0], path=path_info)
             queries = reformatted_data[:2]
-            update_details = reformatted_data[-1]
+            update_details: dict = reformatted_data[-1]
+
+            update_details["changed_node_id"] = path_info.get("changed_node_id", base_node_id)
 
             # Simulate the update on a copy of the graph
             new_graph = original_graph.copy()
             if "attribute_name" in update_details:
                 # Update a node's attribute
-                nx.set_node_attributes(new_graph, {base_node_id: {
+                target = update_details["changed_node_id"]
+                nx.set_node_attributes(new_graph, {target: {
                     update_details["attribute_name"]: update_details["attribute_value"]
                 }})
             elif "name" in update_details:
                 # Change a relationship: remove old edge, add new node and edge
                 rel_name = path_info["path"][-2]
                 end_node_id = find_neighbor_by_edge(new_graph, path_info["changed_node_id"], rel_name)[0]
-                new_graph.remove_edge(path_info["changed_node_id"], end_node_id, key=rel_name)
+                new_graph.remove_edge(update_details["changed_node_id"], end_node_id, key=rel_name)
 
                 new_node_id = str(uuid.uuid4())
                 node_attrs = {"name": update_details["name"],
@@ -174,7 +183,7 @@ def generate_update_data(driver: KGBuildDriver, reformatter: QuestionReformat, b
                 if "entity_type" in update_details:
                     node_attrs["entity_type"] = update_details["entity_type"]
                 new_graph.add_node(new_node_id, **node_attrs)
-                new_graph.add_edge(path_info["changed_node_id"], new_node_id, key=rel_name)
+                new_graph.add_edge(update_details["changed_node_id"], new_node_id, key=rel_name)
 
             # Calculate the diff and format the output
             diff = _calculate_update_diff(original_graph, new_graph, base_node_id, update_details)
@@ -285,7 +294,9 @@ def run(CONFIG):
 
 
 if __name__ == "__main__":
-    for CONFIG in CONFIGS:
-        print(f"\n--- Running with configuration: {CONFIG['name']} ---")
+    from random import shuffle
+    shuffle(CONFIGS)
+    for CONFIG in tqdm(CONFIGS, desc="Running configurations"):
+        print(f"\n--- Running with configuration: {CONFIG['world_description']} ---")
         run(CONFIG)
-        print(f"Finished processing with configuration: {CONFIG['name']}\n")
+        print(f"Finished processing")

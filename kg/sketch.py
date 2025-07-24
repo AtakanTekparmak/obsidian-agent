@@ -78,7 +78,7 @@ if __name__ == "__main__":
             print(f"Generating markdown for {node_id}")
             mem_id = "memory_" + uuid.uuid4().hex
             os.makedirs(f"instances/{instance_id}/{mem_id}", exist_ok=True)
-
+            """
             md_file = generate_markdown_kb_json(driver.kg.g, node_id=node_id)
             md_file["mem_id"] = mem_id
             user_md = md_file["user_md"]
@@ -99,12 +99,12 @@ if __name__ == "__main__":
             print("Generated 1-hop questions")
             retrieval_questions["two_hop"] = reformatter.reformat(user=driver.kg.g.nodes[node_id]["name"],personal_info=user_md, questions=two_hops, is_zero=False)
             print("Generated 2-hop questions")
-
+            """
             update_queries = {"zero_hop": [], "one_hop": [], "two_hop": []}
 
             print("Generating updates")
             # Generate updates
-            for hop in [1, 0, 2]:
+            for hop in [2, 1, 0]:
                 try:
                     path = select_random_path_attrs(driver.kg.g, node_id, hops=hop)
                 except:

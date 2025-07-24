@@ -36,9 +36,9 @@ class StubResponse(BaseModel):
 
 
 class Edge(BaseModel):
-    s: str  # subject id
-    p: str  # predicate / relation label
-    o: str  # object id
+    subject_id: str  # subject id
+    predicate: str  # predicate / relation label
+    object_id: str  # object id
 
 
 class EdgeResp(BaseModel):
@@ -169,13 +169,36 @@ class KGBuildDriver:
             {"id": n, "name": d["name"], "type": d["type"]}
             for n, d in self.kg.g.nodes(data=True)
         ]
-        sys = "Given a world description, plan plausible relations, JSON {edges:[{s,p,o}]}. No self‑loops or duplicates."
+        ids = [node["id"] for node in nodes]
+        sys = "Given a world description, plan plausible relations. No self‑loops or duplicates."
         sys += f"\n\nWorld: {prompt}\n\n"
         usr = json.dumps(nodes)
         data = self.llm.create_json(sys, usr, EdgeResp)
         for e in data.edges:
             try:
-                self.kg.add_edge(e.s, e.p, e.o)
+                # Check if ids exist for both subject and object
+                if e.subject_id not in ids:
+                    print(f"✖ Subject ID {e.subject_id} not found in nodes. Trying by name.")
+                    s_id = [node["id"] for node in nodes if node["name"] == e.s]
+                    if not s_id:
+                        print(f"✖ Subject name {e.s} not found in nodes.")
+                        continue
+                    s_id = s_id[0]
+                else:
+                    s_id = e.subject_id
+                if e.object_id not in ids:
+                    print(f"✖ Object ID {e.object_id} not found in nodes. Trying by name.")
+                    o_id = [node["id"] for node in nodes if node["name"] == e.o]
+                    if not o_id:
+                        print(f"✖ Object name {e.o} not found in nodes.")
+                        continue
+                    o_id = o_id[0]
+                else:
+                    o_id = e.object_id
+                try:
+                    self.kg.add_edge(s_id, e.predicate, o_id)
+                except:
+                    print("✖ Error adding edge:", e)
             except ValueError:
                 pass
 
