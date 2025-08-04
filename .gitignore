@@ -194,3 +194,6 @@ output/conversations/
 
 # uv.lock
 **/uv.lock
+
+# test_diff
+test_diff/

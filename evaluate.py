@@ -55,7 +55,7 @@ def read_jsonl(path, category: Literal["retrieval", "clarification", "update"] =
     model = UpdateQAEntry if category == "update" else QAEntry
     return [model(**entry) for entry in lines]
 
-async def evaluate_agents(model_name, judge_name, use_vllm, tmp_dir, data_dir):
+async def evaluate_agents(model_name, judge_name, use_vllm, tmp_dir, data_dir, add_think=False):
     categories = ["retrieval", "clarification", "update"]
     evaluation = {"agent": model_name, "avg": 0.0, "scores": []}
     os.makedirs(tmp_dir, exist_ok=True)
@@ -80,14 +80,15 @@ async def evaluate_agents(model_name, judge_name, use_vllm, tmp_dir, data_dir):
 
             for entry in tqdm(qa_list, desc=f"{category}/{folder}"):
                 agent.messages = agent.messages[:1]
+                think_suffix = " /think" if add_think else ""
                 if category == "update":
-                    agent.chat(entry.update)
+                    agent.chat(entry.update + think_suffix)
                     retrieval_agent = Agent(model=model_name, memory_path=tmp_folder, use_vllm=use_vllm)
-                    retrieval_agent.chat(entry.question)
+                    retrieval_agent.chat(entry.question + think_suffix)
                     model_answer = retrieval_agent.messages[-1]
                     answer = extract_reply(model_answer.content)
                 else:
-                    agent.chat(entry.question)
+                    agent.chat(entry.question + think_suffix)
                     model_answer = agent.messages[-1]
                     answer = extract_reply(model_answer.content)
 
@@ -133,6 +134,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data-dir", default="data/eval", help="Base data directory containing categories"
     )
+    parser.add_argument(
+        "--add-think", action="store_true", help="Add ' /think' suffix to all agent prompts"
+    )
     args = parser.parse_args()
 
     asyncio.run(
@@ -142,5 +146,6 @@ if __name__ == "__main__":
             use_vllm=args.use_vllm,
             tmp_dir=args.tmp_dir,
             data_dir=args.data_dir,
+            add_think=args.add_think,
         )
     )
